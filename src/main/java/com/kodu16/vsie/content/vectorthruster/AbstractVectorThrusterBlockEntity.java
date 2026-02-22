@@ -54,8 +54,6 @@ public abstract class AbstractVectorThrusterBlockEntity extends AbstractThruster
 
     }
 
-    public abstract String getvectorthrustertype();
-
     @Override
     public void tick() {
         Level level = this.getLevel();

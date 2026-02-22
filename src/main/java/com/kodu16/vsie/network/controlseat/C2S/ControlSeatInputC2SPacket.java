@@ -52,17 +52,23 @@ public class ControlSeatInputC2SPacket {
                 return;
             }
             ControlSeatServerData serverData = controlSeat.getServerData();
-            if((keys & ControlSeatInputC2SPacket.KeysInput.CHANNEL1) !=0) {
+            if((keys & KeysInput.CHANNEL1) !=0) {
                 serverData.channel1 = !serverData.getChannel1();
             }
-            if((keys & ControlSeatInputC2SPacket.KeysInput.CHANNEL2) !=0) {
+            if((keys & KeysInput.CHANNEL2) !=0) {
                 serverData.channel2 = !serverData.getChannel2();
             }
-            if((keys & ControlSeatInputC2SPacket.KeysInput.CHANNEL3) !=0) {
+            if((keys & KeysInput.CHANNEL3) !=0) {
                 serverData.channel3 = !serverData.getChannel3();
             }
-            if((keys & ControlSeatInputC2SPacket.KeysInput.CHANNEL4) !=0) {
+            if((keys & KeysInput.CHANNEL4) !=0) {
                 serverData.channel4 = !serverData.getChannel4();
+            }
+            if((keys & KeysInput.SWITCHENEMY) !=0) {
+                if(!serverData.enemyshipsData.isEmpty()) {
+                    int index = serverData.lockedenemyindex+1;
+                    serverData.lockedenemyindex = index%serverData.enemyshipsData.size();
+                }
             }
             // 可选：标记方块实体为脏以保存更改
             controlSeat.setChanged();
@@ -77,5 +83,6 @@ public class ControlSeatInputC2SPacket {
         public static final int CHANNEL2 = 1 << 1;
         public static final int CHANNEL3 = 1 << 2;
         public static final int CHANNEL4 = 1 << 3;
+        public static final int SWITCHENEMY = 1 << 4; //切换锁定敌人
     }
 }

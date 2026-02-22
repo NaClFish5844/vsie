@@ -1,6 +1,7 @@
 // 我爱GPT5
 package com.kodu16.vsie.network;
 
+import com.kodu16.vsie.network.IFF.IFFC2SPacket;
 import com.kodu16.vsie.network.controlseat.C2S.ControlSeatC2SPacket;
 import com.kodu16.vsie.network.controlseat.C2S.ControlSeatInputC2SPacket;
 import com.kodu16.vsie.network.controlseat.S2C.ControlSeatInputS2CPacket;
@@ -55,6 +56,14 @@ public class ModNetworking {
                 WeaponC2SPacket::decode,
                 WeaponC2SPacket::handle
         );
+        CHANNEL.registerMessage(
+                nextId(),
+                IFFC2SPacket.class,
+                IFFC2SPacket::encode,
+                IFFC2SPacket::decode,
+                IFFC2SPacket::handle
+        );
+
         CHANNEL.registerMessage(
                 nextId(),
                 ControlSeatS2CPacket.class,

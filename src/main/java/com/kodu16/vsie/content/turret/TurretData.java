@@ -3,8 +3,11 @@ package com.kodu16.vsie.content.turret;
 import mekanism.common.tile.component.ITileComponent;
 import mekanism.common.upgrade.IUpgradeData;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
+import org.valkyrienskies.core.api.ships.Ship;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class TurretData implements IUpgradeData {
@@ -15,6 +18,10 @@ public final class TurretData implements IUpgradeData {
     public volatile boolean targetsTrusted = false;
     public volatile Vector3d location;
     public volatile double distance;
+    public volatile ArrayList<Ship> enemyshipsData = new ArrayList<>();
+    public volatile Vec3 directionForward;
+    public volatile Vec3 directionUp;
+    public volatile Vec3 directionRight;
 
     public double getDistance() { return distance; }
     public boolean getTargetsHostile() { return targetsHostile; }

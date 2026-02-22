@@ -40,11 +40,20 @@ public class TurretScreen extends AbstractContainerScreen<TurretContainerMenu> {
         // 直接用 GuiGraphics 的 blit 方法绘制纹理
         guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
         // 根据状态选择不同的图标
-        ResourceLocation icon = turret.getData().targetsHostile ? new ResourceLocation(vsie.ID, "textures/gui/turret/target_hostile_on.png")
+        ResourceLocation iconhostile = turret.getData().targetsHostile ? new ResourceLocation(vsie.ID, "textures/gui/turret/target_hostile_on.png")
                 : new ResourceLocation(vsie.ID, "textures/gui/turret/target_hostile_off.png");
+        ResourceLocation iconpassive = turret.getData().targetsPassive ? new ResourceLocation(vsie.ID, "textures/gui/turret/target_passive_on.png")
+                : new ResourceLocation(vsie.ID, "textures/gui/turret/target_passive_off.png");
+        ResourceLocation iconplayer = turret.getData().targetsPlayers ? new ResourceLocation(vsie.ID, "textures/gui/turret/target_players_on.png")
+                : new ResourceLocation(vsie.ID, "textures/gui/turret/target_players_off.png");
+        ResourceLocation iconship = turret.getData().targetsShip ? new ResourceLocation(vsie.ID, "textures/gui/turret/target_ship_on.png")
+                : new ResourceLocation(vsie.ID, "textures/gui/turret/target_ship_off.png");
 
         // 绘制状态图标
-        guiGraphics.blit(icon, this.leftPos + 30, this.topPos + 50, 0, 0, 20, 20, 20,20); // 你可以调整位置和大小
+        guiGraphics.blit(iconhostile, this.leftPos + 30, this.topPos + 20, 0, 0, 20, 20, 20,20); // 你可以调整位置和大小
+        guiGraphics.blit(iconpassive, this.leftPos + 60, this.topPos + 20, 0, 0, 20, 20, 20,20);
+        guiGraphics.blit(iconplayer, this.leftPos + 90, this.topPos + 20, 0, 0, 20, 20, 20,20);
+        guiGraphics.blit(iconship, this.leftPos + 120, this.topPos + 20, 0, 0, 20, 20, 20,20);
     }
 
     // 可选：如果你还想显示物品栏标签、玩家背包等文字，也可以重写这个
@@ -61,10 +70,28 @@ public class TurretScreen extends AbstractContainerScreen<TurretContainerMenu> {
         super.init();
         BlockPos pos = menu.getBlockEntity().getBlockPos(); // 如果有 getBlockEntity() 方法
         this.addRenderableWidget(Button.builder(
-                        Component.literal("敌对"),
+                        Component.literal("HOS"),
                         button -> ModNetworking.CHANNEL.sendToServer(new TurretC2SPacket(pos,1)))
-                .pos(this.leftPos + 30, this.topPos + 80)
-                .size(60, 20)
+                .pos(this.leftPos + 30, this.topPos + 50)
+                .size(20, 15)
                 .build());
+        this.addRenderableWidget(Button.builder(
+                        Component.literal("PAS"),
+                        button -> ModNetworking.CHANNEL.sendToServer(new TurretC2SPacket(pos,2)))
+                .pos(this.leftPos + 70, this.topPos + 50)
+                .size(20, 15)
+                .build());
+        this.addRenderableWidget(Button.builder(
+                        Component.literal("Player"),
+                        button -> ModNetworking.CHANNEL.sendToServer(new TurretC2SPacket(pos,3)))
+                .pos(this.leftPos + 110, this.topPos + 50)
+                .size(20, 15)
+                .build());        this.addRenderableWidget(Button.builder(
+                        Component.literal("Ship"),
+                        button -> ModNetworking.CHANNEL.sendToServer(new TurretC2SPacket(pos,4)))
+                .pos(this.leftPos + 150, this.topPos + 50)
+                .size(20, 15)
+                .build());
+
     }
 }

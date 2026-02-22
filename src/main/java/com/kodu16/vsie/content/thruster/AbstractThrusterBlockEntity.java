@@ -20,6 +20,10 @@ import org.valkyrienskies.core.api.ships.ServerShip;
 import org.valkyrienskies.core.api.ships.properties.ShipTransform;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
+import software.bernie.geckolib.animatable.GeoBlockEntity;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
 
 import javax.annotation.Nonnull;
 import java.lang.Math;
@@ -27,7 +31,10 @@ import java.util.EventListener;
 import java.util.List;
 
 @SuppressWarnings({"deprecation", "unchecked"})
-public abstract class AbstractThrusterBlockEntity extends SmartBlockEntity {
+public abstract class AbstractThrusterBlockEntity extends SmartBlockEntity implements GeoBlockEntity {
+
+    private final AnimatableInstanceCache cache = new SingletonAnimatableInstanceCache(this);
+
     // Constants
     public ServerShip ship = VSGameUtilsKt.getShipManagingPos((ServerLevel) level, getBlockPos());
 
@@ -62,6 +69,8 @@ public abstract class AbstractThrusterBlockEntity extends SmartBlockEntity {
     public abstract float getZAxisOffset();
 
     public abstract float getMaxThrust();
+
+    public abstract float getflamewidth();
 
     public void setdata(Vector3d inputtorque, Vector3d inputforce)
     {
@@ -168,16 +177,14 @@ public abstract class AbstractThrusterBlockEntity extends SmartBlockEntity {
         BlockState state = this.getBlockState();
         //LOGGER.warn(String.valueOf(Component.literal("throttle:"+thrusterData.getThrottle())));
         //LOGGER.warn(String.valueOf(Component.literal("raycastdistance:"+-thrusterData.getThrottle()*getMaxFlameDistance())));
-        updateRaycastDistance(level, state, (float) (-thrusterData.getThrottle()*getMaxFlameDistance()));
+        updateRaycastDistance(level, state, (float) (thrusterData.getThrottle()*getMaxFlameDistance()));
     }
 
     private void updateRaycastDistance(@Nonnull Level level, @Nonnull BlockState state, float distance) {
-        if (Math.abs(this.raycastDistance - distance) > 0.01f) {
-            this.raycastDistance = distance;
-            setChanged();
-            if (!level.isClientSide()) {
-                level.sendBlockUpdated(this.worldPosition, state, state, 3);
-            }
+        this.raycastDistance = distance;
+        setChanged();
+        if (!level.isClientSide()) {
+            level.sendBlockUpdated(this.worldPosition, state, state, 3);
         }
     }
 
@@ -223,9 +230,20 @@ public abstract class AbstractThrusterBlockEntity extends SmartBlockEntity {
         }
     }
 
+    public abstract String getthrustertype();
+
     public void markUpdated() {
         this.setChanged();
         this.getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
         //if(!this.level.isClientSide()) sendUpdatePacket();
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return cache;
     }
 }

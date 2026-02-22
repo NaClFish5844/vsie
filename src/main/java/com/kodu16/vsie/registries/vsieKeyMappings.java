@@ -40,6 +40,11 @@ public class vsieKeyMappings {
             GLFW.GLFW_KEY_D,
             "category.vsie" // 键位分类（显示在设置菜单中的类别）
     );
+    public static final KeyMapping KEY_SWITCH_ENEMY = new KeyMapping(
+            "key.vsie.switch_enemy", // 键位描述的语言键
+            GLFW.GLFW_KEY_Z,
+            "category.vsie" // 键位分类（显示在设置菜单中的类别）
+    );
     public static final KeyMapping KEY_TOGGLE_WEAPON_CHANNEL1 = new KeyMapping(
             "key.vsie.toggle_weapon_channel_1",
             KeyConflictContext.IN_GAME,
@@ -93,6 +98,7 @@ public class vsieKeyMappings {
         event.register(KEY_BRAKE);
         event.register(KEY_ROLL_L);
         event.register(KEY_ROLL_R);
+        event.register(KEY_SWITCH_ENEMY);
         event.register(KEY_TOGGLE_WEAPON_CHANNEL1);
         event.register(KEY_TOGGLE_WEAPON_CHANNEL2);
         event.register(KEY_TOGGLE_WEAPON_CHANNEL3);

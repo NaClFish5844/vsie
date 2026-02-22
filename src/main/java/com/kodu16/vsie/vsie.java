@@ -1,20 +1,16 @@
 package com.kodu16.vsie;
 
 import com.kodu16.vsie.content.controlseat.server.ControlSeatForceAttachment;
-import com.kodu16.vsie.foundation.ModMenuTypes;
+import com.kodu16.vsie.registries.ModMenuTypes;
 import com.kodu16.vsie.network.ModNetworking;
 import com.kodu16.vsie.registries.vsieBlockEntities;
 import com.kodu16.vsie.registries.vsieBlocks;
 import com.kodu16.vsie.registries.vsieDataTickets;
+import com.kodu16.vsie.registries.vsieEntities;
 import com.kodu16.vsie.registries.vsieItems;
 import com.kodu16.vsie.registries.vsieCreativeTab;
-import com.kodu16.vsie.registries.vsieKeyMappings;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import org.valkyrienskies.core.api.attachment.AttachmentRegistration;
@@ -37,6 +33,7 @@ public class vsie {
         //Content
         vsieBlocks.register();
         vsieBlockEntities.register();
+        vsieEntities.register();
         //vsieKeyMappings.register(modBus); // 不要重复注册，keymappings里面是注册好的
         vsieItems.register();
         vsieCreativeTab.register(modBus);

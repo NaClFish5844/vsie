@@ -28,6 +28,9 @@ public class ControlSeatClientData {
     public volatile boolean channel3 = false;
     public volatile boolean channel4 = false;
     public Map<String, Object> shipsData = new HashMap<>();
+    public volatile String enemy = "";
+    public volatile String ally = "";
+    public volatile String lockedenemyslug = "";
 
     public void setLastMousex(double x) { lastmousex = x; }
     public void setLastMousey(double x) { lastmousey = x; }

@@ -34,6 +34,7 @@ import org.joml.Vector3d;
 import org.slf4j.Logger;
 import org.valkyrienskies.core.api.ships.LoadedShip;
 import org.valkyrienskies.core.api.ships.ServerShip;
+import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.core.api.ships.properties.ShipTransform;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
@@ -56,13 +57,17 @@ public abstract class AbstractWeaponBlockEntity extends SmartBlockEntity impleme
     public boolean hasInitialized;//防止莫名其妙的重置导致变砖
     private float raycastDistance = 513.0f;//武器的raycast和推进器不太一样，武器是射线检测目标的距离，如果是射弹武器也检测，但不会利用
     public Vec3 targetpos = new Vec3(0,0,0);
-    private Vec3 weaponpos;
-    private int currentTick = -1;
+    public Vec3 weaponpos;
+    public int currentTick = -1;
+    public String weapontype = "";
 
 
     public abstract float getmaxrange(); //获取最大射程
     public abstract int getcooldown(); //每两次射击间最小间隔的tick数
-    public abstract String getweapontype();
+
+    public String getweapontype() {
+        return null;
+    }
 
     public AbstractWeaponBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -76,6 +81,8 @@ public abstract class AbstractWeaponBlockEntity extends SmartBlockEntity impleme
     }
 
     public float getRaycastDistance() {return this.raycastDistance;}
+
+    public Vec3 getTargetpos() {return this.targetpos;}
 
     public void tick() {
         super.tick();
@@ -107,6 +114,7 @@ public abstract class AbstractWeaponBlockEntity extends SmartBlockEntity impleme
                 LoadedShip Ship = VSGameUtilsKt.getShipObjectManagingPos(level, pos);
                 if (Ship == null) return;
                 performRaycast(level);
+                LogUtils.getLogger().warn("firing weapon");
                 fire();
             }
             else {
@@ -126,6 +134,10 @@ public abstract class AbstractWeaponBlockEntity extends SmartBlockEntity impleme
 
     public void receivechannel(int encode) {
         getData().receivingchannel = encode;
+    }
+
+    public void receivetarget(Ship ship) {
+        getData().targetship = ship;
     }
 
     public void modifychannel(int type) {
@@ -154,7 +166,6 @@ public abstract class AbstractWeaponBlockEntity extends SmartBlockEntity impleme
     public boolean needtofire() {
         boolean ans = false;
         for (int i = 0; i < 4; i++) {
-            //LogUtils.getLogger().warn(String.valueOf(Component.literal("current channel1:"+getData().channel1+"2:"+getData().channel2+"3:"+getData().channel3+"4:"+getData().channel4)));
             boolean flag = ((getData().receivingchannel >> i) &1) == 1;
             if (flag && i == 0 && getData().channel1) {
                 ans = true;
@@ -173,7 +184,6 @@ public abstract class AbstractWeaponBlockEntity extends SmartBlockEntity impleme
                 break;
             }
         }
-        //LogUtils.getLogger().warn("weapon at:"+this.getBlockPos()+ "need to fire:"+ans+"receive channel:"+getData().receivingchannel);
         return ans;
     }
 
@@ -205,8 +215,8 @@ public abstract class AbstractWeaponBlockEntity extends SmartBlockEntity impleme
 
             float distance = (float)worldFrom.distanceTo(hitPos);
             this.raycastDistance = Math.min(distance, effectiveMaxDistance);
-            LogUtils.getLogger().warn("raycastdistance from clip:"+distance);
             this.targetpos = new Vec3(hitBlockPos.getX(),hitBlockPos.getY(),hitBlockPos.getZ());
+            LogUtils.getLogger().warn("raycast pose from clip:"+this.targetpos);
         }
         setChanged();
         if (!level.isClientSide()) {
@@ -307,6 +317,9 @@ public abstract class AbstractWeaponBlockEntity extends SmartBlockEntity impleme
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.putFloat("raycastDistance", this.getRaycastDistance());
+        tag.putDouble("target_x",this.targetpos.x);
+        tag.putDouble("target_y",this.targetpos.y);
+        tag.putDouble("target_z",this.targetpos.z);
         tag.putBoolean("channel1",weaponData.getChannel1());
         tag.putBoolean("channel2",weaponData.getChannel2());
         tag.putBoolean("channel3",weaponData.getChannel3());
@@ -320,6 +333,7 @@ public abstract class AbstractWeaponBlockEntity extends SmartBlockEntity impleme
             this.weaponData = new WeaponData();
         }
         if (tag.contains("raycastDistance", CompoundTag.TAG_FLOAT)) {this.raycastDistance = tag.getFloat("raycastDistance");}
+        if(tag.contains("target_x") && tag.contains("target_y") && tag.contains("target_z")) {this.targetpos = new Vec3(tag.getDouble("target_x"), tag.getDouble("target_y"), tag.getDouble("target_z"));}
         if (tag.contains("channel1")) {weaponData.setChannel1(tag.getBoolean("channel1"));}
         if (tag.contains("channel2")) {weaponData.setChannel2(tag.getBoolean("channel2"));}
         if (tag.contains("channel3")) {weaponData.setChannel3(tag.getBoolean("channel3"));}

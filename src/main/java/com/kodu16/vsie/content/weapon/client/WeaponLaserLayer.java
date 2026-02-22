@@ -50,14 +50,7 @@ public class WeaponLaserLayer extends GeoRenderLayer<AbstractWeaponBlockEntity> 
         Direction facing = state.getValue(BlockStateProperties.FACING);
         LASER_LENGTH = animatable.getRaycastDistance();
         // 1. 先转到 +Y（向上）为基准的情况
-        switch (facing) {
-            case DOWN -> poseStack.mulPose(Axis.XP.rotationDegrees(-90f));
-            case UP -> poseStack.mulPose(Axis.XP.rotationDegrees(-90f));
-            case NORTH -> poseStack.mulPose(Axis.XP.rotationDegrees(-90f));
-            case SOUTH -> poseStack.mulPose(Axis.XP.rotationDegrees(-90f));
-            case WEST  -> poseStack.mulPose(Axis.XP.rotationDegrees(-90f));
-            case EAST  -> poseStack.mulPose(Axis.XP.rotationDegrees(-90f));
-        }
+        poseStack.mulPose(Axis.XP.rotationDegrees(90f));
         PoseStack.Pose last = poseStack.last();
         Matrix4f pose = last.pose();
         Matrix3f normal = last.normal();

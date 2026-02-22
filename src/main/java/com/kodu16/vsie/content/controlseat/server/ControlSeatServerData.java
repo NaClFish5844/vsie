@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import org.joml.Vector3d;
 import net.minecraft.world.entity.player.Player;
+import org.valkyrienskies.core.api.ships.Ship;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,10 +12,8 @@ import java.util.List;
 import java.util.Map;
 
 
+//请勿在客户端使用，或加入任何仅限客户端的值
 public class ControlSeatServerData {
-    //忍痛大换血换成了一个更清晰的结构，现在这里都是server的，和方块本身绑定的，player也是serverplayer
-    //对于一个控制椅，最大的问题就是它朝向不定，对于船只坐标系，有+X,-X,+Z,-Z四种可能，不过基于控制椅的放置相对方向，可以转换一下控制矢量输入的方向
-    //我到现在总算明白direction是怎么用的了
     public volatile List<BlockPos> thrusterpositionslist = new ArrayList<>(); // 用来存储推进器的位置
     public volatile Vector3d force =  new Vector3d(0,0,0);
     public volatile Vector3d torque = new Vector3d(0,0,0);
@@ -29,7 +28,12 @@ public class ControlSeatServerData {
     public volatile boolean channel4 = true;
     public volatile int channelencode = 0;
     public volatile boolean isfiring = false;
-    public Map<String, Object> shipsData = new HashMap<>();
+    public volatile String enemy = "";
+    public volatile String ally = "";
+    public volatile int lockedenemyindex = 0;
+    public volatile float thruster_strength = 0;
+    public volatile Map<String, Object> shipsData = new HashMap<>();
+    public volatile ArrayList<Ship> enemyshipsData = new ArrayList<>();
     public Level level;
 
 

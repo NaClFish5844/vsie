@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import java.util.function.Supplier;
 
 //按键的packet必须慢发包，否则按一下按键跳三下，所以单独出来了
+//不止是按键，也包括IFF之类的不是随时更新的内容
 public class ControlSeatInputS2CPacket {
     private final BlockPos pos;
     private final int channelencode;

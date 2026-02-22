@@ -1,11 +1,16 @@
 package com.kodu16.vsie.content.turret.client;
 
+import com.kodu16.vsie.content.vectorthruster.AbstractVectorThrusterBlockEntity;
 import com.kodu16.vsie.foundation.translucentbeamrendertype;
+import com.mojang.logging.LogUtils;
+import com.mojang.math.Axis;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 import software.bernie.geckolib.renderer.GeoRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -26,6 +31,7 @@ public class TurretLaserLayer extends GeoRenderLayer<AbstractTurretBlockEntity> 
     public double FLAME_LENGTH = 0f;
     private static final float BASE_RADIUS = 0.25f;
     private static final float TIP_RADIUS = 0.25f;
+    private static final String NOZZLE_BONE_NAME = "cannon1";
 
     // 直接使用我们自己定义的 RenderType
     private static final RenderType FLAME_RENDER_TYPE = translucentbeamrendertype.SOLID_TRANSLUCENT_BEAM;
@@ -36,35 +42,28 @@ public class TurretLaserLayer extends GeoRenderLayer<AbstractTurretBlockEntity> 
     public void render(PoseStack poseStack, AbstractTurretBlockEntity animatable, BakedGeoModel bakedModel,
                        RenderType renderType, MultiBufferSource bufferSource, VertexConsumer bufferSourceBuffer,
                        float partialTick, int packedLight, int packedOverlay) {
-
-        poseStack.pushPose();
-        poseStack.translate(0f, 2.0f, 0f);
-
-        // 如果你以后需要根据 thruster 朝向旋转，这里可以打开
-        // poseStack.mulPose(Axis.YP.rotationDegrees(-entity.getDirection().toYRot()));
-
         FLAME_LENGTH = animatable.getTargetdistance();
         if (FLAME_LENGTH < 0.1) {
-            poseStack.popPose();
             return;
         }
+        super.render(poseStack, animatable, bakedModel, renderType, bufferSource, bufferSourceBuffer,
+                partialTick, packedLight, packedOverlay);
+    }
 
-        Vector3d targetPos = animatable.getTargetPos();
-        Vector3d turretPos = animatable.getTurretPos();
+    @Override
+    public void renderForBone(PoseStack poseStack, AbstractTurretBlockEntity animatable, GeoBone bone,
+                              RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer,
+                              float partialTick, int packedLight, int packedOverlay) {
 
-        Vec3 direction = new Vec3(
-                targetPos.x - turretPos.x,
-                targetPos.y - turretPos.y,
-                targetPos.z - turretPos.z
-        ).normalize();
-
-        Matrix3f rot = new Matrix3f();
-        lookAlong(rot, direction);
-
-// 旋转法线
-        poseStack.last().normal().mul(rot);
-// 旋转位置（关键修复）
-        poseStack.last().pose().mul(new Matrix4f().set(rot));
+        if (!NOZZLE_BONE_NAME.equals(bone.getName())) {
+            super.renderForBone(poseStack, animatable, bone, renderType, bufferSource, buffer,
+                    partialTick, packedLight, packedOverlay);
+            return;
+        }
+        // 只对 cannon bone 执行渲染
+        poseStack.pushPose();
+        poseStack.translate(0,2.0f,0);
+        //LogUtils.getLogger().warn("rotating:x:"+animatable.xRot0*180/ Mth.PI+"y:"+animatable.yRot0*180/ Mth.PI);
 
         PoseStack.Pose last = poseStack.last();
         Matrix4f pose = last.pose();
@@ -131,23 +130,4 @@ public class TurretLaserLayer extends GeoRenderLayer<AbstractTurretBlockEntity> 
                 .normal(normal, 0, 1, 0)          // 法线随便填，shader 不使用光照
                 .endVertex();
     }
-
-    // 让矩阵的 -Z 轴朝向 dir（dir 必须是单位向量）
-    private static void lookAlong(Matrix3f mat, Vec3 dir) {
-        double x = dir.x;
-        double y = dir.y;
-        double z = dir.z;
-
-        // 构造一个临时的 right 向量
-        Vec3 up = Math.abs(z) < 0.999 ? new Vec3(0, 1, 0) : new Vec3(0, 0, 1);
-        Vec3 right = dir.cross(up).normalize();
-        Vec3 newUp = right.cross(dir);
-
-        mat.set(
-                (float) right.x,   (float) right.y,   (float) right.z,
-                (float) newUp.x,   (float) newUp.y,   (float) newUp.z,
-                (float) -dir.x,    (float) -dir.y,    (float) -dir.z
-        );
-    }
-
 }

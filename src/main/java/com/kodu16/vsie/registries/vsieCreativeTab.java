@@ -41,12 +41,18 @@ public class vsieCreativeTab {
             output.accept(vsieItems.TEST_ITEM);
             output.accept(vsieItems.LINKER);
             output.accept(vsieItems.TARGET_FRAME);
+            output.accept(vsieItems.IFF);
             output.accept(vsieBlocks.CONTROL_SEAT_BLOCK);
             output.accept(vsieBlocks.BASIC_THRUSTER_BLOCK);
+            output.accept(vsieBlocks.MEDIUM_THRUSTER_BLOCK);
+            output.accept(vsieBlocks.LARGE_THRUSTER_BLOCK);
             output.accept(vsieBlocks.MEDIUM_LASER_TURRET_BLOCK);
+            output.accept(vsieBlocks.PARTICLE_TURRET_BLOCK);
             output.accept(vsieBlocks.SHIELD_GENERATOR_BLOCK);
             output.accept(vsieBlocks.BASIC_VECTOR_THRUSTER_BLOCK);
             output.accept(vsieBlocks.INFRA_KNIFE_ACCELERATOR_BLOCK);
+            output.accept(vsieBlocks.BASIC_MISSILE_LAUNCHER_BLOCK);
+            output.accept(vsieBlocks.ARC_EMITTER_BLOCK);
         }
     }
 }

@@ -40,12 +40,17 @@ public class BasicVectorThrusterBlockEntity extends AbstractVectorThrusterBlockE
     }
 
     @Override
+    public float getflamewidth() {
+        return 0.5f;
+    }
+
+    @Override
     protected boolean isWorking() {
         return false;
     }
 
     @Override
-    public String getvectorthrustertype() {
-        return "basic";
+    public String getthrustertype() {
+        return "basic_vector";
     }
 }

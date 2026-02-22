@@ -4,10 +4,12 @@
   "package": "com.kodu16.vsie.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "MouseInputMixin"
+    "MouseInputMixin",
+    "FastProjectionFixMixin"
   ],
   "client": [
-    "MouseInputMixin"
+    "MouseInputMixin",
+    "FastProjectionFixMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -41,14 +41,6 @@ public class NearbyShipsS2CPacket {
             buf.writeDouble((double) attr.get("x"));
             buf.writeDouble((double) attr.get("y"));
             buf.writeDouble((double) attr.get("z"));
-
-
-            buf.writeDouble((double) attr.get("min_x"));
-            buf.writeDouble((double) attr.get("min_y"));
-            buf.writeDouble((double) attr.get("min_z"));
-            buf.writeDouble((double) attr.get("max_x"));
-            buf.writeDouble((double) attr.get("max_y"));
-            buf.writeDouble((double) attr.get("max_z"));
         }
     }
 
@@ -69,13 +61,6 @@ public class NearbyShipsS2CPacket {
             attr.put("x", buf.readDouble());
             attr.put("y", buf.readDouble());
             attr.put("z", buf.readDouble());
-
-            attr.put("min_x", buf.readDouble());
-            attr.put("min_y", buf.readDouble());
-            attr.put("min_z", buf.readDouble());
-            attr.put("max_x", buf.readDouble());
-            attr.put("max_y", buf.readDouble());
-            attr.put("max_z", buf.readDouble());
 
             data.put(key, attr);
         }

@@ -1,7 +1,7 @@
 package com.kodu16.vsie.content.vectorthruster.client;
 
 
-import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
+import com.kodu16.vsie.content.thruster.AbstractThrusterBlockEntity;
 import com.kodu16.vsie.content.vectorthruster.AbstractVectorThrusterBlockEntity;
 import com.kodu16.vsie.vsie;
 import net.minecraft.resources.ResourceLocation;
@@ -18,26 +18,26 @@ public class AbstractVectorThrusterModel extends DefaultedBlockGeoModel<Abstract
     }
 
     @Override
-    public ResourceLocation getModelResource(AbstractVectorThrusterBlockEntity abstractVectorThrusterBlockEntity) {
-        return switch (abstractVectorThrusterBlockEntity.getvectorthrustertype()) {
-            case "basic" -> new ResourceLocation(vsie.ID, "geo/block/basic_vector_thruster.geo.json");
-            default -> throw new IllegalStateException("Unexpected value: " + abstractVectorThrusterBlockEntity.getvectorthrustertype());
+    public ResourceLocation getModelResource(AbstractVectorThrusterBlockEntity thruster) {
+        return switch (thruster.getthrustertype()) {
+            case "basic_vector" -> new ResourceLocation(vsie.ID, "geo/block/basic_vector_thruster.geo.json");
+            default -> throw new IllegalStateException("Unexpected value: " + thruster.getthrustertype());
         };
     }
 
     @Override
-    public ResourceLocation getTextureResource(AbstractVectorThrusterBlockEntity abstractVectorThrusterBlockEntity) {
-        return switch (abstractVectorThrusterBlockEntity.getvectorthrustertype()) {
-            case "basic" -> new ResourceLocation(vsie.ID, "textures/block/basic_vector_thruster.png");
-            default -> throw new IllegalStateException("Unexpected value: " + abstractVectorThrusterBlockEntity.getvectorthrustertype());
+    public ResourceLocation getTextureResource(AbstractVectorThrusterBlockEntity thruster) {
+        return switch (thruster.getthrustertype()) {
+            case "basic_vector" -> new ResourceLocation(vsie.ID, "textures/block/basic_vector_thruster.png");
+            default -> throw new IllegalStateException("Unexpected value: " + thruster.getthrustertype());
         };
     }
 
     @Override
-    public ResourceLocation getAnimationResource(AbstractVectorThrusterBlockEntity abstractVectorThrusterBlockEntity) {
-        return switch (abstractVectorThrusterBlockEntity.getvectorthrustertype()) {
-            case "basic" -> new ResourceLocation(vsie.ID, "animations/block/basic_vector_thruster_anim.json");
-            default -> throw new IllegalStateException("Unexpected value: " + abstractVectorThrusterBlockEntity.getvectorthrustertype());
+    public ResourceLocation getAnimationResource(AbstractVectorThrusterBlockEntity thruster) {
+        return switch (thruster.getthrustertype()) {
+            case "basic_vector" -> new ResourceLocation(vsie.ID, "animations/block/basic_vector_thruster_anim.json");
+            default -> throw new IllegalStateException("Unexpected value: " + thruster.getthrustertype());
         };
     }
 

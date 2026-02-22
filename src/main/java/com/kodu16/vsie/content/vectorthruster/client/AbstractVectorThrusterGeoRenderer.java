@@ -1,5 +1,7 @@
 package com.kodu16.vsie.content.vectorthruster.client;
 
+import com.kodu16.vsie.content.thruster.AbstractThrusterBlockEntity;
+import com.kodu16.vsie.content.thruster.client.AbstractThrusterModel;
 import com.kodu16.vsie.content.vectorthruster.AbstractVectorThrusterBlockEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;

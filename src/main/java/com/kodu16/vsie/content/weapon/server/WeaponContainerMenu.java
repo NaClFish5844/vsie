@@ -1,7 +1,7 @@
 package com.kodu16.vsie.content.weapon.server;
 
 import com.kodu16.vsie.content.weapon.AbstractWeaponBlockEntity;
-import com.kodu16.vsie.foundation.ModMenuTypes;
+import com.kodu16.vsie.registries.ModMenuTypes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;

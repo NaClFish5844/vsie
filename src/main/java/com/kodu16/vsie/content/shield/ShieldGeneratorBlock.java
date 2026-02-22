@@ -1,6 +1,5 @@
 package com.kodu16.vsie.content.shield;
 
-import com.kodu16.vsie.content.thruster.block.basicthruster.BasicThrusterBlockEntity;
 import com.kodu16.vsie.registries.vsieBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

@@ -1,5 +1,7 @@
 package com.kodu16.vsie.foundation;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 
@@ -20,13 +22,30 @@ public class translucentbeamrendertype extends RenderType {
             CompositeState.builder()
                     .setShaderState(POSITION_COLOR_SHADER)
                     .setTextureState(NO_TEXTURE)
-                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setTransparencyState(                                   // ← 关键改这里
+                            new TransparencyStateShard(
+                                    "additive_transparency",
+                                    () -> {
+                                        RenderSystem.enableBlend();
+                                        RenderSystem.blendFuncSeparate(
+                                                GlStateManager.SourceFactor.SRC_ALPHA,          // srcRGB
+                                                GlStateManager.DestFactor.ONE,            // dstRGB   ← 1.0   → 加法
+                                                GlStateManager.SourceFactor.ONE,          // srcAlpha
+                                                GlStateManager.DestFactor.ONE             // dstAlpha
+                                        );
+                                    },
+                                    () -> {
+                                        RenderSystem.disableBlend();
+                                        RenderSystem.defaultBlendFunc();
+                                    }
+                            )
+                    )
                     .setCullState(NO_CULL)
                     .setLightmapState(NO_LIGHTMAP)
                     .setOverlayState(NO_OVERLAY)
                     .setOutputState(TRANSLUCENT_TARGET)
-                    .setDepthTestState(LEQUAL_DEPTH_TEST)
                     .setWriteMaskState(COLOR_WRITE)
+                    .setDepthTestState(LEQUAL_DEPTH_TEST)
                     .createCompositeState(false)
     );
 }

@@ -1,6 +1,5 @@
 package com.kodu16.vsie.content.vectorthruster.block;
 
-import com.kodu16.vsie.content.thruster.block.basicthruster.BasicThrusterBlockEntity;
 import com.kodu16.vsie.content.vectorthruster.AbstractVectorThrusterBlock;
 import com.kodu16.vsie.registries.vsieBlockEntities;
 import net.minecraft.core.BlockPos;

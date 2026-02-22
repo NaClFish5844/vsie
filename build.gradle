@@ -138,6 +138,13 @@ repositories {
         }
     }
 
+    maven { // Ritchie's Projectile Library
+        url = "https://maven.realrobotix.me/master/"
+        content {
+            includeGroup("com.rbasamoyai") // THIS IS IMPORTANT
+        }
+    }
+
     //Mixin^2
     //maven { url = "https://maven.bawnorton.com/releases" }
     //maven { url = "https://maven.enjarai.dev/mirrors" }
@@ -163,18 +170,14 @@ dependencies {
 
     implementation("maven.modrinth:kotlin-for-forge:${kotlin_version}")
 
-    compileOnly fg.deobf("cc.tweaked:cc-tweaked-${minecraft_version}-forge:${cc_version}")
-
     // Create
     implementation fg.deobf("com.simibubi.create:create-${minecraft_version}:${create_version}:slim") { transitive = false }
     implementation fg.deobf("dev.engine-room.flywheel:flywheel-forge-${minecraft_version}:${flywheel_version}")
     implementation fg.deobf("net.createmod.ponder:Ponder-Forge-${minecraft_version}:${ponder_version}")
     implementation fg.deobf("com.tterrag.registrate:Registrate:${registrate_version}")
-
+    implementation fg.deobf("com.rbasamoyai:ritchiesprojectilelib:2.1.1+mc.1.20.1-forge") { transitive = false }
     //// RUNTIME ////
     runtimeOnly fg.deobf("com.simibubi.create:create-${minecraft_version}:${create_version}:all")
-    //CC
-    implementation fg.deobf("cc.tweaked:cc-tweaked-${minecraft_version}-forge:${cc_version}")
     //JEI
     implementation fg.deobf("mezz.jei:jei-1.20.1-forge:15.19.0.85")
 

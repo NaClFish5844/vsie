@@ -1,6 +1,7 @@
 package com.kodu16.vsie.content.weapon;
 
 import mekanism.common.upgrade.IUpgradeData;
+import org.valkyrienskies.core.api.ships.Ship;
 
 public class WeaponData implements IUpgradeData {
     public volatile boolean channel1 = false;//四个频道（可以同时处在多个）
@@ -9,6 +10,7 @@ public class WeaponData implements IUpgradeData {
     public volatile boolean channel4 = false;
     public volatile int receivingchannel = 0000;
     public volatile boolean isfiring = false;
+    public Ship targetship = null;
 
     public boolean getChannel1(){return channel1;}
     public boolean getChannel2(){return channel2;}

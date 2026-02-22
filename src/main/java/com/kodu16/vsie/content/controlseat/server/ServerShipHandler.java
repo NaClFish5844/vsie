@@ -58,21 +58,21 @@ public class ServerShipHandler {
         long now = System.currentTimeMillis();
 
         if (data.getPlayer() != null) {
-            QueryableShipData<Ship> qsd = VSGameUtilsKt.getAllShips(level);
-            qsd.iterator().forEachRemaining(e -> {
-                   // LogUtils.getLogger().warn("detected ship:"+e.getSlug());
-            });
-            data.shipsData = ScanNearByShips.scanships(qsd,pos,level);
-
-            if (now - lastSendMs > 33) {//快包
+            if (now - lastSendMs > 50) {//快包
                 lastSendMs = now;
-
+                QueryableShipData<Ship> qsd = VSGameUtilsKt.getAllShips(level);
+                data.shipsData = ScanNearByShips.scanships(qsd,pos,level);
+                data.enemyshipsData = ScanNearByShips.scanenemyships(qsd,pos,level, data.enemy, data.ally);
                 //信息包
-                ControlSeatS2CPacket packet = new ControlSeatS2CPacket(pos, ForwardDirection);
-                //LOGGER.warn(String.valueOf(Component.literal("sending data to client:"+data.getPlayer()+" direction:"+ForwardDirection)));
+                String slug = "";
+                if(!data.enemyshipsData.isEmpty()) {
+                    Ship targetenemyship = data.enemyshipsData.get(data.lockedenemyindex);
+                    slug = targetenemyship.getSlug();
+                }
+                ControlSeatS2CPacket packet = new ControlSeatS2CPacket(pos, ForwardDirection,data.enemy,data.ally,slug);
                 ModNetworking.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) data.getPlayer()), packet);
 
-                //扫描包
+                //扫描全部船只包（扫描敌人包只跑在服务器不用发送）
                 NearbyShipsS2CPacket packetship = new NearbyShipsS2CPacket(data.shipsData);
                 ModNetworking.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) data.getPlayer()), packetship);
             }
@@ -127,8 +127,8 @@ public class ServerShipHandler {
             transform.getShipToWorld().transformDirection(data.getDirectionRight(), worldZDirection);
             worldZDirection.normalize();
 
-            double torquescale = ship.getMass()/3000;
-            Vector3d controltorque = new Vector3d(torque.x/torquescale, torque.y/torquescale, torque.z/torquescale);
+            double torquescale = data.thruster_strength / (ship.getMass()*3);
+            Vector3d controltorque = new Vector3d(torque.x*torquescale, torque.y*torquescale, torque.z*torquescale);
             if(controltorque.length()<0.1) {
                 controltorque.mul(0);
             }

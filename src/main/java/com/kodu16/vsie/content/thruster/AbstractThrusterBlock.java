@@ -3,6 +3,9 @@ package com.kodu16.vsie.content.thruster;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.kodu16.vsie.registries.vsieShapes;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.RenderShape;
 import org.valkyrienskies.core.api.ships.LoadedShip;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
@@ -39,15 +42,10 @@ public abstract class AbstractThrusterBlock extends DirectionalBlock implements 
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
-    /*@Override
-    public VoxelShape getShape(@Nullable BlockState pState, @Nullable BlockGetter pLevel, @Nullable BlockPos pPos, @Nullable CollisionContext pContext) {
-        if (pState == null) {
-            return PropulsionShapes.THRUSTER.get(Direction.NORTH);
-        }
-        Direction direction = pState.getValue(FACING);
-        if (direction == Direction.UP || direction == Direction.DOWN) direction = direction.getOpposite();
-        return PropulsionShapes.THRUSTER.get(direction);
-    }*/
+    @Override
+    public RenderShape getRenderShape(BlockState State) {
+        return RenderShape.ENTITYBLOCK_ANIMATED;
+    }
 
     @Override
     public BlockState getStateForPlacement(@Nonnull BlockPlaceContext context) {
@@ -89,9 +87,6 @@ public abstract class AbstractThrusterBlock extends DirectionalBlock implements 
                 // Initialize thruster data for ValkyRien Skies
                 ThrusterData data = thrusterBlockEntity.getData();
                 data.setDirection(VectorConversionsMCKt.toJOMLD(state.getValue(FACING).getNormal()));
-                /*data.setThrust(0);
-                ThrusterForceApplier applier = new ThrusterForceApplier(data);
-                ship.addApplier(pos, applier);*/
             }
         }
     }

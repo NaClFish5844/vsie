@@ -16,6 +16,7 @@ public class AbstractWeaponModel extends DefaultedBlockGeoModel<AbstractWeaponBl
     public ResourceLocation getModelResource(AbstractWeaponBlockEntity weapon) {
         return switch (weapon.getweapontype()) {
             case "infra_knife_accelerator" -> new ResourceLocation(vsie.ID, "geo/block/infra_knife_accelerator.geo.json");
+            case "arc_emitter" -> new ResourceLocation(vsie.ID, "geo/block/arc_emitter.geo.json");
             default -> throw new IllegalStateException("Unexpected value: " + weapon.getweapontype());
         };
     }
@@ -24,6 +25,7 @@ public class AbstractWeaponModel extends DefaultedBlockGeoModel<AbstractWeaponBl
     public ResourceLocation getTextureResource(AbstractWeaponBlockEntity weapon) {
         return switch (weapon.getweapontype()) {
             case "infra_knife_accelerator" -> new ResourceLocation(vsie.ID, "textures/block/infra_knife_accelerator.png");
+            case "arc_emitter" -> new ResourceLocation(vsie.ID, "textures/block/arc_emitter.png");
             default -> throw new IllegalStateException("Unexpected value: " + weapon.getweapontype());
         };
     }
@@ -31,7 +33,8 @@ public class AbstractWeaponModel extends DefaultedBlockGeoModel<AbstractWeaponBl
     @Override
     public ResourceLocation getAnimationResource(AbstractWeaponBlockEntity weapon) {
         return switch (weapon.getweapontype()) {
-            case "infra_knife_accelerator" -> new ResourceLocation(vsie.ID, "animations/block/infra_knife_accelerator.png");
+            case "infra_knife_accelerator" -> new ResourceLocation(vsie.ID, "animations/block/infra_knife_accelerator_anim.json");
+            case "arc_emitter" -> new ResourceLocation(vsie.ID, "animations/block/arc_emitter_anim.json");
             default -> throw new IllegalStateException("Unexpected value: " + weapon.getweapontype());
         };
     }

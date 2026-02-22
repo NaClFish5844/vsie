@@ -73,11 +73,40 @@ public abstract class AbstractTurretBlock extends DirectionalBlock implements En
     }
 
     @Override
-    public abstract @NotNull InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit);
+    public @NotNull InteractionResult use(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
+        if (!level.isClientSide)
+        {
+            Logger LOGGER = LogUtils.getLogger();
+            LOGGER.info("Turret right-clicked at {} by {}, BE = {}", pos, player.getName().getString(),
+                    level.getBlockEntity(pos));
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof AbstractTurretBlockEntity turret) {
+                NetworkHooks.openScreen((ServerPlayer) player, new MenuProvider() {
+                    @Override
+                    public Component getDisplayName() {
+                        return Component.translatable("container.vsie.turret");
+                    }
 
+                    @Override
+                    public AbstractContainerMenu createMenu(int id, Inventory inv, Player p) {
+                        return new TurretContainerMenu(id, inv, turret);
+                    }
+                }, buf -> buf.writeBlockPos(pos)); // 关键：把 pos 写进去
+            }
+        }
+        return InteractionResult.sidedSuccess(level.isClientSide);
+    }
     @Override
     public @Nullable BlockState getStateForPlacement(@NotNull BlockPlaceContext context) {
-        return this.defaultBlockState().setValue(FACING, context.getClickedFace().getOpposite());
+        Direction baseDirection = context.getNearestLookingDirection();
+        Direction placeDirection;
+        Player player = context.getPlayer();
+        if (player != null) {
+            placeDirection = !player.isShiftKeyDown() ? baseDirection : baseDirection.getOpposite();
+        } else {
+            placeDirection = baseDirection;
+        }
+        return this.defaultBlockState().setValue(FACING, placeDirection);
     }
 
     @Nullable

@@ -1,8 +1,7 @@
 package com.kodu16.vsie.content.turret.server;
 
 import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
-import com.kodu16.vsie.foundation.ModMenuTypes;
-import net.minecraft.core.BlockPos;
+import com.kodu16.vsie.registries.ModMenuTypes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;

@@ -1,18 +1,21 @@
 package com.kodu16.vsie.registries;
 
 import com.kodu16.vsie.content.shield.ShieldGeneratorBlock;
+import com.kodu16.vsie.content.thruster.block.LargeThrusterBlock;
+import com.kodu16.vsie.content.thruster.block.MediumThrusterBlock;
 import com.kodu16.vsie.content.turret.block.MediumLaserTurretBlock;
-import com.kodu16.vsie.content.turret.block.MediumLaserTurretBlockEntity;
+import com.kodu16.vsie.content.turret.block.ParticleTurretBlock;
 import com.kodu16.vsie.content.vectorthruster.block.BasicVectorThrusterBlock;
+import com.kodu16.vsie.content.weapon.arc_emitter.ArcEmitterBlock;
 import com.kodu16.vsie.content.weapon.infra_knife_accelerator.InfraKnifeAcceleratorBlock;
+import com.kodu16.vsie.content.weapon.missile_launcher.block.BasicMissileLauncherBlock;
 import com.kodu16.vsie.vsie;
 import com.kodu16.vsie.content.controlseat.block.ControlSeatBlock;
-import com.kodu16.vsie.content.thruster.block.basicthruster.BasicThrusterBlock;
+import com.kodu16.vsie.content.thruster.block.BasicThrusterBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.material.MapColor;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.tterrag.registrate.util.entry.BlockEntry;
-import net.minecraftforge.eventbus.api.IEventBus;
 
 
 public class vsieBlocks {
@@ -65,6 +68,48 @@ public class vsieBlocks {
             .register();
 
     public static final BlockEntry<InfraKnifeAcceleratorBlock> INFRA_KNIFE_ACCELERATOR_BLOCK = REGISTRATE.block("infra_knife_accelerator", InfraKnifeAcceleratorBlock::new)
+            .properties(p -> p.mapColor(MapColor.METAL))
+            .properties(p -> p.requiresCorrectToolForDrops())
+            .properties(p -> p.sound(SoundType.METAL))
+            .properties(p -> p.strength(5.5f, 4.0f))
+            .properties(p -> p.noOcclusion())
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<BasicMissileLauncherBlock> BASIC_MISSILE_LAUNCHER_BLOCK = REGISTRATE.block("basic_missile_launcher", BasicMissileLauncherBlock::new)
+            .properties(p -> p.mapColor(MapColor.METAL))
+            .properties(p -> p.requiresCorrectToolForDrops())
+            .properties(p -> p.sound(SoundType.METAL))
+            .properties(p -> p.strength(5.5f, 4.0f))
+            .properties(p -> p.noOcclusion())
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<ArcEmitterBlock> ARC_EMITTER_BLOCK = REGISTRATE.block("arc_emitter", ArcEmitterBlock::new)
+            .properties(p -> p.mapColor(MapColor.METAL))
+            .properties(p -> p.requiresCorrectToolForDrops())
+            .properties(p -> p.sound(SoundType.METAL))
+            .properties(p -> p.strength(5.5f, 4.0f))
+            .properties(p -> p.noOcclusion())
+            .simpleItem()
+            .register();
+    public static final BlockEntry<MediumThrusterBlock> MEDIUM_THRUSTER_BLOCK = REGISTRATE.block("medium_thruster", MediumThrusterBlock::new)
+            .properties(p -> p.mapColor(MapColor.METAL))
+            .properties(p -> p.requiresCorrectToolForDrops())
+            .properties(p -> p.sound(SoundType.METAL))
+            .properties(p -> p.strength(5.5f, 4.0f))
+            .properties(p -> p.noOcclusion())
+            .simpleItem()
+            .register();
+    public static final BlockEntry<LargeThrusterBlock> LARGE_THRUSTER_BLOCK = REGISTRATE.block("large_thruster", LargeThrusterBlock::new)
+            .properties(p -> p.mapColor(MapColor.METAL))
+            .properties(p -> p.requiresCorrectToolForDrops())
+            .properties(p -> p.sound(SoundType.METAL))
+            .properties(p -> p.strength(5.5f, 4.0f))
+            .properties(p -> p.noOcclusion())
+            .simpleItem()
+            .register();
+    public static final BlockEntry<ParticleTurretBlock> PARTICLE_TURRET_BLOCK = REGISTRATE.block("particle_turret", ParticleTurretBlock::new)
             .properties(p -> p.mapColor(MapColor.METAL))
             .properties(p -> p.requiresCorrectToolForDrops())
             .properties(p -> p.sound(SoundType.METAL))

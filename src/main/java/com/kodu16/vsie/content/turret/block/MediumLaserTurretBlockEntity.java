@@ -14,6 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -34,7 +35,6 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 public class MediumLaserTurretBlockEntity extends AbstractTurretBlockEntity {
-    public SmartFluidTankBehaviour tank;
     public MediumLaserTurretBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
     }
@@ -57,12 +57,27 @@ public class MediumLaserTurretBlockEntity extends AbstractTurretBlockEntity {
 
     public double getYAxisOffset() {return 1.0d;}
 
-    public void shoot() {
+    @Override
+    public float getMaxSpinSpeed() {
+        return Mth.PI/32;
+    }
+
+    @Override
+    public int getCoolDown() {
+        return 15;
+    }
+
+    public void shootentity() {
         double distance = Vec.Distance(this.targetPos, currentworldpos);
         double projectionLength = distance;
         turretData.setDistance(projectionLength);
         performRaycast(this.getLevel());
         targetentity.hurt(level.damageSources().onFire(), 15.0F);
+    }
+
+    @Override
+    public void shootship() {
+
     }
 
     private void performRaycast(@Nonnull Level level) {

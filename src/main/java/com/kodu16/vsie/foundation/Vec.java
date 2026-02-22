@@ -19,13 +19,6 @@ public class Vec {
         return new Vector3d(xPrime, yPrime, zPrime);
     }
 
-    public static Vector3d cross(Vector3d a, Vector3d b) {
-        double newX = a.y * b.z - a.z * b.y;
-        double newY = a.z * b.x - a.x * b.z;
-        double newZ = a.x * b.y - a.y * b.x;
-        return new Vector3d(newX, newY, newZ);
-    }
-
     public static Vector3d toVector3d(Vec3 a) {
         return new Vector3d(a.x,a.y,a.z);
     }
@@ -34,18 +27,29 @@ public class Vec {
         return Math.sqrt(Math.pow(a.x-b.x,2) + Math.pow(a.y-b.y,2) + Math.pow(a.z-b.z,2));
     }
 
-    public double calculateAngle(Vector3d a, Vector3d b) {
-        double dot = a.dot(b);
-        double lenA = a.length();
-        double lenB = b.length();
+    public static float angleBetween(Vec3 a, Vec3 b) {
+        // 1. 计算点积
+        float dot = (float) (a.x * b.x + a.y * b.y + a.z * b.z);
 
-        if (lenA == 0 || lenB == 0) return 0.0;
+        // 2. 计算两个向量的模长
+        float lenA = (float) Math.sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+        float lenB = (float) Math.sqrt(b.x * b.x + b.y * b.y + b.z * b.z);
 
-        double cos = dot / (lenA * lenB);
-        cos = Math.max(-1.0, Math.min(1.0, cos));  // 防浮点误差
+        // 3. 防止除以零的情况
+        if (lenA == 0 || lenB == 0) {
+            return 0;   // 或抛异常，看需求
+        }
 
-        return Math.toDegrees(Math.acos(cos));
+        // 4. cosθ = dot / (|a| * |b|)
+        float cosTheta = dot / (lenA * lenB);
+
+        // 5. 由于浮点误差，cosTheta 可能略微超过 [-1,1]，需要钳制
+        cosTheta = Math.max(-1.0f, Math.min(1.0f, cosTheta));
+
+        // 6. 转成弧度角
+        return (float) Math.acos(cosTheta);
     }
+
 
     //A在B和C的平面上投影与B的夹角
     public static double projectionAngleToB_deg_signed(

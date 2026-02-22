@@ -71,31 +71,6 @@ public class WeaponScreen extends AbstractContainerScreen<WeaponContainerMenu> {
         super.init();
         BlockPos pos = menu.getBlockEntity().getBlockPos();
         AbstractWeaponBlockEntity blockEntity = menu.getBlockEntity();
-        /*this.addRenderableWidget(new ImageButton(
-                this.leftPos + 30, this.topPos + 20, 16, 16,
-                0, 0, 16,
-                icon_channel1,
-                button ->ModNetworking.CHANNEL.sendToServer(new WeaponC2SPacket(pos, 1))
-        ));
-        this.addRenderableWidget(new ImageButton(
-                this.leftPos + 50, this.topPos + 20, 16, 16,
-                0, 0, 16,
-                icon_channel2,
-                button -> ModNetworking.CHANNEL.sendToServer(new WeaponC2SPacket(pos, 2))
-        ));
-        this.addRenderableWidget(new ImageButton(
-                this.leftPos + 70, this.topPos + 20, 16, 16,
-                0, 0, 16,
-                icon_channel3,
-                button -> ModNetworking.CHANNEL.sendToServer(new WeaponC2SPacket(pos, 3))
-        ));
-        this.addRenderableWidget(new ImageButton(
-                this.leftPos + 90, this.topPos + 20, 16, 16,
-                0, 0,16,
-                icon_channel4,
-                button -> ModNetworking.CHANNEL.sendToServer(new WeaponC2SPacket(pos, 4))
-        ));*/
-
         this.addRenderableWidget(Button.builder(
                 Component.literal("CH1"),
                 btn -> ModNetworking.CHANNEL.sendToServer(new WeaponC2SPacket(pos, 1))

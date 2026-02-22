@@ -1,0 +1,23 @@
+package com.kodu16.vsie.registries;
+
+import com.kodu16.vsie.content.bullet.BulletRenderer;
+import com.kodu16.vsie.content.bullet.ParticleBulletEntity;
+import com.kodu16.vsie.content.missile.entity.BasicMissileEntity;
+import com.kodu16.vsie.vsie;
+import com.simibubi.create.foundation.data.CreateRegistrate;
+import com.tterrag.registrate.util.entry.EntityEntry;
+import net.minecraft.world.entity.MobCategory;
+
+public class vsieEntities {
+
+    private static final CreateRegistrate REGISTRATE = vsie.registrate();
+    public static void register() {}
+    public static final EntityEntry<BasicMissileEntity> BASIC_MISSILE =
+            REGISTRATE.entity("basic_missile", BasicMissileEntity::new, MobCategory.MISC)
+                    .register();
+    public static final EntityEntry<ParticleBulletEntity> PARTICLE_BULLET =
+            REGISTRATE.entity("particle_bullet", ParticleBulletEntity::new, MobCategory.MISC)
+                    .renderer(() -> BulletRenderer::new)
+                    .register();
+
+}

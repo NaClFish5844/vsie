@@ -8,6 +8,7 @@ import com.kodu16.vsie.content.controlseat.client.Input.ClientMouseHandler;
 
 import com.kodu16.vsie.content.controlseat.server.SeatRegistry;
 import com.kodu16.vsie.content.thruster.AbstractThrusterBlockEntity;
+import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
 import com.kodu16.vsie.content.weapon.AbstractWeaponBlockEntity;
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -30,6 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
+import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.ValkyrienSkiesMod;
 import org.valkyrienskies.mod.common.entity.ShipMountingEntity;
@@ -88,13 +90,12 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
                 controlseatData.reset();
                 controlseatData.setPlayer(null);
             }
+            this.calculatedstrength = 0;
             updateThruster();
             updateWeapon();
-
-            //scanships
+            updateTurret();
         }
         else {
-            LOGGER.warn(String.valueOf(Component.literal("detected uninitialized controlseat, time to sweep valkyrie's ass")));
             BlockPos pos = getBlockPos();
             BlockState state = null;
             if (level != null) {
@@ -103,7 +104,7 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
             if (state != null) {
                 Initialize.initialize(level, pos, state);
                 hasInitialized = true;
-                LOGGER.warn(String.valueOf(Component.literal("controlseat Initialize complete:"+pos)));
+                //LOGGER.warn(String.valueOf(Component.literal("controlseat Initialize complete:"+pos)));
             }
         }
 
@@ -111,7 +112,6 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
 
     public void updateThruster() {
         List<Vec3> toRemove = new ArrayList<>();
-
         this.forEachLinkedPeripheral(pos -> {
             BlockPos blockPos = BlockPos.containing(pos);
             BlockEntity be = level.getBlockEntity(blockPos);
@@ -120,12 +120,13 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
                 Logger LOGGER = LogUtils.getLogger();
                 //LOGGER.warn("writing to thrusters:" +blockPos+ "torque:"+controlseatData.getFinaltorque()+"force:"+controlseatData.getFinalforce());
                 thruster.setdata(controlseatData.getFinaltorque(), controlseatData.getFinalforce());
+                this.calculatedstrength+=thruster.getMaxThrust();
             } else {
                 // 先记下来，循环完了再删
                 toRemove.add(pos);
             }
         }, 0);
-
+        controlseatData.thruster_strength = this.calculatedstrength;
         // 循环结束后统一删除
         for (Vec3 pos : toRemove) {
             removeLinkedPeripheral(pos, 0);
@@ -135,26 +136,55 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
     public void updateWeapon() {
         if(previousfirestatus == controlseatData.isfiring) return;
         previousfirestatus = controlseatData.isfiring;
-        for (int i = WeaponCache.size() - 1; i >= 0; i--) {
-            AbstractWeaponBlockEntity weapon = WeaponCache.get(i);
-
-            if (weapon == null || weapon.isRemoved() || !level.isLoaded(weapon.getBlockPos())) {
-                WeaponCache.remove(i);
-                // 记得同步清理 weaponRefs 和 linked peripheral
-                continue;
-            }
-
-            // 正常发信号
-            int encoded = 0;
-            if (controlseatData.getChannel1()) encoded |= 1;
-            if (controlseatData.getChannel2()) encoded |= 2;
-            if (controlseatData.getChannel3()) encoded |= 4;
-            if (controlseatData.getChannel4()) encoded |= 8;
-            if (controlseatData.isfiring) {
-                weapon.receivechannel(encoded);
+        List<Vec3> toRemove = new ArrayList<>();
+        this.forEachLinkedPeripheral(pos -> {
+            BlockPos blockPos = BlockPos.containing(pos);
+            BlockEntity be = level.getBlockEntity(blockPos);
+            if (be instanceof AbstractWeaponBlockEntity weapon) {
+                // 正常发信号
+                int encoded = 0;
+                if (controlseatData.getChannel1()) encoded |= 1;
+                if (controlseatData.getChannel2()) encoded |= 2;
+                if (controlseatData.getChannel3()) encoded |= 4;
+                if (controlseatData.getChannel4()) encoded |= 8;
+                if (controlseatData.isfiring) {
+                    weapon.receivechannel(encoded);
+                } else {
+                    weapon.receivechannel(0);
+                }
+                if(!controlseatData.enemyshipsData.isEmpty()) {
+                    Ship ship = controlseatData.enemyshipsData.get(controlseatData.lockedenemyindex);
+                    if(ship!=null) {
+                        weapon.receivetarget(ship);
+                    }
+                }
             } else {
-                weapon.receivechannel(0);
+                // 先记下来，循环完了再删
+                toRemove.add(pos);
             }
+        }, 1);
+
+        // 循环结束后统一删除
+        for (Vec3 pos : toRemove) {
+            removeLinkedPeripheral(pos, 1);
+        }
+    }
+
+    public void updateTurret() {
+        List<Vec3> toRemove = new ArrayList<>();
+        this.forEachLinkedPeripheral(pos -> {
+            BlockPos blockPos = BlockPos.containing(pos);
+            BlockEntity be = level.getBlockEntity(blockPos);
+            if (be instanceof AbstractTurretBlockEntity turret) {
+                turret.updateenemy(controlseatData.enemyshipsData);
+            } else {
+                // 先记下来，循环完了再删
+                toRemove.add(pos);
+            }
+        }, 3);
+        // 循环结束后统一删除
+        for (Vec3 pos : toRemove) {
+            removeLinkedPeripheral(pos, 3);
         }
     }
 
