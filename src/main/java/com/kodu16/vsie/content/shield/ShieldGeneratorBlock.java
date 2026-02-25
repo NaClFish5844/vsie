@@ -47,7 +47,7 @@ public class ShieldGeneratorBlock extends DirectionalBlock implements EntityBloc
 
     @Override
     public BlockState getStateForPlacement(@Nonnull BlockPlaceContext context) {
-        Direction baseDirection = context.getNearestLookingDirection();
+        Direction baseDirection = context.getHorizontalDirection();
         Direction placeDirection;
         Player player = context.getPlayer();
         if (player != null) {

@@ -2,7 +2,6 @@ package com.kodu16.vsie.content.controlseat;
 
 
 import com.kodu16.vsie.content.controlseat.server.ControlSeatServerData;
-import com.kodu16.vsie.content.weapon.AbstractWeaponBlockEntity;
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
@@ -11,15 +10,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import org.valkyrienskies.core.api.ships.ServerShip;
-import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.ValkyrienSkiesMod;
 import software.bernie.geckolib.animatable.GeoBlockEntity;
@@ -27,9 +23,7 @@ import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -41,11 +35,22 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
     private final AnimatableInstanceCache cache = new SingletonAnimatableInstanceCache(this);
     public float calculatedstrength = 0;
 
+    //energy
+    public int energyspendpertick = 10;
+    public int capacitorenergy = 0;//控制椅记录的当tick需要消耗的电量，如果抽不够电量则停机
+
+    //shield
+    public double avalibleshield = 0;
+    public int shieldsubtracthistick = 0;//控制椅记录的当tick需要消耗的护盾电量，如果抽不够则护盾过载
+
     //Links(nbt:true)
     private final List<Vec3> linkedThrusters = new ArrayList<>();
     public final List<Vec3> linkedWeapons = new ArrayList<>();
-    private final List<Vec3> linkedShields = new ArrayList<>();
+    public final List<Vec3> linkedShields = new ArrayList<>();
     private final List<Vec3> linkedTurrets = new ArrayList<>();
+    private final List<Vec3> linkedBatteries = new ArrayList<>();
+    //控制椅连的电池，弹药库，燃料库
+    //不加了，再加有点多了
 
 
 
@@ -53,9 +58,6 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
         super(typeIn, pos, state);
         controlseatData = new ControlSeatServerData();
     }
-
-
-    // 修改 tick 方法，在此方法中确保座椅输入与对应玩家的 UUID 匹配
 
     protected abstract boolean isWorking();
 
@@ -75,6 +77,10 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
         nbt.putString("ally", controlseatData.ally);
 
         writeVec3List(nbt, "Thrusters", linkedThrusters);
+        writeVec3List(nbt,"Weapons",linkedWeapons);
+        writeVec3List(nbt, "Shields", linkedShields);
+        writeVec3List(nbt, "Turrets", linkedTurrets);
+        writeVec3List(nbt, "Batteries",linkedBatteries);
     }
 
     @Override
@@ -90,8 +96,13 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
         linkedWeapons.clear();
         linkedShields.clear();
         linkedTurrets.clear();
+        linkedBatteries.clear();
 
         readVec3List(nbt, "Thrusters", linkedThrusters);
+        readVec3List(nbt, "Weapons",linkedWeapons);
+        readVec3List(nbt, "Shields",linkedShields);
+        readVec3List(nbt, "Turrets",linkedTurrets);
+        readVec3List(nbt, "Batteries",linkedBatteries);
     }
 
     @Override
@@ -125,17 +136,34 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
         controlseatData.ally = str;
     }
 
-    public void addLinkedPeripheral(Vec3 pos, int type) { //0：推进器 1：主武器 2：护盾 3：炮塔，务必不要写错
+    public void addLinkedPeripheral(Vec3 pos, int type) { //0：推进器 1：主武器 2：护盾 3：炮塔 4：电池，务必不要写错
         Logger LOGGER = LogUtils.getLogger();
         if (type == 0 && !linkedThrusters.contains(pos)) {
             linkedThrusters.add(pos);
             LOGGER.warn("adding thruster to controlseat: " + pos);
             setChanged(); // 标记方块实体脏了，强制保存
         }
-        if (type == 1 && !linkedWeapons.contains(pos)) {
+        else if (type == 1 && !linkedWeapons.contains(pos)) {
             linkedWeapons.add(pos);
-            LOGGER.warn("adding thruster to controlseat: " + pos);
+            LOGGER.warn("adding weapon to controlseat: " + pos);
             setChanged(); // 标记方块实体脏了，强制保存
+        }
+        else if(type == 2 && !linkedShields.contains(pos)) {
+            linkedShields.add(pos);
+            LOGGER.warn("adding shield to controlseat: " + pos);
+            setChanged();
+        }
+
+        else if(type == 3 && !linkedTurrets.contains(pos)) {
+            linkedTurrets.add(pos);
+            LOGGER.warn("adding turret to controlseat: " + pos);
+            setChanged();
+        }
+
+        else if(type == 4 && !linkedBatteries.contains(pos)) {
+            linkedBatteries.add(pos);
+            LOGGER.warn("adding battery to controlseat: " + pos);
+            setChanged();
         }
     }
 
@@ -144,15 +172,39 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
             linkedThrusters.remove(pos);
             setChanged(); // 标记方块实体脏了，强制保存
         }
-        if (type==1 && linkedWeapons.contains(pos)) {
+        else if (type==1 && linkedWeapons.contains(pos)) {
             linkedWeapons.remove(pos);
+            setChanged(); // 标记方块实体脏了，强制保存
+        }
+        else if (type==2 && linkedShields.contains(pos)) {
+            linkedShields.remove(pos);
+            setChanged(); // 标记方块实体脏了，强制保存
+        }
+        else if (type==3 && linkedTurrets.contains(pos)) {
+            linkedTurrets.remove(pos);
+            setChanged(); // 标记方块实体脏了，强制保存
+        }
+        else if (type==4 && linkedBatteries.contains(pos)) {
+            linkedBatteries.remove(pos);
             setChanged(); // 标记方块实体脏了，强制保存
         }
     }
 
-    public void forEachLinkedPeripheral(Consumer<Vec3> action, int type) { //0：推进器 1：主武器 2：护盾 3：炮塔，务必不要写错
+    public void forEachLinkedPeripheral(Consumer<Vec3> action, int type) {
         if(type==0) {
             linkedThrusters.forEach(action);
+        }
+        if(type==1) {
+            linkedWeapons.forEach(action);
+        }
+        if(type==2) {
+            linkedShields.forEach(action);
+        }
+        if(type==3) {
+            linkedTurrets.forEach(action);
+        }
+        if(type==4) {
+            linkedBatteries.forEach(action);
         }
     }
 

@@ -2,7 +2,10 @@ package com.kodu16.vsie.content.item.linker;
 
 import com.kodu16.vsie.content.controlseat.AbstractControlSeatBlock;
 import com.kodu16.vsie.content.controlseat.AbstractControlSeatBlockEntity;
+import com.kodu16.vsie.content.shield.ShieldGeneratorBlockEntity;
+import com.kodu16.vsie.content.storage.energybattery.AbstractEnergyBatteryBlockEntity;
 import com.kodu16.vsie.content.thruster.AbstractThrusterBlockEntity;
+import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
 import com.kodu16.vsie.content.weapon.AbstractWeaponBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
@@ -37,6 +40,7 @@ public class linker extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
+        //0：推进器 1：主武器 2：护盾 3：炮塔 4：电池，务必不要写错
         Level level = context.getLevel();
         if (level.isClientSide) return InteractionResult.PASS;
 
@@ -67,6 +71,7 @@ public class linker extends Item {
         BlockPos controllerPos = new BlockPos(controllerArray[0], controllerArray[1], controllerArray[2]);
         BlockEntity blockEntityA = level.getBlockEntity(controllerPos);
         BlockEntity blockEntityB = level.getBlockEntity(convertToBlockPos(new Vector3d(clickedPos.getX(), clickedPos.getY(), clickedPos.getZ())));
+
         if (blockEntityB instanceof AbstractThrusterBlockEntity thruster) {
             Vec3 pos = new Vec3(clickedPos.getX(), clickedPos.getY(), clickedPos.getZ());
             if (blockEntityA instanceof AbstractControlSeatBlockEntity controlseat) {
@@ -79,7 +84,8 @@ public class linker extends Item {
             }
             return InteractionResult.CONSUME;
         }
-        if (blockEntityB instanceof AbstractWeaponBlockEntity weapon) {
+
+        else if (blockEntityB instanceof AbstractWeaponBlockEntity weapon) {
             Vec3 pos = new Vec3(clickedPos.getX(), clickedPos.getY(), clickedPos.getZ());
             if (blockEntityA instanceof AbstractControlSeatBlockEntity controlseat) {
                 controlseat.addLinkedPeripheral(pos, 1);
@@ -91,6 +97,47 @@ public class linker extends Item {
             }
             return InteractionResult.PASS;
         }
+
+        else if (blockEntityB instanceof ShieldGeneratorBlockEntity shield) {
+            Vec3 pos = new Vec3(clickedPos.getX(), clickedPos.getY(), clickedPos.getZ());
+            if (blockEntityA instanceof AbstractControlSeatBlockEntity controlseat) {
+                controlseat.addLinkedPeripheral(pos, 2);
+                shield.linkedcontrolseatpos = controllerPos;
+                player.displayClientMessage(Component.literal("§b已将控制椅: " + controllerPos + " 与护盾: " + clickedPos + " 绑定"), true);
+            }
+            else {
+                player.displayClientMessage(Component.literal("绑定的控制椅已经被移除"), true);
+                nbt.remove("ControlSeatPos");
+            }
+            return InteractionResult.PASS;
+        }
+
+        else if (blockEntityB instanceof AbstractTurretBlockEntity turret) {
+            Vec3 pos = new Vec3(clickedPos.getX(), clickedPos.getY(), clickedPos.getZ());
+            if (blockEntityA instanceof AbstractControlSeatBlockEntity controlseat) {
+                controlseat.addLinkedPeripheral(pos, 3);
+                player.displayClientMessage(Component.literal("§b已将控制椅: " + controllerPos + " 与炮塔: " + clickedPos + " 绑定"), true);
+            }
+            else {
+                player.displayClientMessage(Component.literal("绑定的控制椅已经被移除"), true);
+                nbt.remove("ControlSeatPos");
+            }
+            return InteractionResult.PASS;
+        }
+
+        else if (blockEntityB instanceof AbstractEnergyBatteryBlockEntity battery) {
+            Vec3 pos = new Vec3(clickedPos.getX(), clickedPos.getY(), clickedPos.getZ());
+            if (blockEntityA instanceof AbstractControlSeatBlockEntity controlseat) {
+                controlseat.addLinkedPeripheral(pos, 4);
+                player.displayClientMessage(Component.literal("§b已将控制椅: " + controllerPos + " 与电池: " + clickedPos + " 绑定"), true);
+            }
+            else {
+                player.displayClientMessage(Component.literal("绑定的控制椅已经被移除"), true);
+                nbt.remove("ControlSeatPos");
+            }
+            return InteractionResult.PASS;
+        }
+
         else {
             player.displayClientMessage(Component.literal(blockEntityB+"不是有效外设"), true);
             return InteractionResult.PASS;

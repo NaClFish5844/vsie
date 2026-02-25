@@ -7,6 +7,7 @@ import com.kodu16.vsie.vsie;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.tterrag.registrate.util.entry.EntityEntry;
 import net.minecraft.world.entity.MobCategory;
+import rbasamoyai.ritchiesprojectilelib.RPLTags;
 
 public class vsieEntities {
 
@@ -18,6 +19,7 @@ public class vsieEntities {
     public static final EntityEntry<ParticleBulletEntity> PARTICLE_BULLET =
             REGISTRATE.entity("particle_bullet", ParticleBulletEntity::new, MobCategory.MISC)
                     .renderer(() -> BulletRenderer::new)
+                    .tag(RPLTags.PRECISE_MOTION)
                     .register();
 
 }

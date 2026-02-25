@@ -64,7 +64,7 @@ public abstract class AbstractBulletEntity extends Projectile {
             // 用稍微大一点的膨胀来补救
             List<Entity> entities = this.level().getEntities(
                     this,
-                    this.getBoundingBox().expandTowards(movement).inflate(0.8, 0.8, 0.8)
+                    this.getBoundingBox().expandTowards(movement).inflate(1.8, 1.8, 1.8)
             );
 
             Entity closest = null;

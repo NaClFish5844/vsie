@@ -1,9 +1,6 @@
 package com.kodu16.vsie.content.item.IFF;
 
 import com.kodu16.vsie.content.controlseat.AbstractControlSeatBlockEntity;
-import com.kodu16.vsie.content.item.IFF.server.IFFContainerMenu;
-import com.kodu16.vsie.content.turret.server.TurretContainerMenu;
-import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -20,9 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3d;
 
 public class iff extends Item {
 

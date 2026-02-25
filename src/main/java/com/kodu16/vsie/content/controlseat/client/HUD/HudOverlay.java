@@ -28,8 +28,8 @@ public class HudOverlay {
     private static final int TEXT_ALPHA    = 5;   // 主文字透明度
     private static final int SHADOW_ALPHA  = 110;   // 发光/阴影透明度
 
-    private static final int MAIN_COLOR = FastColor.ARGB32.color(TEXT_ALPHA, 0x00, 0xFF, 0xFF);
-    private static final int SUB_COLOR  = FastColor.ARGB32.color(TEXT_ALPHA, 0x99, 0xFF, 0xFF);
+    private static final int MAIN_COLOR = FastColor.ARGB32.color(TEXT_ALPHA, 0x00, 0xAA, 0xFF);
+    private static final int SUB_COLOR  = FastColor.ARGB32.color(TEXT_ALPHA, 0x00, 0x88, 0x88);
 
     private static final Minecraft mc = Minecraft.getInstance(); // drawGlowText 要用
 
@@ -81,11 +81,20 @@ public class HudOverlay {
             drawCenteredText(gg,"§e"+data.channel3, centerX+20, baseY + 50, SUB_COLOR);
             drawCenteredText(gg,"§e"+data.channel4, centerX+60, baseY + 50, SUB_COLOR);
 
-            //扫描船只，绘制边框
-            //ItemProjectile.drawforeach(new Vec3(pos.x, pos.y, pos.z), data.shipsData, new Vec3(data.getShipFacing().x,data.getShipFacing().y,data.getShipFacing().z),gg,MAIN_COLOR);
+            //绘制电量余量和燃料余量表
+            FuelEnergyStatus.renderDecorative(gg, (float) data.energyavalible /data.energytotal,1f);
+
+            //绘制护盾条和护盾开关
+            if(data.shieldon) {
+                drawCenteredText(gg,"shield:ON", centerX-60, baseY+30, MAIN_COLOR);
+            }
+            else {
+                drawCenteredText(gg,"shield:OFF", centerX-60, baseY+30, SUB_COLOR);
+            }
 
             //装饰
             Decorative.renderDecorative(gg);
+
             RenderSystem.disableBlend();
         }
     }

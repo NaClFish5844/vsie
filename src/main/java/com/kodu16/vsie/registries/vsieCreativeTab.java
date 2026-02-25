@@ -42,6 +42,7 @@ public class vsieCreativeTab {
             output.accept(vsieItems.LINKER);
             output.accept(vsieItems.TARGET_FRAME);
             output.accept(vsieItems.IFF);
+            output.accept(vsieItems.SHIELD_TOOL);
             output.accept(vsieBlocks.CONTROL_SEAT_BLOCK);
             output.accept(vsieBlocks.BASIC_THRUSTER_BLOCK);
             output.accept(vsieBlocks.MEDIUM_THRUSTER_BLOCK);
@@ -53,6 +54,9 @@ public class vsieCreativeTab {
             output.accept(vsieBlocks.INFRA_KNIFE_ACCELERATOR_BLOCK);
             output.accept(vsieBlocks.BASIC_MISSILE_LAUNCHER_BLOCK);
             output.accept(vsieBlocks.ARC_EMITTER_BLOCK);
+            output.accept(vsieBlocks.SMALL_ENERGY_BATTERY_BLOCK);
+            output.accept(vsieBlocks.MEDIUM_ENERGY_BATTERY_BLOCK);
+            output.accept(vsieBlocks.LARGE_ENERGY_BATTERY_BLOCK);
         }
     }
 }

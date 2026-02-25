@@ -2,6 +2,10 @@ package com.kodu16.vsie.registries;
 
 import com.kodu16.vsie.content.controlseat.client.AbstractControlSeatGeoRenderer;
 import com.kodu16.vsie.content.shield.ShieldGeneratorBlockEntity;
+import com.kodu16.vsie.content.storage.energybattery.AbstractEnergyBatteryGeoRenderer;
+import com.kodu16.vsie.content.storage.energybattery.block.LargeEnergyBatteryBlockEntity;
+import com.kodu16.vsie.content.storage.energybattery.block.MediumEnergyBatteryBlockEntity;
+import com.kodu16.vsie.content.storage.energybattery.block.SmallEnergyBatteryBlockEntity;
 import com.kodu16.vsie.content.thruster.block.BasicThrusterBlockEntity;
 import com.kodu16.vsie.content.thruster.block.LargeThrusterBlockEntity;
 import com.kodu16.vsie.content.thruster.block.MediumThrusterBlockEntity;
@@ -81,5 +85,20 @@ public class vsieBlockEntities {
             REGISTRATE.blockEntity("particle_turret_block_entity", ParticleTurretBlockEntity::new)
                     .validBlocks(vsieBlocks.PARTICLE_TURRET_BLOCK)
                     .renderer(() -> AbstractTurretGeoRenderer::new)
+                    .register();
+    public static final BlockEntityEntry<SmallEnergyBatteryBlockEntity> SMALL_ENERGY_BATTERY_BLOCK_ENTITY =
+            REGISTRATE.blockEntity("small_energy_battery_block_entity", SmallEnergyBatteryBlockEntity::new)
+                    .validBlocks(vsieBlocks.SMALL_ENERGY_BATTERY_BLOCK)
+                    .renderer(() -> AbstractEnergyBatteryGeoRenderer::new)
+                    .register();
+    public static final BlockEntityEntry<MediumEnergyBatteryBlockEntity> MEDIUM_ENERGY_BATTERY_BLOCK_ENTITY =
+            REGISTRATE.blockEntity("medium_energy_battery_block_entity", MediumEnergyBatteryBlockEntity::new)
+                    .validBlocks(vsieBlocks.MEDIUM_ENERGY_BATTERY_BLOCK)
+                    .renderer(() -> AbstractEnergyBatteryGeoRenderer::new)
+                    .register();
+    public static final BlockEntityEntry<LargeEnergyBatteryBlockEntity> LARGE_ENERGY_BATTERY_BLOCK_ENTITY =
+            REGISTRATE.blockEntity("large_energy_battery_block_entity", LargeEnergyBatteryBlockEntity::new)
+                    .validBlocks(vsieBlocks.LARGE_ENERGY_BATTERY_BLOCK)
+                    .renderer(() -> AbstractEnergyBatteryGeoRenderer::new)
                     .register();
 }

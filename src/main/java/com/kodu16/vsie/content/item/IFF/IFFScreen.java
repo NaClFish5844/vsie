@@ -1,12 +1,9 @@
-package com.kodu16.vsie.content.item.IFF.client;
+package com.kodu16.vsie.content.item.IFF;
 
-import com.kodu16.vsie.content.item.IFF.server.IFFContainerMenu;
 import com.kodu16.vsie.network.IFF.IFFC2SPacket;
 import com.kodu16.vsie.network.ModNetworking;
 //import com.kodu16.vsie.network.packet.IFFC2SPacket;
 import com.kodu16.vsie.vsie;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.logging.LogUtils;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;

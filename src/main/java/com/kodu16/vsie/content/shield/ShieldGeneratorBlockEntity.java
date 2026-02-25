@@ -1,11 +1,17 @@
 package com.kodu16.vsie.content.shield;
 
+import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.fluid.SmartFluidTankBehaviour;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -18,8 +24,16 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.energy.EnergyStorage;
+import net.minecraftforge.energy.IEnergyStorage;
 import org.joml.Vector3f;
+import org.valkyrienskies.core.api.ships.LoadedShip;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class ShieldGeneratorBlockEntity extends SmartBlockEntity {
@@ -32,7 +46,18 @@ public class ShieldGeneratorBlockEntity extends SmartBlockEntity {
         tank = SmartFluidTankBehaviour.single(this, 200);
         behaviours.add(tank);
     }
-    double RADIUS = 10;
+
+    public BlockPos linkedcontrolseatpos = new BlockPos(0,0,0);
+    double RADIUS = 3;
+    public int maxreceiverate = 100;
+    // 必须缓存 LazyOptional （Forge 强烈推荐）
+    private final LazyOptional<IEnergyStorage> energyCap = LazyOptional.of(() -> this.energyStorage);
+    public EnergyStorage energyStorage = new EnergyStorage(
+            100000,    // 最大容量 (capacity)
+            maxreceiverate,      // 最大接收速率 (max receive)   可以设 Integer.MAX_VALUE 如果想无限制
+            Integer.MAX_VALUE,      // 最大输出速率 (max extract)
+            0         // 初始能量
+    );
 
     public void tick(Level level, BlockPos pos, BlockState state, ShieldGeneratorBlockEntity be) {
         if (level.isClientSide || level.getGameTime() % 2 != 0) return;
@@ -60,18 +85,21 @@ public class ShieldGeneratorBlockEntity extends SmartBlockEntity {
 
             if (distSq > RADIUS * RADIUS || distSq < 0.25) return;
 
-            // 拦截！
-            entity.discard(); // 直接删除，兼容 99% 的模组实体
+            if(getEnergy().getEnergyStored()>20000)
+            {
+                // 拦截！
+                entity.discard(); // 直接删除，兼容 99% 的模组实体
+                // 粒子交点
+                Vec3 hitDir = toEntity.normalize();
+                Vec3 hitPoint = center.add(hitDir.scale(RADIUS));
+                spawnRippleParticles((ServerLevel) level, hitPoint, hitDir);
 
-            // 粒子交点
-            Vec3 hitDir = toEntity.normalize();
-            Vec3 hitPoint = center.add(hitDir.scale(RADIUS));
-            spawnRippleParticles((ServerLevel) level, hitPoint, hitDir);
-
-            // 可选：播放音效
-            level.playSound(null, hitPoint.x, hitPoint.y, hitPoint.z,
-                    SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.BLOCKS,
-                    1.0f, 1.2f + level.random.nextFloat() * 0.4f);
+                // 可选：播放音效
+                level.playSound(null, hitPoint.x, hitPoint.y, hitPoint.z,
+                        SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.BLOCKS,
+                        1.0f, 1.2f + level.random.nextFloat() * 0.4f);
+                getEnergyStorage().extractEnergy(20,false);
+            }
         });
     }
 
@@ -113,4 +141,84 @@ public class ShieldGeneratorBlockEntity extends SmartBlockEntity {
             }
         }
     }
+
+    @Nonnull
+    @Override
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+        if (cap == ForgeCapabilities.ENERGY) {
+            return energyCap.cast();
+        }
+        return super.getCapability(cap, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        energyCap.invalidate();           // 必须！方块实体移除/区块卸载时调用
+    }
+
+    @Override
+    protected void write(CompoundTag tag, boolean clientpacket) {
+        super.write(tag,clientpacket);
+        tag.putInt("Energy", getEnergy().getEnergyStored());
+        writeVec3(tag, "controlpos", linkedcontrolseatpos);
+    }
+
+    @Override
+    public void read(CompoundTag tag, boolean clientpacket) {
+        super.read(tag,clientpacket);
+        if (tag.contains("Energy")) {
+            energyStorage.receiveEnergy(tag.getInt("Energy"), false);
+        }
+        readVec3(tag, "controlpos");
+    }
+
+    @Override
+    public CompoundTag getUpdateTag() {
+        CompoundTag tag = super.getUpdateTag();
+        write(tag, true);
+        return tag;
+    }
+
+    @Override
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+        CompoundTag tag = pkt.getTag();
+        if (tag != null) {
+            handleUpdateTag(tag);
+        }
+    }
+
+    @Override
+    public void handleUpdateTag(CompoundTag tag) {
+        read(tag, true);
+    }
+
+    // 方便外部直接调用（例如 tick、GUI、Waila 等）
+    public EnergyStorage getEnergyStorage() {
+        return energyStorage;
+    }
+
+    // 或直接返回 IEnergyStorage 接口
+    public IEnergyStorage getEnergy() {
+        return energyStorage;
+    }
+
+    private void writeVec3(CompoundTag nbt, String key, BlockPos position) {
+        CompoundTag vecTag = new CompoundTag();
+        vecTag.putInt("x", position.getX());
+        vecTag.putInt("y", position.getY());
+        vecTag.putInt("z", position.getZ());
+        nbt.put(key, vecTag);
+    }
+
+    private void readVec3(CompoundTag nbt, String key) {
+        if (!nbt.contains(key, Tag.TAG_LIST)) return;
+        CompoundTag vecTag = nbt.getCompound(key);
+        int x = vecTag.getInt("x");
+        int y = vecTag.getInt("y");
+        int z = vecTag.getInt("z");
+        this.linkedcontrolseatpos = new BlockPos(x, y, z);
+        LogUtils.getLogger().warn("shield linked controlseat pos:"+this.linkedcontrolseatpos);
+    }
+
 }

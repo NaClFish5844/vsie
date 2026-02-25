@@ -6,6 +6,7 @@ import com.kodu16.vsie.network.controlseat.C2S.ControlSeatC2SPacket;
 import com.kodu16.vsie.network.controlseat.C2S.ControlSeatInputC2SPacket;
 import com.kodu16.vsie.network.controlseat.S2C.ControlSeatInputS2CPacket;
 import com.kodu16.vsie.network.controlseat.S2C.ControlSeatS2CPacket;
+import com.kodu16.vsie.network.controlseat.S2C.ControlSeatStatusS2CPacket;
 import com.kodu16.vsie.network.controlseat.S2C.NearbyShipsS2CPacket;
 import com.kodu16.vsie.network.turret.TurretC2SPacket;
 import com.kodu16.vsie.network.weapon.WeaponC2SPacket;
@@ -77,6 +78,13 @@ public class ModNetworking {
                 ControlSeatInputS2CPacket::write,
                 ControlSeatInputS2CPacket::decode,
                 ControlSeatInputS2CPacket::handle
+        );
+        CHANNEL.registerMessage(
+                nextId(),
+                ControlSeatStatusS2CPacket.class,
+                ControlSeatStatusS2CPacket::write,
+                ControlSeatStatusS2CPacket::decode,
+                ControlSeatStatusS2CPacket::handle
         );
         CHANNEL.registerMessage(
                 nextId(),

@@ -11,12 +11,18 @@
     "block.vsie.arc_emitter": "arc emitter",
     "block.vsie.medium_thruster": "medium thruster",
     "block.vsie.large_thruster": "large thruster",
+    "block.vsie.particle_turret": "particle turret",
+    "block.vsie.small_energy_battery": "small energy battery",
+    "block.vsie.medium_energy_battery": "medium energy battery",
+    "block.vsie.large_energy_battery": "large energy battery",
+
 
     "item.vsie.control_seat": "control seat",
     "item.vsie.test_item": "test item",
     "item.vsie.linker": "linker",
     "item.vsie.target_frame": "target frame",
     "item.vsie.iff": "IFF",
+    "item.vsie.shield_tool": "Shield tool",
 
     "category.vsie": "vsie controls",
     "key.vsie.toggle_mouse_lock": "toggle mouse lock",
@@ -29,6 +35,7 @@
     "key.vsie.scan_peripheral": "scan peripheral",
     "key.vsie.break": "(useless, misspell of brake)",
     "key.vsie.switch_enemy": "switch enemy lock",
+  "key.vsie.toggle_shield": "toggle shield",
     "key.vsie.toggle_weapon_channel_1": "toggle weapon channel 1",
     "key.vsie.toggle_weapon_channel_2": "toggle weapon channel 2",
     "key.vsie.toggle_weapon_channel_3": "toggle weapon channel 3",

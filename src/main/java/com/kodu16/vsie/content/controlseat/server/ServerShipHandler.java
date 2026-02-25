@@ -4,6 +4,7 @@ package com.kodu16.vsie.content.controlseat.server;
 import com.kodu16.vsie.content.controlseat.block.ControlSeatBlockEntity;
 import com.kodu16.vsie.content.controlseat.functions.ScanNearByShips;
 import com.kodu16.vsie.network.controlseat.S2C.ControlSeatInputS2CPacket;
+import com.kodu16.vsie.network.controlseat.S2C.ControlSeatStatusS2CPacket;
 import com.kodu16.vsie.network.controlseat.S2C.NearbyShipsS2CPacket;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
@@ -43,6 +44,7 @@ public class ServerShipHandler {
         this.data = data;
     }
     private long lastSendMs = 0;
+    private long lastSendStatusMs = 0;
     int lastSentEncode = 0;
     int current=0;
     private volatile Vector3d worldXDirection = new Vector3d();
@@ -75,6 +77,12 @@ public class ServerShipHandler {
                 //扫描全部船只包（扫描敌人包只跑在服务器不用发送）
                 NearbyShipsS2CPacket packetship = new NearbyShipsS2CPacket(data.shipsData);
                 ModNetworking.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) data.getPlayer()), packetship);
+            }
+
+            if(now - lastSendStatusMs > 250) {//状态包（慢包out）
+                lastSendStatusMs = now;
+                ControlSeatStatusS2CPacket packetstatus = new ControlSeatStatusS2CPacket(pos, data.avalibleenergy,data.totalenergystorage,0,100,data.isshieldon);
+                ModNetworking.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) data.getPlayer()),packetstatus);
             }
 
             current = data.channelencode;
@@ -134,7 +142,7 @@ public class ServerShipHandler {
             }
 
             Vector3d Invarianttorque = calculateWorldTorque(controltorque, worldXDirection, worldYDirection, worldZDirection);
-            double forcescale = (mass*-0.1) * data.getThrottle();
+            double forcescale = (mass*-0.1) * data.getThrottle() * data.thruster_strength / (ship.getMass()*3);
             Vector3d Invariantforce = new Vector3d(worldXDirection.x * forcescale, worldXDirection.y * forcescale, worldXDirection.z * forcescale);
 
             // 计算反向阻尼力矩，与角速度成比例

@@ -219,6 +219,8 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
 
     public abstract int getCoolDown();
 
+    public abstract int getenergypertick();
+
     public abstract void shootentity();
 
     public abstract void shootship();

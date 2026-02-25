@@ -45,6 +45,11 @@ public class vsieKeyMappings {
             GLFW.GLFW_KEY_Z,
             "category.vsie" // 键位分类（显示在设置菜单中的类别）
     );
+    public static final KeyMapping KEY_TOGGLE_SHIELD = new KeyMapping(
+            "key.vsie.toggle_shield", // 键位描述的语言键
+            GLFW.GLFW_KEY_V,
+            "category.vsie" // 键位分类（显示在设置菜单中的类别）
+    );
     public static final KeyMapping KEY_TOGGLE_WEAPON_CHANNEL1 = new KeyMapping(
             "key.vsie.toggle_weapon_channel_1",
             KeyConflictContext.IN_GAME,

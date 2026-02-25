@@ -55,13 +55,18 @@ public class ParticleTurretBlockEntity extends AbstractTurretBlockEntity {
         return 60;
     }
 
+    @Override
+    public int getenergypertick() {
+        return 100;
+    }
+
     public void shootentity() {
             //triggerAnim("controller", "shoot");
             Vec3 center = getBlockPos().getCenter();
 
             ParticleBulletEntity bullet = new ParticleBulletEntity(vsieEntities.PARTICLE_BULLET.get(), level);
             bullet.setPos(new Vec3(this.currentworldpos.x,this.currentworldpos.y,this.currentworldpos.z));
-            bullet.setDeltaMovement(center.vectorTo(new Vec3(targetPos.x,targetPos.y,targetPos.z)).normalize().scale(10.0F));
+            bullet.setDeltaMovement(center.vectorTo(new Vec3(targetPos.x,targetPos.y,targetPos.z)).normalize().scale(30.0F));
             level.addFreshEntity(bullet);
     }
 

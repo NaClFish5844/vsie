@@ -70,6 +70,10 @@ public class ControlSeatInputC2SPacket {
                     serverData.lockedenemyindex = index%serverData.enemyshipsData.size();
                 }
             }
+            if((keys & KeysInput.TOGGLESHIELD) !=0) {
+                boolean shield = serverData.isshieldon;
+                serverData.isshieldon = !shield;
+            }
             // 可选：标记方块实体为脏以保存更改
             controlSeat.setChanged();
         });
@@ -84,5 +88,6 @@ public class ControlSeatInputC2SPacket {
         public static final int CHANNEL3 = 1 << 2;
         public static final int CHANNEL4 = 1 << 3;
         public static final int SWITCHENEMY = 1 << 4; //切换锁定敌人
+        public static final int TOGGLESHIELD = 1 << 5; //切换开关护盾
     }
 }

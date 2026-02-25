@@ -1,4 +1,4 @@
-package com.kodu16.vsie.content.item.IFF.server;
+package com.kodu16.vsie.content.item.IFF;
 
 import com.kodu16.vsie.registries.ModMenuTypes;
 import net.minecraft.world.entity.player.Inventory;

@@ -44,6 +44,10 @@ public class AbstractThrusterGeoRenderer extends GeoBlockRenderer<AbstractThrust
         }
     }
 
+    @Override
+    public boolean shouldRenderOffScreen(AbstractThrusterBlockEntity be) {
+        return true;   // 或者 return distanceSq < 某个超大值 的平方
+    }
 
 
 }

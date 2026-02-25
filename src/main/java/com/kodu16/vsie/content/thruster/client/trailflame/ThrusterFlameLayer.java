@@ -43,7 +43,6 @@ public class ThrusterFlameLayer extends GeoRenderLayer<AbstractThrusterBlockEnti
     public void renderflame(PoseStack poseStack, AbstractThrusterBlockEntity animatable, MultiBufferSource bufferSource) {
             poseStack.mulPose(Axis.XP.rotationDegrees(90f));
             float length = animatable.getRaycastDistance();
-            LogUtils.getLogger().warn("rendering throttle:"+length);
             float flameLength = length * 1.5f;  // 最大长度 4 格，可自行调整
 
             VertexConsumer vc = bufferSource.getBuffer(FLAME_RENDER_TYPE);

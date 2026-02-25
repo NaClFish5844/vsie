@@ -67,6 +67,11 @@ public class MediumLaserTurretBlockEntity extends AbstractTurretBlockEntity {
         return 15;
     }
 
+    @Override
+    public int getenergypertick() {
+        return 10;
+    }
+
     public void shootentity() {
         double distance = Vec.Distance(this.targetPos, currentworldpos);
         double projectionLength = distance;

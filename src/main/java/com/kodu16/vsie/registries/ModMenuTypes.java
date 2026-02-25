@@ -1,7 +1,8 @@
 // ModMenuTypes.java
 package com.kodu16.vsie.registries;
 
-import com.kodu16.vsie.content.item.IFF.server.IFFContainerMenu;
+import com.kodu16.vsie.content.item.IFF.IFFContainerMenu;
+import com.kodu16.vsie.content.item.shieldtool.ShieldToolContainerMenu;
 import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
 import com.kodu16.vsie.content.turret.server.TurretContainerMenu;
 import com.kodu16.vsie.content.weapon.AbstractWeaponBlockEntity;
@@ -9,7 +10,6 @@ import com.kodu16.vsie.content.weapon.server.WeaponContainerMenu;
 import com.kodu16.vsie.vsie;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -36,4 +36,7 @@ public class ModMenuTypes {
     public static final RegistryObject<MenuType<IFFContainerMenu>> IFF_MENU = MENUS.register("iff_menu",
             () -> IForgeMenuType.create((id, inv, data) ->
                     new IFFContainerMenu(id, inv, inv.player.getMainHandItem())));
+    public static final RegistryObject<MenuType<ShieldToolContainerMenu>> SHIELD_TOOL_MENU = MENUS.register("shield_tool_menu",
+            () -> IForgeMenuType.create((id, inv, data) ->
+                    new ShieldToolContainerMenu(id, inv, inv.player.getMainHandItem())));
 }

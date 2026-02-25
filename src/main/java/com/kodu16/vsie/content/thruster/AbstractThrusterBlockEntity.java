@@ -72,6 +72,8 @@ public abstract class AbstractThrusterBlockEntity extends SmartBlockEntity imple
 
     public abstract float getflamewidth();
 
+    //public abstract int getConsumetick();
+
     public void setdata(Vector3d inputtorque, Vector3d inputforce)
     {
         Logger LOGGER = LogUtils.getLogger();
@@ -149,10 +151,9 @@ public abstract class AbstractThrusterBlockEntity extends SmartBlockEntity imple
 
                 thrusterData.setThrottle((float) throttle);
 
-                //LOGGER.info("Thruster at {} throttle = {:.2f} (force: {:.2f}, torque: {:.2f})", pos, throttle, forceAlignment, torqueAlignment);
-                LOGGER.warn("Thruster {}: transform={} throttle={} forceAlign={} torqueAlign={} | dir={} localdir={} force={} torque={} relPos={}",
+                /*LOGGER.warn("Thruster {}: transform={} throttle={} forceAlign={} torqueAlign={} | dir={} localdir={} force={} torque={} relPos={}",
                         pos, Ship.getTransform(), throttle, forceAlignment, torqueAlignment,
-                        thrustDirectionWorld, thrusterData.getDirection(), normDesiredForce, normDesiredTorque, relativePosInShip);
+                        thrustDirectionWorld, thrusterData.getDirection(), normDesiredForce, normDesiredTorque, relativePosInShip);*/
 
 
             }

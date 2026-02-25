@@ -6,7 +6,7 @@ import net.minecraft.util.FastColor;
 
 public class Decorative {
     private static final int SIDEARC_RADIUS = 90; // 半圆半径（像素）
-    private static final int SIDEARC_THICKNESS = 2; // 弧线厚度
+    private static final int SIDEARC_THICKNESS = 3; // 弧线厚度
     private static final int TEXT_ALPHA    = 5;   // 主文字透明度
     // 颜色（ARGB）
     private static final int MAIN_COLOR = FastColor.ARGB32.color(TEXT_ALPHA, 0x00, 0xFF, 0xFF);
@@ -21,7 +21,7 @@ public class Decorative {
 
         // 背景灰色半圆（45°~135°）
         DrawShape.drawPartialArc(gg, centerX+centerX/4, centerY, SIDEARC_RADIUS, SIDEARC_THICKNESS, MAIN_COLOR, -30, 30);
-        DrawShape.drawPartialArc(gg, centerX-centerX/4, centerY, SIDEARC_RADIUS, SIDEARC_THICKNESS, MAIN_COLOR, -210, -150);
+        //DrawShape.drawPartialArc(gg, centerX-centerX/4, centerY, SIDEARC_RADIUS, SIDEARC_THICKNESS, MAIN_COLOR, -210, -150);
         //DrawShape.drawHollowSquare(gg,centerX,centerY,50,2,MAIN_COLOR);
 
         /*// 文字直接用 gg.drawString（它内部也是批量的）

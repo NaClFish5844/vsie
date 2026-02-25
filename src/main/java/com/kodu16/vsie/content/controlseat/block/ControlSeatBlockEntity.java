@@ -2,18 +2,24 @@ package com.kodu16.vsie.content.controlseat.block;
 
 import com.kodu16.vsie.content.controlseat.AbstractControlSeatBlockEntity;
 import com.kodu16.vsie.content.controlseat.Initialize;
-import com.kodu16.vsie.content.controlseat.functions.ScanNearByShips;
+import com.kodu16.vsie.content.controlseat.functions.ShieldHandler;
 import com.kodu16.vsie.content.controlseat.server.ControlSeatServerData;
 import com.kodu16.vsie.content.controlseat.client.Input.ClientMouseHandler;
 
 import com.kodu16.vsie.content.controlseat.server.SeatRegistry;
+import com.kodu16.vsie.content.shield.ShieldGeneratorBlockEntity;
+import com.kodu16.vsie.content.storage.energybattery.AbstractEnergyBatteryBlockEntity;
 import com.kodu16.vsie.content.thruster.AbstractThrusterBlockEntity;
 import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
 import com.kodu16.vsie.content.weapon.AbstractWeaponBlockEntity;
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.fluid.SmartFluidTankBehaviour;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.phys.AABB;
+import org.joml.primitives.AABBdc;
 import org.slf4j.Logger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -22,7 +28,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -35,16 +40,20 @@ import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.ValkyrienSkiesMod;
 import org.valkyrienskies.mod.common.entity.ShipMountingEntity;
+import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
     //private final ControlSeatServerData serverData = new ControlSeatServerData();
     public volatile boolean ride = false;
     private boolean hasInitialized = false;
     public boolean previousfirestatus = false;
+    int totalenergy = 100;
+    int totalenergyavalible = 0;
+
+
     //即使我不想写的这么恶心，为了跨维度我还是得干
     //有两个hashmap，第二个是为了渲染HUD的时候用来反查controlseat
     private List<ShipMountingEntity> seats = new ArrayList<>();
@@ -91,9 +100,22 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
                 controlseatData.setPlayer(null);
             }
             this.calculatedstrength = 0;
+            this.energyspendpertick = 0;
+            this.totalenergy =100;
+            this.totalenergyavalible = 0;
             updateThruster();
             updateWeapon();
             updateTurret();
+            updateShield();
+            this.capacitorenergy = -this.energyspendpertick;
+            LogUtils.getLogger().warn("current energy cost per tick:"+this.energyspendpertick);
+            updateEnergy();
+            if(this.capacitorenergy < 0) {
+                this.capacitorenergy = 0;
+                this.calculatedstrength = 0;
+                return;
+            }
+            this.capacitorenergy = 0;
         }
         else {
             BlockPos pos = getBlockPos();
@@ -104,10 +126,99 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
             if (state != null) {
                 Initialize.initialize(level, pos, state);
                 hasInitialized = true;
-                //LOGGER.warn(String.valueOf(Component.literal("controlseat Initialize complete:"+pos)));
+            }
+        }
+        if(controlseatData.isshieldon) {//如果护盾开启
+            updateShieldEnergyAvalible();
+            if(controlseatData.shieldcooldowntime == 0) {
+                Ship ship = VSGameUtilsKt.getShipManagingPos(level,this.getBlockPos());
+                Vec3 center = null;
+                if (ship == null) {
+                    return;
+                }
+                double[] c = getAABBdcCenter(ship.getWorldAABB());
+                center = new Vec3(c[0],c[1],c[2]);
+                AABB searchBox = new AABB(this.getBlockPos()).inflate(controlseatData.shieldradius + 3.0); // 多搜一点，防止高速实体一帧穿过去
+
+                // 核心：只筛选“没有生命值 + 速度够快 + 不是玩家也不是盔甲架”之类的实体
+                Vec3 finalCenter = center;
+                level.getEntitiesOfClass(Entity.class, searchBox, entity -> {
+                    if (entity.isRemoved() || entity instanceof LivingEntity)
+                        return false;
+
+                    // 速度阈值，可调（单位：方块/刻）
+                    double speed = entity.getDeltaMovement().length();
+                    if (speed < 0.25) return false; // 太慢的直接忽略（比如漂浮的物品）
+
+                    // 计算是否朝护盾飞来
+                    Vec3 toEntity = entity.position().subtract(finalCenter);
+                    double dot = entity.getDeltaMovement().normalize().dot(toEntity.normalize());
+                    return dot < -0.3; // 越负说明越正对护盾飞来（-0.3~0.6 之间调节手感）
+                }).forEach(entity -> {
+
+                    Vec3 toEntity = entity.position().subtract(finalCenter);
+                    double distSq = toEntity.lengthSqr();
+
+                    if (distSq > controlseatData.shieldradius * controlseatData.shieldradius || distSq < 0.25) return;
+                    controlseatData.avalibleshield = avalibleshield;
+                    if(controlseatData.avalibleshield>0)
+                    {
+                        // 拦截
+                        entity.discard();
+                        // 粒子交点
+                        Vec3 hitDir = toEntity.normalize();
+                        Vec3 hitPoint = finalCenter.add(hitDir.scale(controlseatData.shieldradius));
+                        ShieldHandler.spawnRippleParticles((ServerLevel) level, hitPoint, hitDir);
+
+                        // 可选：播放音效
+                        level.playSound(null, hitPoint.x, hitPoint.y, hitPoint.z,
+                                SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.BLOCKS,
+                                1.0f, 1.2f + level.random.nextFloat() * 0.4f);
+                        shieldsubtracthistick+= (int) controlseatData.shieldcostperprojectile;
+                    }
+                    else {
+                        controlseatData.shieldcooldowntime = controlseatData.shieldmaxcooldowntime;
+                    }
+                });
+                SubtractShieldEnergy(shieldsubtracthistick);
+                RegenerateShieldEnergy((int) controlseatData.shieldregeneratepertick);
             }
         }
 
+    }
+
+    //0：推进器 1：主武器 2：护盾 3：炮塔 4：电池，务必不要写错
+    public void updateEnergy() {//avalible：剩余值，非avalible：总值
+        List<Vec3> toRemove = new ArrayList<>();
+        this.forEachLinkedPeripheral(pos -> {
+            BlockPos blockPos = BlockPos.containing(pos);
+            BlockEntity be = level.getBlockEntity(blockPos);
+
+            if (be instanceof AbstractEnergyBatteryBlockEntity battery) {
+                int energy = battery.getEnergy().getEnergyStored();
+                if(energy>=-this.capacitorenergy) {
+                    battery.getEnergyStorage().extractEnergy(-this.capacitorenergy,false);
+                    this.capacitorenergy = 0;
+                }
+                else {
+                    battery.getEnergyStorage().extractEnergy(energy,false);
+                    this.capacitorenergy += energy;
+                }
+                totalenergy += battery.getEnergy().getMaxEnergyStored();
+                totalenergyavalible += battery.getEnergy().getEnergyStored();
+                //LogUtils.getLogger().warn("detected battery:total:"+totalenergy+"avalible:"+totalenergyavalible);
+            } else {
+                // 先记下来，循环完了再删
+                toRemove.add(pos);
+            }
+        }, 4);
+        controlseatData.totalenergystorage = totalenergy;
+        controlseatData.avalibleenergy = totalenergyavalible;
+        //LogUtils.getLogger().warn("detected total energy:"+controlseatData.totalenergystorage+"avalible:"+controlseatData.avalibleenergy);
+        // 循环结束后统一删除
+        for (Vec3 pos : toRemove) {
+            removeLinkedPeripheral(pos, 4);
+        }
     }
 
     public void updateThruster() {
@@ -170,12 +281,81 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
         }
     }
 
+    public void updateShield() {
+        List<Vec3> toRemove = new ArrayList<>();
+        this.forEachLinkedPeripheral(pos -> {
+            BlockPos blockPos = BlockPos.containing(pos);
+            BlockEntity be = level.getBlockEntity(blockPos);
+
+            if (be instanceof ShieldGeneratorBlockEntity shield) {
+                Logger LOGGER = LogUtils.getLogger();
+            } else {
+                // 先记下来，循环完了再删
+                toRemove.add(pos);
+            }
+        }, 2);
+        // 循环结束后统一删除
+        for (Vec3 pos : toRemove) {
+            removeLinkedPeripheral(pos, 2);
+        }
+        double[] minmax = ShieldHandler.getMinMaxDistance(linkedShields);
+        double max = minmax[0];
+        double min = minmax[1];
+        controlseatData.shieldmax = max;
+        controlseatData.shieldmin = min;
+        controlseatData.shieldradius = 0.75*max;
+        controlseatData.totalshield = 20000 * linkedShields.size();
+        controlseatData.shieldcostperprojectile = (max*max*linkedShields.size())/min;
+        controlseatData.shieldregeneratepertick = max*min;
+        controlseatData.shieldmaxcooldowntime = (max*max)/(min*min);
+    }
+
+    public void updateShieldEnergyAvalible() {
+        this.forEachLinkedPeripheral(pos -> {
+            BlockPos blockPos = BlockPos.containing(pos);
+            BlockEntity be = level.getBlockEntity(blockPos);
+
+            if (be instanceof ShieldGeneratorBlockEntity shield) {
+                Logger LOGGER = LogUtils.getLogger();
+                avalibleshield += shield.getEnergy().getEnergyStored();
+                shield.maxreceiverate = (int) (controlseatData.shieldregeneratepertick/linkedShields.size())+10;
+            }
+        }, 2);
+    }
+
+    public void SubtractShieldEnergy(int energy) {
+        int eachsubtract = energy/linkedShields.size();
+        this.forEachLinkedPeripheral(pos -> {
+            BlockPos blockPos = BlockPos.containing(pos);
+            BlockEntity be = level.getBlockEntity(blockPos);
+
+            if (be instanceof ShieldGeneratorBlockEntity shield) {
+                Logger LOGGER = LogUtils.getLogger();
+                shield.getEnergy().extractEnergy(eachsubtract,false);
+            }
+        }, 2);
+    }
+
+    public void RegenerateShieldEnergy(int energy) {
+        int eachregenerate = energy/linkedShields.size();
+        this.forEachLinkedPeripheral(pos -> {
+            BlockPos blockPos = BlockPos.containing(pos);
+            BlockEntity be = level.getBlockEntity(blockPos);
+
+            if (be instanceof ShieldGeneratorBlockEntity shield) {
+                Logger LOGGER = LogUtils.getLogger();
+                shield.getEnergy().receiveEnergy(eachregenerate,false);
+            }
+        }, 2);
+    }
+
     public void updateTurret() {
         List<Vec3> toRemove = new ArrayList<>();
         this.forEachLinkedPeripheral(pos -> {
             BlockPos blockPos = BlockPos.containing(pos);
             BlockEntity be = level.getBlockEntity(blockPos);
             if (be instanceof AbstractTurretBlockEntity turret) {
+                this.energyspendpertick += turret.getenergypertick();
                 turret.updateenemy(controlseatData.enemyshipsData);
             } else {
                 // 先记下来，循环完了再删
@@ -308,5 +488,15 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
             // Initialize mouse handler when the player sits down
         }
         return ride;
+    }
+
+    private static double[] getAABBdcCenter(AABBdc aabb) {
+        double width = aabb.maxX() - aabb.minX();
+        double len = aabb.maxZ() - aabb.minZ();
+        double hight = aabb.maxY() - aabb.minY();
+        double centerX = aabb.minX() + width / 2;
+        double centerY = aabb.minY() + hight / 2;
+        double centerZ = aabb.minZ() + len / 2;
+        return new double[]{centerX, centerY, centerZ};
     }
 }

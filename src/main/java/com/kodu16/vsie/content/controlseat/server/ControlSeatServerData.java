@@ -22,18 +22,36 @@ public class ControlSeatServerData {
     private volatile Vector3d directionForward;
     private volatile Vector3d directionUp;
     private volatile Vector3d directionRight;
+
     public volatile boolean channel1 = true;
     public volatile boolean channel2 = true;
     public volatile boolean channel3 = true;
     public volatile boolean channel4 = true;
     public volatile int channelencode = 0;
     public volatile boolean isfiring = false;
+
     public volatile String enemy = "";
     public volatile String ally = "";
     public volatile int lockedenemyindex = 0;
-    public volatile float thruster_strength = 0;
     public volatile Map<String, Object> shipsData = new HashMap<>();
     public volatile ArrayList<Ship> enemyshipsData = new ArrayList<>();
+
+    public volatile float thruster_strength = 0;
+
+    public volatile int totalenergystorage = 100;//最大可储存的电量
+    public volatile int avalibleenergy = 0;//当前可用的电量
+
+    public volatile double totalshield = 100;//最大护盾
+    public volatile double avalibleshield = 0;//当前剩余护盾
+    public volatile double shieldradius = 0;//护盾的范围
+    public volatile double shieldcostperprojectile = 0;//拦截一个弹射物消耗的护盾能量
+    public volatile double shieldregeneratepertick = 0;//每秒回复量
+    public volatile double shieldmaxcooldowntime = 0;//护盾过载后需要多长时间才能回充
+    public volatile double shieldcooldowntime = 0;//护盾过载后准备重新开始回充的时间
+    public volatile boolean isshieldon = false;//是否开启护盾
+    public volatile double shieldmin = 0;
+    public volatile double shieldmax = 0;
+
     public Level level;
 
 

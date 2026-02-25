@@ -1,6 +1,9 @@
 package com.kodu16.vsie.registries;
 
 import com.kodu16.vsie.content.shield.ShieldGeneratorBlock;
+import com.kodu16.vsie.content.storage.energybattery.block.LargeEnergyBatteryBlock;
+import com.kodu16.vsie.content.storage.energybattery.block.MediumEnergyBatteryBlock;
+import com.kodu16.vsie.content.storage.energybattery.block.SmallEnergyBatteryBlock;
 import com.kodu16.vsie.content.thruster.block.LargeThrusterBlock;
 import com.kodu16.vsie.content.thruster.block.MediumThrusterBlock;
 import com.kodu16.vsie.content.turret.block.MediumLaserTurretBlock;
@@ -110,6 +113,30 @@ public class vsieBlocks {
             .simpleItem()
             .register();
     public static final BlockEntry<ParticleTurretBlock> PARTICLE_TURRET_BLOCK = REGISTRATE.block("particle_turret", ParticleTurretBlock::new)
+            .properties(p -> p.mapColor(MapColor.METAL))
+            .properties(p -> p.requiresCorrectToolForDrops())
+            .properties(p -> p.sound(SoundType.METAL))
+            .properties(p -> p.strength(5.5f, 4.0f))
+            .properties(p -> p.noOcclusion())
+            .simpleItem()
+            .register();
+    public static final BlockEntry<SmallEnergyBatteryBlock> SMALL_ENERGY_BATTERY_BLOCK = REGISTRATE.block("small_energy_battery", SmallEnergyBatteryBlock::new)
+            .properties(p -> p.mapColor(MapColor.METAL))
+            .properties(p -> p.requiresCorrectToolForDrops())
+            .properties(p -> p.sound(SoundType.METAL))
+            .properties(p -> p.strength(5.5f, 4.0f))
+            .properties(p -> p.noOcclusion())
+            .simpleItem()
+            .register();
+    public static final BlockEntry<MediumEnergyBatteryBlock> MEDIUM_ENERGY_BATTERY_BLOCK = REGISTRATE.block("medium_energy_battery", MediumEnergyBatteryBlock::new)
+            .properties(p -> p.mapColor(MapColor.METAL))
+            .properties(p -> p.requiresCorrectToolForDrops())
+            .properties(p -> p.sound(SoundType.METAL))
+            .properties(p -> p.strength(5.5f, 4.0f))
+            .properties(p -> p.noOcclusion())
+            .simpleItem()
+            .register();
+    public static final BlockEntry<LargeEnergyBatteryBlock> LARGE_ENERGY_BATTERY_BLOCK = REGISTRATE.block("large_energy_battery", LargeEnergyBatteryBlock::new)
             .properties(p -> p.mapColor(MapColor.METAL))
             .properties(p -> p.requiresCorrectToolForDrops())
             .properties(p -> p.sound(SoundType.METAL))

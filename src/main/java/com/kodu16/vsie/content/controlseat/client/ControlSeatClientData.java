@@ -23,14 +23,23 @@ public class ControlSeatClientData {
     public volatile Quaterniond shiprot = new Quaterniond();
     public volatile Vector3d shipfacing = new Vector3d(0,0,0);
     public volatile boolean mouseLpress = false;
+
     public volatile boolean channel1 = false;
     public volatile boolean channel2 = false;
     public volatile boolean channel3 = false;
     public volatile boolean channel4 = false;
+
     public Map<String, Object> shipsData = new HashMap<>();
     public volatile String enemy = "";
     public volatile String ally = "";
     public volatile String lockedenemyslug = "";
+
+    public volatile int energyavalible = 0;
+    public volatile int energytotal = 100;
+
+    public volatile boolean shieldon = false;
+    public volatile int shieldavalible = 0;
+    public volatile int shieldtotal = 100;
 
     public void setLastMousex(double x) { lastmousex = x; }
     public void setLastMousey(double x) { lastmousey = x; }
