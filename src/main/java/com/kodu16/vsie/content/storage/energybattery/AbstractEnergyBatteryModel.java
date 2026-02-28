@@ -7,7 +7,7 @@ import software.bernie.geckolib.model.DefaultedBlockGeoModel;
 @SuppressWarnings({"removal"})
 public class AbstractEnergyBatteryModel extends DefaultedBlockGeoModel<AbstractEnergyBatteryBlockEntity> {
     public AbstractEnergyBatteryModel() {
-        super(new ResourceLocation(vsie.ID,"control_seat"));
+        super(new ResourceLocation(vsie.ID,"energy_battery"));
     }
 
     @Override

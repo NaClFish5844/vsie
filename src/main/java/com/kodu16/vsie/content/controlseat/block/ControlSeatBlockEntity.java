@@ -50,8 +50,6 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
     public volatile boolean ride = false;
     private boolean hasInitialized = false;
     public boolean previousfirestatus = false;
-    int totalenergy = 100;
-    int totalenergyavalible = 0;
 
 
     //即使我不想写的这么恶心，为了跨维度我还是得干
@@ -108,7 +106,7 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
             updateTurret();
             updateShield();
             this.capacitorenergy = -this.energyspendpertick;
-            LogUtils.getLogger().warn("current energy cost per tick:"+this.energyspendpertick);
+            //LogUtils.getLogger().warn("current energy cost per tick:"+this.energyspendpertick);
             updateEnergy();
             if(this.capacitorenergy < 0) {
                 this.capacitorenergy = 0;
@@ -128,9 +126,12 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
                 hasInitialized = true;
             }
         }
+
+        //护盾
         if(controlseatData.isshieldon) {//如果护盾开启
             updateShieldEnergyAvalible();
-            if(controlseatData.shieldcooldowntime == 0) {
+            int currentcooldown = (int) controlseatData.shieldcooldowntime;
+            if(controlseatData.shieldcooldowntime <= 0) {
                 Ship ship = VSGameUtilsKt.getShipManagingPos(level,this.getBlockPos());
                 Vec3 center = null;
                 if (ship == null) {
@@ -160,7 +161,6 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
                     double distSq = toEntity.lengthSqr();
 
                     if (distSq > controlseatData.shieldradius * controlseatData.shieldradius || distSq < 0.25) return;
-                    controlseatData.avalibleshield = avalibleshield;
                     if(controlseatData.avalibleshield>0)
                     {
                         // 拦截
@@ -168,20 +168,22 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
                         // 粒子交点
                         Vec3 hitDir = toEntity.normalize();
                         Vec3 hitPoint = finalCenter.add(hitDir.scale(controlseatData.shieldradius));
-                        ShieldHandler.spawnRippleParticles((ServerLevel) level, hitPoint, hitDir);
+                        ShieldHandler.spawnRippleParticles((ServerLevel) level, hitPoint, finalCenter);
 
                         // 可选：播放音效
                         level.playSound(null, hitPoint.x, hitPoint.y, hitPoint.z,
                                 SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.BLOCKS,
                                 1.0f, 1.2f + level.random.nextFloat() * 0.4f);
-                        shieldsubtracthistick+= (int) controlseatData.shieldcostperprojectile;
+                        SubtractShieldEnergy((int) controlseatData.shieldcostperprojectile);
                     }
                     else {
                         controlseatData.shieldcooldowntime = controlseatData.shieldmaxcooldowntime;
                     }
                 });
-                SubtractShieldEnergy(shieldsubtracthistick);
                 RegenerateShieldEnergy((int) controlseatData.shieldregeneratepertick);
+            }
+            else {
+                controlseatData.shieldcooldowntime = currentcooldown - 1;
             }
         }
 
@@ -206,7 +208,6 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
                 }
                 totalenergy += battery.getEnergy().getMaxEnergyStored();
                 totalenergyavalible += battery.getEnergy().getEnergyStored();
-                //LogUtils.getLogger().warn("detected battery:total:"+totalenergy+"avalible:"+totalenergyavalible);
             } else {
                 // 先记下来，循环完了再删
                 toRemove.add(pos);
@@ -304,13 +305,14 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
         controlseatData.shieldmax = max;
         controlseatData.shieldmin = min;
         controlseatData.shieldradius = 0.75*max;
-        controlseatData.totalshield = 20000 * linkedShields.size();
-        controlseatData.shieldcostperprojectile = (max*max*linkedShields.size())/min;
-        controlseatData.shieldregeneratepertick = max*min;
-        controlseatData.shieldmaxcooldowntime = (max*max)/(min*min);
+        controlseatData.totalshield = 100000 * linkedShields.size();
+        controlseatData.shieldcostperprojectile = ((max*(max/min)*linkedShields.size()))*1000;
+        controlseatData.shieldregeneratepertick = ((max*linkedShields.size()))*500;
+        controlseatData.shieldmaxcooldowntime = (max/min)*100;
     }
 
     public void updateShieldEnergyAvalible() {
+        avalibleshield = 0;
         this.forEachLinkedPeripheral(pos -> {
             BlockPos blockPos = BlockPos.containing(pos);
             BlockEntity be = level.getBlockEntity(blockPos);
@@ -321,6 +323,7 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
                 shield.maxreceiverate = (int) (controlseatData.shieldregeneratepertick/linkedShields.size())+10;
             }
         }, 2);
+        controlseatData.avalibleshield = avalibleshield;
     }
 
     public void SubtractShieldEnergy(int energy) {

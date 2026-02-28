@@ -15,6 +15,9 @@
     "block.vsie.small_energy_battery": "small energy battery",
     "block.vsie.medium_energy_battery": "medium energy battery",
     "block.vsie.large_energy_battery": "large energy battery",
+    "block.vsie.small_fueltank": "small fueltank",
+    "block.vsie.medium_fueltank": "medium fueltank",
+    "block.vsie.large_fueltank": "large fueltank",
 
 
     "item.vsie.control_seat": "control seat",
@@ -35,7 +38,7 @@
     "key.vsie.scan_peripheral": "scan peripheral",
     "key.vsie.break": "(useless, misspell of brake)",
     "key.vsie.switch_enemy": "switch enemy lock",
-  "key.vsie.toggle_shield": "toggle shield",
+    "key.vsie.toggle_shield": "toggle shield",
     "key.vsie.toggle_weapon_channel_1": "toggle weapon channel 1",
     "key.vsie.toggle_weapon_channel_2": "toggle weapon channel 2",
     "key.vsie.toggle_weapon_channel_3": "toggle weapon channel 3",
@@ -47,6 +50,8 @@
     "gui.turret.target_players": "shoot at players",
     "gui.turret.target_ship": "shoot at vs ships",
 
-    "container.vsie.weapon": "weapon menu"
+    "container.vsie.weapon": "weapon menu",
+
+    "fluid.vsie.dtfuel": "D-T fuel"
 
 }

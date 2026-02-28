@@ -43,6 +43,7 @@ public class vsieCreativeTab {
             output.accept(vsieItems.TARGET_FRAME);
             output.accept(vsieItems.IFF);
             output.accept(vsieItems.SHIELD_TOOL);
+            output.accept(vsieFluids.DTFUEL.getBucket().get());
             output.accept(vsieBlocks.CONTROL_SEAT_BLOCK);
             output.accept(vsieBlocks.BASIC_THRUSTER_BLOCK);
             output.accept(vsieBlocks.MEDIUM_THRUSTER_BLOCK);
@@ -57,6 +58,9 @@ public class vsieCreativeTab {
             output.accept(vsieBlocks.SMALL_ENERGY_BATTERY_BLOCK);
             output.accept(vsieBlocks.MEDIUM_ENERGY_BATTERY_BLOCK);
             output.accept(vsieBlocks.LARGE_ENERGY_BATTERY_BLOCK);
+            output.accept(vsieBlocks.SMALL_FUELTANK_BLOCK);
+            output.accept(vsieBlocks.MEDIUM_FUELTANK_BLOCK);
+            output.accept(vsieBlocks.LARGE_FUELTANK_BLOCK);
         }
     }
 }

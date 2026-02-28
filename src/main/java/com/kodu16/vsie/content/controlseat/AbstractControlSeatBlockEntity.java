@@ -37,11 +37,13 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
 
     //energy
     public int energyspendpertick = 10;
-    public int capacitorenergy = 0;//控制椅记录的当tick需要消耗的电量，如果抽不够电量则停机
+    public int capacitorenergy = 0;//控制椅记录的当tick需要消耗的电量，如果抽不够电量则停机]
+
+    public int totalenergy = 100;
+    public int totalenergyavalible = 0;//缓存的能量
 
     //shield
-    public double avalibleshield = 0;
-    public int shieldsubtracthistick = 0;//控制椅记录的当tick需要消耗的护盾电量，如果抽不够则护盾过载
+    public double avalibleshield = 0;//缓存的护盾能量
 
     //Links(nbt:true)
     private final List<Vec3> linkedThrusters = new ArrayList<>();

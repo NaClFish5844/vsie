@@ -6,6 +6,10 @@ import com.kodu16.vsie.content.storage.energybattery.AbstractEnergyBatteryGeoRen
 import com.kodu16.vsie.content.storage.energybattery.block.LargeEnergyBatteryBlockEntity;
 import com.kodu16.vsie.content.storage.energybattery.block.MediumEnergyBatteryBlockEntity;
 import com.kodu16.vsie.content.storage.energybattery.block.SmallEnergyBatteryBlockEntity;
+import com.kodu16.vsie.content.storage.fueltank.AbstractFuelTankGeoRenderer;
+import com.kodu16.vsie.content.storage.fueltank.block.LargeFuelTankBlockEntity;
+import com.kodu16.vsie.content.storage.fueltank.block.MediumFuelTankBlockEntity;
+import com.kodu16.vsie.content.storage.fueltank.block.SmallFuelTankBlockEntity;
 import com.kodu16.vsie.content.thruster.block.BasicThrusterBlockEntity;
 import com.kodu16.vsie.content.thruster.block.LargeThrusterBlockEntity;
 import com.kodu16.vsie.content.thruster.block.MediumThrusterBlockEntity;
@@ -100,5 +104,20 @@ public class vsieBlockEntities {
             REGISTRATE.blockEntity("large_energy_battery_block_entity", LargeEnergyBatteryBlockEntity::new)
                     .validBlocks(vsieBlocks.LARGE_ENERGY_BATTERY_BLOCK)
                     .renderer(() -> AbstractEnergyBatteryGeoRenderer::new)
+                    .register();
+    public static final BlockEntityEntry<SmallFuelTankBlockEntity> SMALL_FUELTANK_BLOCK_ENTITY =
+            REGISTRATE.blockEntity("small_fueltank_block_entity", SmallFuelTankBlockEntity::new)
+                    .validBlocks(vsieBlocks.SMALL_FUELTANK_BLOCK)
+                    .renderer(() -> AbstractFuelTankGeoRenderer::new)
+                    .register();
+    public static final BlockEntityEntry<MediumFuelTankBlockEntity> MEDIUM_FUELTANK_BLOCK_ENTITY =
+            REGISTRATE.blockEntity("medium_fueltank_block_entity", MediumFuelTankBlockEntity::new)
+                    .validBlocks(vsieBlocks.MEDIUM_FUELTANK_BLOCK)
+                    .renderer(() -> AbstractFuelTankGeoRenderer::new)
+                    .register();
+    public static final BlockEntityEntry<LargeFuelTankBlockEntity> LARGE_FUELTANK_BLOCK_ENTITY =
+            REGISTRATE.blockEntity("large_fueltank_block_entity", LargeFuelTankBlockEntity::new)
+                    .validBlocks(vsieBlocks.LARGE_FUELTANK_BLOCK)
+                    .renderer(() -> AbstractFuelTankGeoRenderer::new)
                     .register();
 }

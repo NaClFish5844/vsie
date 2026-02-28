@@ -124,20 +124,21 @@ public abstract class AbstractEnergyBatteryBlockEntity extends SmartBlockEntity 
     }
 
     private void writeVec3(CompoundTag nbt, String key, BlockPos position) {
-            CompoundTag vecTag = new CompoundTag();
-            vecTag.putInt("x", position.getX());
-            vecTag.putInt("y", position.getY());
-            vecTag.putInt("z", position.getZ());
-            nbt.put(key, vecTag);
+        CompoundTag vecTag = new CompoundTag();
+        vecTag.putInt("x", position.getX());
+        vecTag.putInt("y", position.getY());
+        vecTag.putInt("z", position.getZ());
+        nbt.put(key, vecTag);
     }
 
     private void readVec3(CompoundTag nbt, String key) {
-        if (!nbt.contains(key, Tag.TAG_LIST)) return;
-        CompoundTag vecTag = nbt.getCompound(key);
-        int x = vecTag.getInt("x");
-        int y = vecTag.getInt("y");
-        int z = vecTag.getInt("z");
-        this.linkedcontrolseatpos = new BlockPos(x, y, z);
+        if (nbt.contains(key, Tag.TAG_COMPOUND)) {   // 改成 TAG_COMPOUND 更准确
+            CompoundTag vecTag = nbt.getCompound(key);
+            int x = vecTag.getInt("x");
+            int y = vecTag.getInt("y");
+            int z = vecTag.getInt("z");
+            this.linkedcontrolseatpos = new BlockPos(x, y, z);
+        }
     }
 
     @Override

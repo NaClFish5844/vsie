@@ -159,4 +159,50 @@ public class DrawShape {
             RenderSystem.disableBlend();
     }
 
+    public static void drawThickLine(GuiGraphics gg,
+                                     int x1, int y1,
+                                     int x2, int y2,
+                                     int thickness,
+                                     int argb) {
+        if (thickness <= 0) return;
+
+        float a = ((argb >> 24) & 255) / 255f;
+        float r = ((argb >> 16) & 255) / 255f;
+        float g = ((argb >>  8) & 255) / 255f;
+        float b = ( argb        & 255) / 255f;
+
+        Matrix4f mat = gg.pose().last().pose();
+
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.enableBlend();
+        // 如果你发现颜色偏暗或不显示，可以临时加这行测试：
+        // RenderSystem.disableCull();   // 禁用背面剔除（调试用，正式不建议长期开）
+
+        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
+        buffer.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+        float len = (float) Math.sqrt(dx*dx + dy*dy);
+
+        if (len < 0.01f) {
+            RenderSystem.disableBlend();
+            return;
+        }
+
+        // 关键：逆时针法线（从起点看过去，左侧在上）
+        float nx =  dy / len;
+        float ny = -dx / len;
+
+        float half = thickness / 2f;
+
+        // 逆时针顺序
+        buffer.vertex(mat, x1 + nx * half, y1 + ny * half, 0).color(r,g,b,a).endVertex(); // 起点左
+        buffer.vertex(mat, x1 - nx * half, y1 - ny * half, 0).color(r,g,b,a).endVertex(); // 起点右
+        buffer.vertex(mat, x2 + nx * half, y2 + ny * half, 0).color(r,g,b,a).endVertex(); // 终点左
+        buffer.vertex(mat, x2 - nx * half, y2 - ny * half, 0).color(r,g,b,a).endVertex(); // 终点右
+
+        BufferUploader.drawWithShader(buffer.end());
+        RenderSystem.disableBlend();
+    }
 }

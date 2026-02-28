@@ -41,7 +41,7 @@ public class ControlSeatServerData {
     public volatile int totalenergystorage = 100;//最大可储存的电量
     public volatile int avalibleenergy = 0;//当前可用的电量
 
-    public volatile double totalshield = 100;//最大护盾
+    public volatile double totalshield = 1;//最大护盾
     public volatile double avalibleshield = 0;//当前剩余护盾
     public volatile double shieldradius = 0;//护盾的范围
     public volatile double shieldcostperprojectile = 0;//拦截一个弹射物消耗的护盾能量

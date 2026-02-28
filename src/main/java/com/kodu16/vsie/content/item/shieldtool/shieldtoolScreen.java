@@ -79,13 +79,13 @@ public class shieldtoolScreen extends AbstractContainerScreen<ShieldToolContaine
                         Component.literal("§7绑定的所有护盾发生器之间的最大距离*0.75")),
 
                 new LineData("Energy cost per intercept: " + menu.costPerProjectile,
-                        Component.literal("§7（护盾发生器之间的最大距离^2/护盾发生器之间的最小距离）*护盾发生器数")),
+                        Component.literal("§7（护盾发生器之间的最大距离^2/护盾发生器之间的最小距离）*护盾发生器数*1000")),
 
                 new LineData("Energy regenerate per tick: " + menu.regenPerTick,
-                        Component.literal("§7（护盾发生器之间的最大距离*护盾发生器之间的最小距离）*20 FE")),
+                        Component.literal("§7（护盾发生器之间的最大距离*护盾发生器个数）* 500 FE")),
 
                 new LineData("Overload cooldown time: " + menu.maxCooldown+"ticks",
-                        Component.literal("§7((护盾发生器之间的最大距离/护盾发生器之间的最小距离)^2)/20 秒"))
+                        Component.literal("§7(护盾发生器之间的最大距离/护盾发生器之间的最小距离)*100 ticks"))
         };
 
         // 当前鼠标在 GUI 内的相对坐标

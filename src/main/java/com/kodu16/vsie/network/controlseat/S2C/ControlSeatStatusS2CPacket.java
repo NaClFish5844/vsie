@@ -24,15 +24,22 @@ public class ControlSeatStatusS2CPacket {
     public int fuelavalible;
     public int fueltotal;
     public boolean shieldon;
+    public int shieldavalible;
+    public int shieldtotal;
 
     // 构造函数
-    public ControlSeatStatusS2CPacket(BlockPos pos, int energyavalible, int energytotal, int fuelavalible,int fueltotal,boolean shieldon) {
+    public ControlSeatStatusS2CPacket(BlockPos pos,
+                                      int energyavalible, int energytotal,
+                                      int fuelavalible,int fueltotal,
+                                      boolean shieldon, int shieldavalible, int shieldtotal) {
         this.pos = pos;
         this.energyavalible = energyavalible;
         this.energytotal = energytotal;
         this.fuelavalible = fuelavalible;
         this.fueltotal = fueltotal;
         this.shieldon = shieldon;
+        this.shieldavalible = shieldavalible;
+        this.shieldtotal = shieldtotal;
     }
 
     // 编码（序列化）
@@ -43,6 +50,8 @@ public class ControlSeatStatusS2CPacket {
         buf.writeInt(fuelavalible);
         buf.writeInt(fueltotal);
         buf.writeBoolean(shieldon);
+        buf.writeInt(shieldavalible);
+        buf.writeInt(shieldtotal);
     }
 
     // 解码（反序列化）
@@ -53,7 +62,9 @@ public class ControlSeatStatusS2CPacket {
         int fuelavalible = buf.readInt();
         int fueltotal = buf.readInt();
         boolean shieldon = buf.readBoolean();
-        return new ControlSeatStatusS2CPacket(pos, energyavalible, energytotal, fuelavalible, fueltotal, shieldon);
+        int shieldavalible = buf.readInt();
+        int shieldtotal = buf.readInt();
+        return new ControlSeatStatusS2CPacket(pos, energyavalible, energytotal, fuelavalible, fueltotal, shieldon, shieldavalible, shieldtotal);
     }
 
     // 处理客户端接收到的数据包
@@ -74,6 +85,8 @@ public class ControlSeatStatusS2CPacket {
             clientData.energyavalible = energyavalible;
             clientData.energytotal = energytotal;
             clientData.shieldon = shieldon;
+            clientData.shieldavalible = shieldavalible;
+            clientData.shieldtotal = shieldtotal;
         }));
         ctx.get().setPacketHandled(true);
     }

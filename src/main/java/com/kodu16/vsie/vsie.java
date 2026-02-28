@@ -3,10 +3,12 @@ package com.kodu16.vsie;
 import com.kodu16.vsie.content.controlseat.server.ControlSeatForceAttachment;
 import com.kodu16.vsie.registries.ModMenuTypes;
 import com.kodu16.vsie.network.ModNetworking;
+import com.kodu16.vsie.registries.ModParticleTypes;
 import com.kodu16.vsie.registries.vsieBlockEntities;
 import com.kodu16.vsie.registries.vsieBlocks;
 import com.kodu16.vsie.registries.vsieDataTickets;
 import com.kodu16.vsie.registries.vsieEntities;
+import com.kodu16.vsie.registries.vsieFluids;
 import com.kodu16.vsie.registries.vsieItems;
 import com.kodu16.vsie.registries.vsieCreativeTab;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -35,10 +37,12 @@ public class vsie {
         vsieBlockEntities.register();
         vsieEntities.register();
         //vsieKeyMappings.register(modBus); // 不要重复注册，keymappings里面是注册好的
+        vsieFluids.register();
         vsieItems.register();
         vsieCreativeTab.register(modBus);
         vsieDataTickets.registerDataTickets();
         ModMenuTypes.MENUS.register(modBus);
+        ModParticleTypes.register(modBus);
         ModNetworking.register();
         GeckoLib.initialize();
 

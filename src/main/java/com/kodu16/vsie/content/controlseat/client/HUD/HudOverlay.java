@@ -2,6 +2,7 @@ package com.kodu16.vsie.content.controlseat.client.HUD;
 
 import com.kodu16.vsie.content.controlseat.client.Input.ClientDataManager;
 import com.kodu16.vsie.content.controlseat.client.ControlSeatClientData;
+import com.kodu16.vsie.content.controlseat.functions.ShipAnglePainter;
 import com.kodu16.vsie.content.controlseat.server.SeatRegistry;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.kodu16.vsie.content.controlseat.block.ControlSeatBlockEntity;
@@ -17,18 +18,17 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.valkyrienskies.core.impl.shadow.Dr;
 import org.valkyrienskies.mod.common.ValkyrienSkiesMod;
+import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class HudOverlay {
 
-    // 你可以把颜色做成配置项，这里先写死一个半透明青色
-    private static int hudColor = 0xCC00FFFF; // ARGB
     // 透明度配置（建议后面改成 Config）
-    private static final int TEXT_ALPHA    = 5;   // 主文字透明度
-    private static final int SHADOW_ALPHA  = 110;   // 发光/阴影透明度
+    private static final int TEXT_ALPHA    = 10;   // 主文字透明度
 
-    private static final int MAIN_COLOR = FastColor.ARGB32.color(TEXT_ALPHA, 0x00, 0xAA, 0xFF);
+    private static final int MAIN_COLOR = FastColor.ARGB32.color(TEXT_ALPHA, 0x00, 0xCC, 0xFF);
     private static final int SUB_COLOR  = FastColor.ARGB32.color(TEXT_ALPHA, 0x00, 0x88, 0x88);
 
     private static final Minecraft mc = Minecraft.getInstance(); // drawGlowText 要用
@@ -81,8 +81,11 @@ public class HudOverlay {
             drawCenteredText(gg,"§e"+data.channel3, centerX+20, baseY + 50, SUB_COLOR);
             drawCenteredText(gg,"§e"+data.channel4, centerX+60, baseY + 50, SUB_COLOR);
 
-            //绘制电量余量和燃料余量表
-            FuelEnergyStatus.renderDecorative(gg, (float) data.energyavalible /data.energytotal,1f);
+            //绘制电量条，护盾条
+            StatusIndicator.renderDecorative(gg,
+                    (float) data.energyavalible /data.energytotal,
+                    1f,
+                    (float) data.shieldavalible /data.shieldtotal);
 
             //绘制护盾条和护盾开关
             if(data.shieldon) {
@@ -91,6 +94,11 @@ public class HudOverlay {
             else {
                 drawCenteredText(gg,"shield:OFF", centerX-60, baseY+30, SUB_COLOR);
             }
+
+            //绘制水平和竖直方位条
+            double[] angles = ShipAnglePainter.getDirectedAnglesToAxes(VectorConversionsMCKt.toMinecraft(data.shipfacing));
+            ShipAnglePainter.drawAngleLine(gg, data.shipfacing, centerX, baseY+130, MAIN_COLOR);
+            drawCenteredText(gg, "§l§b"+(int)angles[0], centerX, baseY+140, MAIN_COLOR);
 
             //装饰
             Decorative.renderDecorative(gg);
@@ -102,6 +110,16 @@ public class HudOverlay {
 
     // 方便的居中绘制方法（不带辉光）
     private static void drawCenteredText(GuiGraphics gg, String text, int x, int y, int color) {
-        gg.drawCenteredString(Minecraft.getInstance().font, Component.literal(text), x, y, color);
+        float scale = 0.7f;
+        /*if (scale == 1.0f) {
+            gg.drawCenteredString(mc.font, Component.literal(text), x, y, color);
+            return;
+        }*/
+        gg.pose().pushPose();
+        gg.pose().scale(scale, scale, 1);
+        float inv = 1 / scale;
+        gg.drawCenteredString(mc.font, Component.literal(text), (int)(x * inv), (int)(y * inv), color);
+        gg.pose().popPose();
     }
+
 }

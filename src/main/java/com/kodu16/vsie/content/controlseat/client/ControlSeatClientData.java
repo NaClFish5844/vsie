@@ -35,11 +35,11 @@ public class ControlSeatClientData {
     public volatile String lockedenemyslug = "";
 
     public volatile int energyavalible = 0;
-    public volatile int energytotal = 100;
+    public volatile int energytotal = 1;
 
     public volatile boolean shieldon = false;
     public volatile int shieldavalible = 0;
-    public volatile int shieldtotal = 100;
+    public volatile int shieldtotal = 1;
 
     public void setLastMousex(double x) { lastmousex = x; }
     public void setLastMousey(double x) { lastmousey = x; }

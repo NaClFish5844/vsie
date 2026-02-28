@@ -81,7 +81,11 @@ public class ServerShipHandler {
 
             if(now - lastSendStatusMs > 250) {//状态包（慢包out）
                 lastSendStatusMs = now;
-                ControlSeatStatusS2CPacket packetstatus = new ControlSeatStatusS2CPacket(pos, data.avalibleenergy,data.totalenergystorage,0,100,data.isshieldon);
+                ControlSeatStatusS2CPacket packetstatus = new ControlSeatStatusS2CPacket(pos,
+                        data.avalibleenergy,data.totalenergystorage,
+                        0,100,
+                        data.isshieldon, (int) data.avalibleshield, (int) data.totalshield);
+                //LogUtils.getLogger().warn("shieldtotal:"+data.totalshield+"avalible:"+data.avalibleshield);
                 ModNetworking.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) data.getPlayer()),packetstatus);
             }
 
@@ -135,7 +139,7 @@ public class ServerShipHandler {
             transform.getShipToWorld().transformDirection(data.getDirectionRight(), worldZDirection);
             worldZDirection.normalize();
 
-            double torquescale = data.thruster_strength / (ship.getMass()*3);
+            double torquescale = data.thruster_strength / (ship.getMass()*0.1);
             Vector3d controltorque = new Vector3d(torque.x*torquescale, torque.y*torquescale, torque.z*torquescale);
             if(controltorque.length()<0.1) {
                 controltorque.mul(0);
