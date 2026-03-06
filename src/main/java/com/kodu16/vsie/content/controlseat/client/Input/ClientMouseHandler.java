@@ -21,6 +21,7 @@ public class ClientMouseHandler {
     // 在这干活不必考虑你做的是哪个player，你做的就是entity告诉你的客户端的player，这整个程序是跑在客户端的
     //handle负责挨个检测一遍，然后给服务端发包
     public static final Logger LOGGER = LogUtils.getLogger();
+    public boolean viewlock = false;
     public static void handle(LocalPlayer player, BlockPos pos) {
         //最好统一使用minecraft实例和客户端数据，虽然我估计底下的搞到的都是同一个
         if(player!=null) {
@@ -33,11 +34,11 @@ public class ClientMouseHandler {
                 //LOGGER.warn(String.valueOf(Component.literal("mouseDX:"+dx+"mouseDY:"+dy)));
                 //dxdy都是（-1,1）
                 if (data.isViewLocked()) {
-                    ClientSeatInputSender.tickSend(pos, data.getUserUUID(), dx, dy, 0, data.mouseLpress);
+                    ClientSeatInputSender.tickSend(pos, data.getUserUUID(), dx, dy, 0, data.mouseLpress, data.viewLock, (int) player.getXRot(), (int) player.getYHeadRot());
                     //LOGGER.warn(String.valueOf(Component.literal("sending mousepress:"+data.mouseLpress)));
                 }
                 else {
-                    ClientSeatInputSender.tickSend(pos, data.getUserUUID(), 0, 0, 0, false);
+                    ClientSeatInputSender.tickSend(pos, data.getUserUUID(), 0, 0, 0, false, data.viewLock, (int) player.getXRot(), (int) player.getYHeadRot());
                     data.reset();
                 }
             }
@@ -57,7 +58,7 @@ public class ClientMouseHandler {
         // 捕捉空格键按下，加上延迟按键，省的按一下切三下视角给玩家搞不会
         if (jumpKey.isDown() && System.currentTimeMillis()- data.getLastKeyPressTime()>800) {
             //我哪知道行不行，我猜行
-            //按下空格键时锁定视角
+            //按下左alt时锁定视角
             //很麻烦，视角的锁定角度必须根据控制椅的方块朝向规定四种情况，所以必须回返一个控制椅朝向
             data.toggleViewLock();
             if (data.isViewLocked()) {

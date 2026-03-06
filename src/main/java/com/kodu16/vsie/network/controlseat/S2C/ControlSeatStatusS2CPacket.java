@@ -84,6 +84,10 @@ public class ControlSeatStatusS2CPacket {
             }
             clientData.energyavalible = energyavalible;
             clientData.energytotal = energytotal;
+
+            clientData.fuelavalible = fuelavalible;
+            clientData.fueltotal = fueltotal;
+
             clientData.shieldon = shieldon;
             clientData.shieldavalible = shieldavalible;
             clientData.shieldtotal = shieldtotal;

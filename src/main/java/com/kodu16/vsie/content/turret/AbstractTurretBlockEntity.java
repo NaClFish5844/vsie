@@ -46,6 +46,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import software.bernie.geckolib.util.RenderUtils;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -56,18 +57,17 @@ import org.slf4j.Logger;
 public abstract class AbstractTurretBlockEntity extends SmartBlockEntity implements GeoBlockEntity, MenuProvider {
     Logger LOGGER = LogUtils.getLogger();
     @WrappingComputerMethod(wrapper = SpecialComputerMethodWrapper.ComputerIInventorySlotWrapper.class, methodNames = "getEnergyItem", docPlaceholder = "energy slot")
-    EnergyInventorySlot energySlot;
     public static SerializableDataTicket<Boolean> HAS_TARGET;
     public Vector3d targetPos = new Vector3d(0,0,0); //这是被选择的那个目标的位置
     public static SerializableDataTicket<Float> XROT; //这是动画计算用的
     public static SerializableDataTicket<Float> YROT;
-    private final AnimatableInstanceCache cache = new SingletonAnimatableInstanceCache(this);
-    private static final RawAnimation SHOOT_ANIMATION = RawAnimation.begin().then("shoot", Animation.LoopType.PLAY_ONCE);
+    public final AnimatableInstanceCache cache = new SingletonAnimatableInstanceCache(this);
+    public static final RawAnimation SHOOT_ANIMATION = RawAnimation.begin().then("shoot", Animation.LoopType.PLAY_ONCE);
     public double targetdistance;
     public @Nullable LivingEntity targetentity;
-    public @Nullable Ship targetShip;
-    private int aimtype = 0; //0：空 1：实体 2：船只
-    private List<Vector3d> targetPreVelocity = new ArrayList<Vector3d>();
+    private @Nullable Ship selectedtargetShip;
+    public int aimtype = 0; //0：空 1：实体 2：船只
+    public List<Vector3d> targetPreVelocity = new ArrayList<Vector3d>();
     public float xRot0 = 0;
     public float yRot0 = 0;
     public float prevxrot = 0;
@@ -76,15 +76,15 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
     public boolean yOK = false;
     public float targetxrot = 0;
     public float targetyrot = 0;
-    private int idleTicks = 0;
-    private static final double SEARCH_RADIUS = 100.0;
+    public int idleTicks = 0;
+    public static final double SEARCH_RADIUS = 100.0;
     public boolean onShip = false;
     public Vector3d currentworldpos = new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ());
     protected TurretData turretData;
 
-    private Vector3d worldXDirection = new Vector3d();
-    private Vector3d worldYDirection = new Vector3d();
-    private Vector3d worldZDirection = new Vector3d();
+    public Vector3d worldXDirection = new Vector3d();
+    public Vector3d worldYDirection = new Vector3d();
+    public Vector3d worldZDirection = new Vector3d();
 
     protected AbstractTurretBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -164,19 +164,21 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
             if (aimtype==1 && isValidTargetEntity(targetentity)) {
                 targetPreVelocity.add(new Vector3d(targetentity.getDeltaMovement().x, targetentity.getDeltaMovement().y, targetentity.getDeltaMovement().z));
             }
-            if (aimtype==2 && isValidTargetShip(targetShip)) {
-                targetPreVelocity.add(new Vector3d(targetShip.getVelocity()));
+            if (aimtype==2 && isValidTargetShip(selectedtargetShip)) {
+                targetPreVelocity.add(new Vector3d(selectedtargetShip.getVelocity()));
             }
-            if(aimtype==1 && isValidTargetEntity(targetentity) || aimtype==2 && isValidTargetShip(targetShip)) {
-                targetPos = new Vector3d(
-                        targetentity.getX(),
-                        targetentity.getY(),
-                        targetentity.getZ()
-                );
-                if(onShip) {
-                    LoadedShip ship = VSGameUtilsKt.getShipObjectManagingPos(level, this.getBlockPos());
-                    //targetPos = ship.getTransform().getWorldToShip().transformPosition(targetPos);
+            if(aimtype==1 && isValidTargetEntity(targetentity) || aimtype==2 && isValidTargetShip(selectedtargetShip)) {
+                if(aimtype==1 && isValidTargetEntity(targetentity) ){
+                    targetPos = new Vector3d(
+                            targetentity.getX(),
+                            targetentity.getY(),
+                            targetentity.getZ()
+                    );
                 }
+                else {
+                    targetPos = (Vector3d) selectedtargetShip.getTransform().getPositionInWorld();
+                }
+
                 targetPos = getShootLocation(targetPos, targetPreVelocity, level, currentworldpos);
                 updateTargetRot();
                 this.xRot0 = closestReachableX(xRot0,getMaxSpinSpeed(),targetxrot);
@@ -220,7 +222,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
         this.getData().enemyshipsData = enemyshipsData;
     }
 
-    public void tryInvalidateTarget() {
+    private void tryInvalidateTarget() {
         if(aimtype==1) {
             if(!isValidTargetEntity(targetentity)) {
                 setAnimData(HAS_TARGET, false);
@@ -232,9 +234,9 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
             }
         }
         else if(aimtype==2) {
-            if(!isValidTargetShip(targetShip)) {
+            if(!isValidTargetShip(selectedtargetShip)) {
                 setAnimData(HAS_TARGET, false);
-                targetShip = null;
+                selectedtargetShip = null;
                 targetdistance = 0;
                 xRot0 = 0;
                 yRot0 = 0;
@@ -243,7 +245,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
         }
     }
 
-    private void tryFindTargetEntity() {
+    public void tryFindTargetEntity() {
         if (idleTicks-- > 0) return;
         if (targetentity != null && targetentity.isAlive()) return; // 有活目标就不重复找
 
@@ -278,19 +280,19 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
     }
 
 
-    private void tryFindtargetShip() {
+    public void tryFindtargetShip() {
         if(idleTicks-- > 0) {
             return;
         }
         ArrayList<Ship> enemylist = getData().enemyshipsData;
         if (enemylist.isEmpty()) return;
         int pickindex = getRandomInt(0,enemylist.size()-1);
-        this.targetShip = enemylist.get(pickindex);
+        this.selectedtargetShip = enemylist.get(pickindex);
     }
 
 
 
-    private boolean isValidTargetEntity(@Nullable LivingEntity e) {
+    public boolean isValidTargetEntity(@Nullable LivingEntity e) {
         // 只负责实体判断，输入的只有实体
         if (e == null) {
             return false;
@@ -335,8 +337,9 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
     }
 
     private boolean canSeeTarget(Vector3d pos) {
+
         Vec3 turretpos = new Vec3(currentworldpos.x, currentworldpos.y, currentworldpos.z);
-        Vec3 targetPos = new Vec3(pos.x(), pos.y(), pos.z());
+        Vec3 targetPos = new Vec3(Math.round(pos.x()*10)/10.0, Math.round(pos.y()*10)/10.0, Math.round(pos.z()*10)/10.0);
         Vec3 lookVec = turretpos.vectorTo(targetPos).normalize().scale(0.75F);
         ClipContext ctx = new ClipContext(turretpos.add(lookVec), targetPos, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, null);
         return level.clip(ctx).getType().equals(HitResult.Type.MISS);
@@ -363,7 +366,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
         //if(!this.level.isClientSide()) sendUpdatePacket();
     }
 
-    public void updateTargetRot() {
+    private void updateTargetRot() {
         Direction facing = this.getBlockState().getValue(AbstractTurretBlock.FACING);
         // 1. 获取炮塔当前的朝向（方块的facing）
         Vec3 localUp  = VectorConversionsMCKt.toMinecraft(VectorConversionsMCKt.toJOMLD(facing.getOpposite().getNormal()));;
@@ -422,7 +425,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
         this.targetyrot = (float) -yaw;
 
         this.targetxrot = (float) pitch;
-        LogUtils.getLogger().warn("X:"+worldXDirection+"Y:"+worldYDirection+"Z:"+worldZDirection+"target:"+targetPos+"turret:"+currentworldpos +"yaw:"+yaw+"pitch:"+pitch);
+        //LogUtils.getLogger().warn("X:"+worldXDirection+"Y:"+worldYDirection+"Z:"+worldZDirection+"target:"+targetPos+"turret:"+currentworldpos +"yaw:"+yaw+"pitch:"+pitch);
     }
 
 
@@ -501,31 +504,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
         return cache;
     }
 
-    private Quaternionf getTransform(Direction direction) {
-        switch (direction) {
-            case NORTH -> {
-                return new Quaternionf().rotationX((float) (-Math.PI/2));
-            }
-            case EAST -> {
-                return new Quaternionf().rotationZ((float) (-Math.PI/2));
-            }
-            case SOUTH -> {
-                return new Quaternionf().rotationX((float) (Math.PI/2));
-            }
-            case WEST -> {
-                return new Quaternionf().rotationZ((float) (Math.PI/2));
-            }
-            case UP -> {
-                return new Quaternionf().rotationZ((float) Math.PI);
-            }
-            case DOWN -> {
-                return new Quaternionf();
-            }
-        }
-        return new Quaternionf();
-    }
-
-    float closestReachableX(float current, float maxChange, float target) {
+    public float closestReachableX(float current, float maxChange, float target) {
         // 先把 target 拉到 current ±180° 范围内
         float delta = target - current;
         delta = (delta + Mth.PI) % (Mth.TWO_PI) - Mth.PI;  // -π ~ +π
@@ -548,7 +527,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
         return current + move;
     }
 
-    float closestReachableY(float current, float maxChange, float target) {
+    public float closestReachableY(float current, float maxChange, float target) {
         // 先把 target 拉到 current ±180° 范围内
         float delta = target - current;
         delta = (delta + Mth.PI) % (Mth.TWO_PI) - Mth.PI;  // -π ~ +π

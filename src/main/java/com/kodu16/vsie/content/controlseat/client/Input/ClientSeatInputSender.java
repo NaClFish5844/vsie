@@ -16,7 +16,11 @@ public class ClientSeatInputSender {
     private static long lastSendMs = 0;
     private static long lastSendInputMs = 0;
     /** 每 tick/隔几 tick 调用一次即可（例如在 ClientTickEvent.END） */
-    public static void tickSend(BlockPos pos, UUID uuid, double mousex, double mousey, double roll, boolean mouseLpress) {
+    public static void tickSend(BlockPos pos, UUID uuid,
+                                double mousex, double mousey,
+                                double roll,
+                                boolean mouseLpress,
+                                boolean isviewlock, int xrot, int yrot) {
         Minecraft mc = Minecraft.getInstance();
         //合法性校验，省的玩家A动了读玩家B
         if (mc.player == null || mc.player.getUUID() != uuid) return;
@@ -50,7 +54,7 @@ public class ClientSeatInputSender {
             if (vsieKeyMappings.KEY_SWITCH_ENEMY.isDown()) keysInput |= ControlSeatInputC2SPacket.KeysInput.SWITCHENEMY;
             if (vsieKeyMappings.KEY_TOGGLE_SHIELD.isDown()) keysInput |= ControlSeatInputC2SPacket.KeysInput.TOGGLESHIELD;
             ModNetworking.CHANNEL.sendToServer(
-                    new ControlSeatInputC2SPacket(pos,keysInput)
+                    new ControlSeatInputC2SPacket(pos,keysInput, isviewlock, xrot, yrot)
             );
         }
     }

@@ -7,18 +7,25 @@ import com.kodu16.vsie.content.controlseat.server.ControlSeatServerData;
 import com.kodu16.vsie.content.controlseat.client.Input.ClientMouseHandler;
 
 import com.kodu16.vsie.content.controlseat.server.SeatRegistry;
+import com.kodu16.vsie.content.heavyturret.AbstractHeavyTurretBlockEntity;
 import com.kodu16.vsie.content.shield.ShieldGeneratorBlockEntity;
 import com.kodu16.vsie.content.storage.energybattery.AbstractEnergyBatteryBlockEntity;
+import com.kodu16.vsie.content.storage.fueltank.AbstractFuelTankBlockEntity;
 import com.kodu16.vsie.content.thruster.AbstractThrusterBlockEntity;
 import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
 import com.kodu16.vsie.content.weapon.AbstractWeaponBlockEntity;
+import com.kodu16.vsie.network.fuel.FluidThrusterProperties;
+import com.kodu16.vsie.registries.fuel.ThrusterFuelManager;
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.fluid.SmartFluidTankBehaviour;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.joml.primitives.AABBdc;
 import org.slf4j.Logger;
 import net.minecraft.client.Minecraft;
@@ -99,21 +106,35 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
             }
             this.calculatedstrength = 0;
             this.energyspendpertick = 0;
+            this.fuelspendcurrenttick = 0;
+
             this.totalenergy =100;
             this.totalenergyavalible = 0;
+            this.totalfuel = 100;
+            this.totalfuelavalible = 0;
+
             updateThruster();
             updateWeapon();
             updateTurret();
             updateShield();
             this.capacitorenergy = -this.energyspendpertick;
+            this.capacitorfuel = -this.fuelspendcurrenttick;
             //LogUtils.getLogger().warn("current energy cost per tick:"+this.energyspendpertick);
             updateEnergy();
+            updateFuel();
+
             if(this.capacitorenergy < 0) {
                 this.capacitorenergy = 0;
                 this.calculatedstrength = 0;
                 return;
             }
             this.capacitorenergy = 0;
+
+            if(this.capacitorfuel < 0) {
+                this.capacitorfuel = 0;
+                this.calculatedstrength = 0;
+                return;
+            }
         }
         else {
             BlockPos pos = getBlockPos();
@@ -189,7 +210,7 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
 
     }
 
-    //0：推进器 1：主武器 2：护盾 3：炮塔 4：电池，务必不要写错
+    //0：推进器 1：主武器 2：护盾 3：炮塔 4：电池 5：燃料箱 6：弹药箱，务必不要写错
     public void updateEnergy() {//avalible：剩余值，非avalible：总值
         List<Vec3> toRemove = new ArrayList<>();
         this.forEachLinkedPeripheral(pos -> {
@@ -233,6 +254,8 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
                 //LOGGER.warn("writing to thrusters:" +blockPos+ "torque:"+controlseatData.getFinaltorque()+"force:"+controlseatData.getFinalforce());
                 thruster.setdata(controlseatData.getFinaltorque(), controlseatData.getFinalforce());
                 this.calculatedstrength+=thruster.getMaxThrust();
+                this.fuelspendcurrenttick += thruster.fuelconsumptionperthrottle()*thruster.getFuelThrottle();
+                LogUtils.getLogger().warn("thruster consuming fuel:"+this.fuelspendcurrenttick);
             } else {
                 // 先记下来，循环完了再删
                 toRemove.add(pos);
@@ -359,7 +382,14 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
             BlockEntity be = level.getBlockEntity(blockPos);
             if (be instanceof AbstractTurretBlockEntity turret) {
                 this.energyspendpertick += turret.getenergypertick();
-                turret.updateenemy(controlseatData.enemyshipsData);
+                if(be instanceof AbstractHeavyTurretBlockEntity heavyturret && !controlseatData.enemyshipsData.isEmpty()) {
+                        //LogUtils.getLogger().warn("controlseat target:"+controlseatData.enemyshipsData.get(controlseatData.lockedenemyindex));
+                    heavyturret.updatespecificenemy((Vector3d) controlseatData.enemyshipsData.get(controlseatData.lockedenemyindex).getTransform().getPositionInWorld());
+                    heavyturret.updateplayerstatus(controlseatData.isviewlocked,controlseatData.playerrotx,controlseatData.playerroty);
+                }
+                else {
+                    turret.updateenemy(controlseatData.enemyshipsData);
+                }
             } else {
                 // 先记下来，循环完了再删
                 toRemove.add(pos);
@@ -371,7 +401,45 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
         }
     }
 
+    public void updateFuel() {
+        List<Vec3> toRemove = new ArrayList<>();
+        this.forEachLinkedPeripheral(pos -> {
+            BlockPos blockPos = BlockPos.containing(pos);
+            BlockEntity be = level.getBlockEntity(blockPos);
 
+            if (be instanceof AbstractFuelTankBlockEntity fueltank) {
+                FluidStack fluid = fueltank.getFluidTank().getFluid();
+                int currenttankremain = fluid.getAmount();
+                if(getFuelProperties(fluid.getRawFluid()) == null) {
+                    totalfuel += fueltank.getFluidTank().getCapacity();
+                    controlseatData.totalfuelstorage = totalfuel;
+                    return;
+                }
+                float consumptionmultiplier = getFuelProperties(fluid.getRawFluid()).consumptionMultiplier;
+                LogUtils.getLogger().warn("draining fuel:"+this.capacitorfuel);
+                if(currenttankremain>=-this.capacitorfuel*consumptionmultiplier) {
+                    fueltank.getFluidTank().drain((int) (-this.capacitorfuel*consumptionmultiplier), IFluidHandler.FluidAction.EXECUTE);
+                    this.capacitorfuel = 0;
+                }
+                else {
+                    fueltank.getFluidTank().drain(currenttankremain, IFluidHandler.FluidAction.EXECUTE);
+                    this.capacitorfuel += (int) (currenttankremain/consumptionmultiplier);
+                }
+                totalfuel += fueltank.getFluidTank().getCapacity();
+                totalfuelavalible += currenttankremain;
+            } else {
+                // 先记下来，循环完了再删
+                toRemove.add(pos);
+            }
+        }, 5);
+        controlseatData.totalfuelstorage = totalfuel;
+        controlseatData.avaliblefuel = totalfuelavalible;
+        //LogUtils.getLogger().warn("detected total energy:"+controlseatData.totalenergystorage+"avalible:"+controlseatData.avalibleenergy);
+        // 循环结束后统一删除
+        for (Vec3 pos : toRemove) {
+            removeLinkedPeripheral(pos, 5);
+        }
+    }
 
     protected boolean isWorking() {
         return true;
@@ -501,5 +569,9 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
         double centerY = aabb.minY() + hight / 2;
         double centerZ = aabb.minZ() + len / 2;
         return new double[]{centerX, centerY, centerZ};
+    }
+
+    public FluidThrusterProperties getFuelProperties(Fluid fluid) {
+        return ThrusterFuelManager.getProperties(fluid);
     }
 }

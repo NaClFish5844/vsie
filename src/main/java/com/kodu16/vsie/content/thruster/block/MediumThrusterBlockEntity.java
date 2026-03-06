@@ -34,6 +34,11 @@ public class MediumThrusterBlockEntity extends AbstractThrusterBlockEntity {
         return 1.5f;
     }
 
+    @Override
+    public int fuelconsumptionperthrottle() {
+        return 8;
+    }
+
     ;
 
     @Override

@@ -50,10 +50,10 @@ public class TurretScreen extends AbstractContainerScreen<TurretContainerMenu> {
                 : new ResourceLocation(vsie.ID, "textures/gui/turret/target_ship_off.png");
 
         // 绘制状态图标
-        guiGraphics.blit(iconhostile, this.leftPos + 30, this.topPos + 20, 0, 0, 20, 20, 20,20); // 你可以调整位置和大小
-        guiGraphics.blit(iconpassive, this.leftPos + 60, this.topPos + 20, 0, 0, 20, 20, 20,20);
-        guiGraphics.blit(iconplayer, this.leftPos + 90, this.topPos + 20, 0, 0, 20, 20, 20,20);
-        guiGraphics.blit(iconship, this.leftPos + 120, this.topPos + 20, 0, 0, 20, 20, 20,20);
+        guiGraphics.blit(iconhostile, this.leftPos + 20, this.topPos + 70, 0, 0, 19, 19, 19,19); // 你可以调整位置和大小
+        guiGraphics.blit(iconpassive, this.leftPos + 59, this.topPos + 70, 0, 0, 19, 19, 19,19);
+        guiGraphics.blit(iconplayer, this.leftPos + 98, this.topPos + 70, 0, 0, 19, 19, 19,19);
+        guiGraphics.blit(iconship, this.leftPos + 137, this.topPos + 70, 0, 0, 19, 19, 19,19);
     }
 
     // 可选：如果你还想显示物品栏标签、玩家背包等文字，也可以重写这个
@@ -62,7 +62,7 @@ public class TurretScreen extends AbstractContainerScreen<TurretContainerMenu> {
         // 标题
         guiGraphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 0x404040, false);
         // 玩家背包文字 “物品栏”
-        guiGraphics.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0x404040, false);
+        //guiGraphics.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0x404040, false);
     }
 
     @Override
@@ -72,25 +72,25 @@ public class TurretScreen extends AbstractContainerScreen<TurretContainerMenu> {
         this.addRenderableWidget(Button.builder(
                         Component.literal("HOS"),
                         button -> ModNetworking.CHANNEL.sendToServer(new TurretC2SPacket(pos,1)))
-                .pos(this.leftPos + 30, this.topPos + 50)
-                .size(20, 15)
+                .pos(this.leftPos + 16, this.topPos + 100)
+                .size(27, 15)
                 .build());
         this.addRenderableWidget(Button.builder(
                         Component.literal("PAS"),
                         button -> ModNetworking.CHANNEL.sendToServer(new TurretC2SPacket(pos,2)))
-                .pos(this.leftPos + 70, this.topPos + 50)
-                .size(20, 15)
+                .pos(this.leftPos + 55, this.topPos + 100)
+                .size(27, 15)
                 .build());
         this.addRenderableWidget(Button.builder(
                         Component.literal("Player"),
                         button -> ModNetworking.CHANNEL.sendToServer(new TurretC2SPacket(pos,3)))
-                .pos(this.leftPos + 110, this.topPos + 50)
-                .size(20, 15)
+                .pos(this.leftPos + 94, this.topPos + 100)
+                .size(27, 15)
                 .build());        this.addRenderableWidget(Button.builder(
                         Component.literal("Ship"),
                         button -> ModNetworking.CHANNEL.sendToServer(new TurretC2SPacket(pos,4)))
-                .pos(this.leftPos + 150, this.topPos + 50)
-                .size(20, 15)
+                .pos(this.leftPos + 133, this.topPos + 100)
+                .size(27, 15)
                 .build());
 
     }

@@ -8,12 +8,18 @@ import com.kodu16.vsie.network.controlseat.S2C.ControlSeatInputS2CPacket;
 import com.kodu16.vsie.network.controlseat.S2C.ControlSeatS2CPacket;
 import com.kodu16.vsie.network.controlseat.S2C.ControlSeatStatusS2CPacket;
 import com.kodu16.vsie.network.controlseat.S2C.NearbyShipsS2CPacket;
+import com.kodu16.vsie.network.fuel.SyncThrusterFuelsPacket;
 import com.kodu16.vsie.network.screen.ScreenC2SPacket;
+import com.kodu16.vsie.network.turret.HeavyTurretC2SPacket;
 import com.kodu16.vsie.network.turret.TurretC2SPacket;
 import com.kodu16.vsie.network.weapon.WeaponC2SPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
+import org.valkyrienskies.core.impl.shadow.CH;
 
 @SuppressWarnings({"removal"})
 public class ModNetworking {
@@ -50,6 +56,13 @@ public class ModNetworking {
                 TurretC2SPacket::encode, // 编码方法
                 TurretC2SPacket::decode, // 解码方法
                 TurretC2SPacket::handle  // 处理方法
+        );
+        CHANNEL.registerMessage(
+                nextId(),
+                HeavyTurretC2SPacket.class, // 你的新 C2S 数据包类
+                HeavyTurretC2SPacket::encode, // 编码方法
+                HeavyTurretC2SPacket::decode, // 解码方法
+                HeavyTurretC2SPacket::handle  // 处理方法
         );
         CHANNEL.registerMessage(
                 nextId(),
@@ -101,6 +114,20 @@ public class ModNetworking {
                 NearbyShipsS2CPacket::decode,
                 NearbyShipsS2CPacket::handle
         );
+
+        CHANNEL.messageBuilder(SyncThrusterFuelsPacket.class, nextId(), NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(SyncThrusterFuelsPacket::encode)
+                .decoder(SyncThrusterFuelsPacket::decode)
+                .consumerMainThread(SyncThrusterFuelsPacket::handle)
+                .add();
+    }
+
+    public static <MSG> void sendToAll(MSG message) {
+        CHANNEL.send(PacketDistributor.ALL.noArg(), message);
+    }
+
+    public static <MSG> void sendToPlayer(MSG message, ServerPlayer player) {
+        CHANNEL.send(PacketDistributor.PLAYER.with(() -> player), message);
     }
 
 }

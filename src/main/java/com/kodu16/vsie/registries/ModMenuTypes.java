@@ -1,10 +1,14 @@
 // ModMenuTypes.java
 package com.kodu16.vsie.registries;
 
+import com.kodu16.vsie.content.heavyturret.AbstractHeavyTurretBlockEntity;
+import com.kodu16.vsie.content.heavyturret.HeavyTurretContainerMenu;
 import com.kodu16.vsie.content.item.IFF.IFFContainerMenu;
 import com.kodu16.vsie.content.item.shieldtool.ShieldToolContainerMenu;
 import com.kodu16.vsie.content.screen.AbstractScreenBlockEntity;
 import com.kodu16.vsie.content.screen.ScreenContainerMenu;
+import com.kodu16.vsie.content.storage.ammobox.AmmoBoxBlockEntity;
+import com.kodu16.vsie.content.storage.ammobox.AmmoBoxContainerMenu;
 import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
 import com.kodu16.vsie.content.turret.TurretContainerMenu;
 import com.kodu16.vsie.content.weapon.AbstractWeaponBlockEntity;
@@ -41,6 +45,20 @@ public class ModMenuTypes {
                 BlockPos pos = data.readBlockPos();
                 AbstractScreenBlockEntity screen = (AbstractScreenBlockEntity) inv.player.level().getBlockEntity(pos);
                 return new ScreenContainerMenu(windowId, inv, screen);
+            }));
+    public static final RegistryObject<MenuType<AmmoBoxContainerMenu>> AMMO_BOX_MENU = MENUS.register("ammo_box_menu",
+            () -> IForgeMenuType.create((windowId, inv, data) -> {
+                // data 里读出客户端传来的 BlockPos
+                BlockPos pos = data.readBlockPos();
+                AmmoBoxBlockEntity screen = (AmmoBoxBlockEntity) inv.player.level().getBlockEntity(pos);
+                return new AmmoBoxContainerMenu(windowId, inv, screen);
+            }));
+    public static final RegistryObject<MenuType<HeavyTurretContainerMenu>> HEAVY_TURRET_MENU = MENUS.register("heavy_turret_menu",
+            () -> IForgeMenuType.create((windowId, inv, data) -> {
+                // data 里读出客户端传来的 BlockPos
+                BlockPos pos = data.readBlockPos();
+                AbstractHeavyTurretBlockEntity turret = (AbstractHeavyTurretBlockEntity) inv.player.level().getBlockEntity(pos);
+                return new HeavyTurretContainerMenu(windowId, inv, turret);
             }));
 
     public static final RegistryObject<MenuType<IFFContainerMenu>> IFF_MENU = MENUS.register("iff_menu",

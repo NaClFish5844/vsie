@@ -18,14 +18,14 @@ public class ShipAnglePainter {
 
         // ───────────── 配置参数 ─────────────
         int ticksEachSide   = 8;
-        double pxPer10Deg   = 7.0;
+        double pxPer10Deg   = 5.0;
         double fracOffset   = (yawDeg % 10.0) * (pxPer10Deg / 10.0);
 
         double labelThreshold   = 2.5;     // 显示数字标签的阈值
-        double highlightRadius  = 6.0;     // 渐变影响范围（度）
+        double highlightRadius  = 5.0;     // 渐变影响范围（度）
         int    cardinalColor    = 0xFF88DDFF;  // 主方向专用颜色（亮蓝）
         int    cardinalAlpha    = 255;
-        int    cardinalLength   = 4;       // 主方向永远最长
+        int    cardinalLength   = 3;       // 主方向永远最长
         int    cardinalThickness = 2;
 
         // ─── 先单独绘制 4 个主方向（N/S/E/W） ───

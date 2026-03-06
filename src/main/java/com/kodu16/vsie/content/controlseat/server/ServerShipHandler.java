@@ -77,7 +77,7 @@ public class ServerShipHandler {
                 lastSendStatusMs = now;
                 ControlSeatStatusS2CPacket packetstatus = new ControlSeatStatusS2CPacket(pos,
                         data.avalibleenergy,data.totalenergystorage,
-                        0,100,
+                        data.avaliblefuel,data.totalfuelstorage,
                         data.isshieldon, (int) data.avalibleshield, (int) data.totalshield);
                 //LogUtils.getLogger().warn("shieldtotal:"+data.totalshield+"avalible:"+data.avalibleshield);
                 ModNetworking.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) data.getPlayer()),packetstatus);
@@ -133,14 +133,14 @@ public class ServerShipHandler {
             transform.getShipToWorld().transformDirection(data.getDirectionRight(), worldZDirection);
             worldZDirection.normalize();
 
-            double torquescale = data.thruster_strength / (ship.getMass()*0.1);
+            double torquescale = data.thruster_strength / (Math.sqrt(ship.getMass()));
             Vector3d controltorque = new Vector3d(torque.x*torquescale, torque.y*torquescale, torque.z*torquescale);
             if(controltorque.length()<0.1) {
                 controltorque.mul(0);
             }
 
             Vector3d Invarianttorque = calculateWorldTorque(controltorque, worldXDirection, worldYDirection, worldZDirection);
-            double forcescale = (mass*-0.1) * data.getThrottle() * data.thruster_strength / (ship.getMass()*3);
+            double forcescale = -1000 * data.getThrottle() * data.thruster_strength / (ship.getMass()*3);
             Vector3d Invariantforce = new Vector3d(worldXDirection.x * forcescale, worldXDirection.y * forcescale, worldXDirection.z * forcescale);
 
             // 计算反向阻尼力矩，与角速度成比例

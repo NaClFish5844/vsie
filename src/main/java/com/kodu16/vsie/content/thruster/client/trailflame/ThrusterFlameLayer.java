@@ -41,7 +41,8 @@ public class ThrusterFlameLayer extends GeoRenderLayer<AbstractThrusterBlockEnti
     }
 
     public void renderflame(PoseStack poseStack, AbstractThrusterBlockEntity animatable, MultiBufferSource bufferSource) {
-            poseStack.mulPose(Axis.XP.rotationDegrees(90f));
+            poseStack.mulPose(Axis.XP.rotationDegrees(270f));
+            poseStack.translate(0,0,0.2);
             float length = animatable.getRaycastDistance();
             float flameLength = length * 1.5f;  // 最大长度 4 格，可自行调整
 
@@ -52,7 +53,7 @@ public class ThrusterFlameLayer extends GeoRenderLayer<AbstractThrusterBlockEnti
 
             for (int i = 0; i <= LENGTH_SEGMENTS; i++) {
                 float t = i / (float) LENGTH_SEGMENTS;
-                float z = -t * flameLength;                    // 沿 -Z 方向延伸
+                float z = t * flameLength;                    // 沿 -Z 方向延伸
                 float radius = animatable.getflamewidth() + (-0.05f * animatable.getflamewidth()) * t;
 
                 float r = lerp(0.4f, 0.3f, t);

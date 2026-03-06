@@ -41,6 +41,9 @@ public class ControlSeatServerData {
     public volatile int totalenergystorage = 100;//最大可储存的电量
     public volatile int avalibleenergy = 0;//当前可用的电量
 
+    public volatile int totalfuelstorage = 100;//最大可储存的电量
+    public volatile int avaliblefuel = 0;//当前可用的电量
+
     public volatile double totalshield = 1;//最大护盾
     public volatile double avalibleshield = 0;//当前剩余护盾
     public volatile double shieldradius = 0;//护盾的范围
@@ -51,6 +54,10 @@ public class ControlSeatServerData {
     public volatile boolean isshieldon = false;//是否开启护盾
     public volatile double shieldmin = 0;
     public volatile double shieldmax = 0;
+
+    public volatile boolean isviewlocked = false;
+    public volatile int playerrotx = 0;
+    public volatile int playerroty = 0;
 
     public Level level;
 

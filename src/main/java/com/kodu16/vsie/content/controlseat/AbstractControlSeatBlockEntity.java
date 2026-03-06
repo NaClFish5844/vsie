@@ -37,10 +37,15 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
 
     //energy
     public int energyspendpertick = 10;
-    public int capacitorenergy = 0;//控制椅记录的当tick需要消耗的电量，如果抽不够电量则停机]
-
+    public int capacitorenergy = 0;//控制椅记录的当tick需要消耗的电量，如果抽不够电量则停机
     public int totalenergy = 100;
     public int totalenergyavalible = 0;//缓存的能量
+
+    //fuel
+    public int fuelspendcurrenttick = 0;
+    public int capacitorfuel = 0;//控制椅记录的当tick需要消耗的油，如果抽不够油则引擎停机（不停电）
+    public int totalfuel = 100;
+    public int totalfuelavalible = 0;
 
     //shield
     public double avalibleshield = 0;//缓存的护盾能量
@@ -51,6 +56,7 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
     public final List<Vec3> linkedShields = new ArrayList<>();
     private final List<Vec3> linkedTurrets = new ArrayList<>();
     private final List<Vec3> linkedBatteries = new ArrayList<>();
+    public final List<Vec3> linkedFuelTanks = new ArrayList<>();
     //控制椅连的电池，弹药库，燃料库
     //不加了，再加有点多了
 
@@ -83,6 +89,7 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
         writeVec3List(nbt, "Shields", linkedShields);
         writeVec3List(nbt, "Turrets", linkedTurrets);
         writeVec3List(nbt, "Batteries",linkedBatteries);
+        writeVec3List(nbt, "Fueltanks", linkedFuelTanks);
     }
 
     @Override
@@ -99,12 +106,14 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
         linkedShields.clear();
         linkedTurrets.clear();
         linkedBatteries.clear();
+        linkedFuelTanks.clear();
 
         readVec3List(nbt, "Thrusters", linkedThrusters);
         readVec3List(nbt, "Weapons",linkedWeapons);
         readVec3List(nbt, "Shields",linkedShields);
         readVec3List(nbt, "Turrets",linkedTurrets);
         readVec3List(nbt, "Batteries",linkedBatteries);
+        readVec3List(nbt, "Fueltanks" ,linkedFuelTanks);
     }
 
     @Override
@@ -167,6 +176,12 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
             LOGGER.warn("adding battery to controlseat: " + pos);
             setChanged();
         }
+
+        else if(type == 5 && !linkedFuelTanks.contains(pos)) {
+            linkedFuelTanks.add(pos);
+            LOGGER.warn("adding fueltank to controlseat: " + pos);
+            setChanged();
+        }
     }
 
     public void removeLinkedPeripheral(Vec3 pos, int type) {
@@ -190,6 +205,11 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
             linkedBatteries.remove(pos);
             setChanged(); // 标记方块实体脏了，强制保存
         }
+
+        else if (type==5 && linkedFuelTanks.contains(pos)) {
+            linkedFuelTanks.remove(pos);
+            setChanged(); // 标记方块实体脏了，强制保存
+        }
     }
 
     public void forEachLinkedPeripheral(Consumer<Vec3> action, int type) {
@@ -207,6 +227,9 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
         }
         if(type==4) {
             linkedBatteries.forEach(action);
+        }
+        if(type==5) {
+            linkedFuelTanks.forEach(action);
         }
     }
 

@@ -45,6 +45,11 @@ public class BasicVectorThrusterBlockEntity extends AbstractVectorThrusterBlockE
     }
 
     @Override
+    public int fuelconsumptionperthrottle() {
+        return 1;
+    }
+
+    @Override
     protected boolean isWorking() {
         return false;
     }

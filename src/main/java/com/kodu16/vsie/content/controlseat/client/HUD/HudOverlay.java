@@ -84,7 +84,7 @@ public class HudOverlay {
             //绘制电量条，护盾条
             StatusIndicator.renderDecorative(gg,
                     (float) data.energyavalible /data.energytotal,
-                    1f,
+                        (float) data.fuelavalible /data.fueltotal,
                     (float) data.shieldavalible /data.shieldtotal);
 
             //绘制护盾条和护盾开关
@@ -97,8 +97,8 @@ public class HudOverlay {
 
             //绘制水平和竖直方位条
             double[] angles = ShipAnglePainter.getDirectedAnglesToAxes(VectorConversionsMCKt.toMinecraft(data.shipfacing));
-            ShipAnglePainter.drawAngleLine(gg, data.shipfacing, centerX, baseY+130, MAIN_COLOR);
-            drawCenteredText(gg, "§l§b"+(int)angles[0], centerX, baseY+140, MAIN_COLOR);
+            ShipAnglePainter.drawAngleLine(gg, data.shipfacing, centerX, baseY+150, MAIN_COLOR);
+            drawCenteredText(gg, "§l§b"+(int)angles[0], centerX, baseY+170, MAIN_COLOR);
 
             //装饰
             Decorative.renderDecorative(gg);

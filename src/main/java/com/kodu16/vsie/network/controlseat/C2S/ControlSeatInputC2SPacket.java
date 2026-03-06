@@ -19,21 +19,33 @@ public class ControlSeatInputC2SPacket {
     public static final Logger LOGGER = LogUtils.getLogger();
     public final BlockPos pos;
     public final int keys;   // bitmask
+    public final boolean isviewlock;
+    public final int rotx;
+    public final int roty;
 
-    public ControlSeatInputC2SPacket(BlockPos pos, int keys) {
+    public ControlSeatInputC2SPacket(BlockPos pos, int keys, boolean isviewlock, int rotx, int roty) {
         this.pos = pos;
         this.keys = keys;
+        this.isviewlock = isviewlock;
+        this.rotx = rotx;
+        this.roty = roty;
     }
 
     public static void encode(ControlSeatInputC2SPacket pkt, FriendlyByteBuf buf) {
         buf.writeBlockPos(pkt.pos);
         buf.writeVarInt(pkt.keys);
+        buf.writeBoolean(pkt.isviewlock);
+        buf.writeInt(pkt.rotx);
+        buf.writeInt(pkt.roty);
     }
 
     public static ControlSeatInputC2SPacket decode(FriendlyByteBuf buf) {
         BlockPos pos = buf.readBlockPos();
         int keys = buf.readVarInt();
-        return new ControlSeatInputC2SPacket(pos, keys);
+        Boolean isviewlock = buf.readBoolean();
+        int rotx = buf.readInt();
+        int roty = buf.readInt();
+        return new ControlSeatInputC2SPacket(pos, keys, isviewlock,rotx,roty);
     }
 
     public static void handle(ControlSeatInputC2SPacket pkt, Supplier<NetworkEvent.Context> ctxSup) {
@@ -75,6 +87,9 @@ public class ControlSeatInputC2SPacket {
                 serverData.isshieldon = !shield;
             }
             // 可选：标记方块实体为脏以保存更改
+            serverData.isviewlocked = pkt.isviewlock;
+            serverData.playerrotx = pkt.rotx;;
+            serverData.playerroty = pkt.roty;
             controlSeat.setChanged();
         });
         ctx.setPacketHandled(true);

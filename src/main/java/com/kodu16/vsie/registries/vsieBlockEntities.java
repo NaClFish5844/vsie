@@ -1,9 +1,12 @@
 package com.kodu16.vsie.registries;
 
 import com.kodu16.vsie.content.controlseat.client.AbstractControlSeatGeoRenderer;
+import com.kodu16.vsie.content.heavyturret.heavyelectromagnetturret.HeavyElectroMagnetTurretBlockEntity;
+import com.kodu16.vsie.content.heavyturret.heavyelectromagnetturret.HeavyElectroMagnetTurretGeoRenderer;
 import com.kodu16.vsie.content.screen.AbstractScreenGeoRenderer;
 import com.kodu16.vsie.content.screen.block.BasicScreenBlockEntity;
 import com.kodu16.vsie.content.shield.ShieldGeneratorBlockEntity;
+import com.kodu16.vsie.content.storage.ammobox.AmmoBoxBlockEntity;
 import com.kodu16.vsie.content.storage.energybattery.AbstractEnergyBatteryGeoRenderer;
 import com.kodu16.vsie.content.storage.energybattery.block.LargeEnergyBatteryBlockEntity;
 import com.kodu16.vsie.content.storage.energybattery.block.MediumEnergyBatteryBlockEntity;
@@ -92,6 +95,11 @@ public class vsieBlockEntities {
                     .validBlocks(vsieBlocks.PARTICLE_TURRET_BLOCK)
                     .renderer(() -> AbstractTurretGeoRenderer::new)
                     .register();
+    public static final BlockEntityEntry<HeavyElectroMagnetTurretBlockEntity> HEAVY_ELECTROMAGNET_TURRET_BLOCK_ENTITY =
+            REGISTRATE.blockEntity("heavy_electromagnet_turret_block_entity", HeavyElectroMagnetTurretBlockEntity::new)
+                    .validBlocks(vsieBlocks.HEAVY_ELECTROMAGNET_TURRET_BLOCK)
+                    .renderer(() -> HeavyElectroMagnetTurretGeoRenderer::new)
+                    .register();
     public static final BlockEntityEntry<SmallEnergyBatteryBlockEntity> SMALL_ENERGY_BATTERY_BLOCK_ENTITY =
             REGISTRATE.blockEntity("small_energy_battery_block_entity", SmallEnergyBatteryBlockEntity::new)
                     .validBlocks(vsieBlocks.SMALL_ENERGY_BATTERY_BLOCK)
@@ -126,5 +134,9 @@ public class vsieBlockEntities {
             REGISTRATE.blockEntity("basic_screen_block_entity", BasicScreenBlockEntity::new)
                     .validBlocks(vsieBlocks.BASIC_SCREEN_BLOCK)
                     .renderer(() -> AbstractScreenGeoRenderer::new)
+                    .register();
+    public static final BlockEntityEntry<AmmoBoxBlockEntity> AMMO_BOX_BLOCK_ENTITY =
+            REGISTRATE.blockEntity("ammo_box_block_entity", AmmoBoxBlockEntity::new)
+                    .validBlocks(vsieBlocks.AMMO_BOX_BLOCK)
                     .register();
 }

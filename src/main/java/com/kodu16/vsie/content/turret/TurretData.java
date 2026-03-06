@@ -11,10 +11,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class TurretData implements IUpgradeData {
+
+    //turrets only
     public volatile boolean targetsHostile = false;//1:敌对，2:被动，3:玩家，4:船只
     public volatile boolean targetsPassive = false;
     public volatile boolean targetsPlayers = false;
     public volatile boolean targetsShip = false;
+
+    //heavy turrets only
+    public volatile int firetype = 0;//0:手动，1:自动，2:智能
+    public volatile int playerangleX = 0;//玩家当前朝向
+    public volatile int playerangleY = 0;
+    public volatile boolean isviewlocked = false;
+
     public volatile boolean targetsTrusted = false;
     public volatile Vector3d location;
     public volatile double distance;

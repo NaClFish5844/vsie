@@ -1,7 +1,9 @@
 package com.kodu16.vsie.content.thruster.client;
 
 
+import com.kodu16.vsie.content.heavyturret.AbstractHeavyTurretBlockEntity;
 import com.kodu16.vsie.content.thruster.AbstractThrusterBlockEntity;
+import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
 import com.kodu16.vsie.content.vectorthruster.AbstractVectorThrusterBlockEntity;
 import com.kodu16.vsie.vsie;
 import net.minecraft.resources.ResourceLocation;

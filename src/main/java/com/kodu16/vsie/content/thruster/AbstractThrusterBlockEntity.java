@@ -41,6 +41,7 @@ public abstract class AbstractThrusterBlockEntity extends SmartBlockEntity imple
     // Common State
     public ThrusterData thrusterData;
     public boolean hasInitialized = false;//值得被写入abstract类被所有人学习！
+    public int throttle;//计算消耗油量用
 
     private float raycastDistance = 0.0f;//注意，这就是最重要的核心的raycast距离
 
@@ -110,7 +111,7 @@ public abstract class AbstractThrusterBlockEntity extends SmartBlockEntity imple
                 thrustDirectionWorld.normalize();
 
                 // 2. 力贡献方向（就是推力方向本身）
-                Vector3d forceContribution = new Vector3d(thrustDirectionWorld);
+                Vector3d forceContribution = new Vector3d(thrustDirectionWorld.mul(-1));
 
                 // 3. 力矩贡献方向：r × F_dir
                 Vector3d torqueFromThisThruster = new Vector3d();
@@ -148,6 +149,8 @@ public abstract class AbstractThrusterBlockEntity extends SmartBlockEntity imple
 
                 // 8. 最终油门 0~1（带平滑防止小抖动）
                 double throttle = Math.max(0.0, Math.min(1.0, totalAlignment));
+
+                this.throttle = (int) (throttle*100);
 
                 thrusterData.setThrottle((float) throttle);
 
@@ -189,8 +192,12 @@ public abstract class AbstractThrusterBlockEntity extends SmartBlockEntity imple
         }
     }
 
+    public abstract int fuelconsumptionperthrottle();//每tick，每百分比油门消耗的油量，一秒消耗20次，别拿脚填！
+
 
     protected abstract boolean isWorking();
+
+    public int getFuelThrottle(){return this.throttle;}
 
     // Networking and nbt
 

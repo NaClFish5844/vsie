@@ -35,7 +35,10 @@ public class ControlSeatClientData {
     public volatile String lockedenemyslug = "";
 
     public volatile int energyavalible = 0;
-    public volatile int energytotal = 1;
+    public volatile int energytotal = 100;
+
+    public volatile int fuelavalible = 0;
+    public volatile int fueltotal = 100;
 
     public volatile boolean shieldon = false;
     public volatile int shieldavalible = 0;

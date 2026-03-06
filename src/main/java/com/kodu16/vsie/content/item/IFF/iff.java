@@ -71,15 +71,18 @@ public class iff extends Item {
         }
     }
 
-    // 你原来的右键打开界面代码（保持不变）
+    // 右键空气 / 右键非方块 / 没点中任何东西 → 打开界面
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         if (hand != InteractionHand.MAIN_HAND) {
             return InteractionResultHolder.pass(player.getItemInHand(hand));
         }
 
+        ItemStack stack = player.getItemInHand(hand);
+
+        // 服务端才处理菜单
         if (!level.isClientSide) {
-            //LogUtils.getLogger().warn("opening iff GUI");
+            // 这里不再无条件打开，而是可以加更多条件（目前无条件打开）
             player.openMenu(new MenuProvider() {
                 @Override
                 public Component getDisplayName() {
@@ -93,34 +96,63 @@ public class iff extends Item {
             });
         }
 
-        return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());
+        return InteractionResultHolder.sidedSuccess(stack, level.isClientSide());
     }
 
+    // 右键方块时的行为
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
-        if (level.isClientSide) return InteractionResult.PASS;
-
-        ServerPlayer player = (ServerPlayer) context.getPlayer();
-        BlockPos clickedPos = context.getClickedPos();
-        ItemStack stack = context.getItemInHand();
-        CompoundTag nbt = stack.getOrCreateTag();
-        // 如果没控制椅，绑定控制椅
-        BlockEntity be = level.getBlockEntity(clickedPos);
-        if (be instanceof AbstractControlSeatBlockEntity controlSeat) {
-            if (nbt.contains("enemy")) {
-                controlSeat.setEnemy(nbt.getString("enemy"));
-            }
-            if (nbt.contains("ally")) {
-                controlSeat.setAlly(nbt.getString("ally"));
-            }
-            player.displayClientMessage(Component.literal("setting IFF: Enemy:"+nbt.getString("enemy")+" Ally:"+nbt.getString("ally")), true);
-            return InteractionResult.CONSUME;
-        }
-        else {
-            player.displayClientMessage(Component.literal(clickedPos+"is not a valid controlseat"), true);
+        if (level.isClientSide) {
             return InteractionResult.PASS;
         }
+
+        ServerPlayer player = (ServerPlayer) context.getPlayer();
+        BlockPos pos = context.getClickedPos();
+        ItemStack stack = context.getItemInHand();
+
+        BlockEntity be = level.getBlockEntity(pos);
+
+        if (be instanceof AbstractControlSeatBlockEntity controlSeat) {
+            CompoundTag tag = stack.getOrCreateTag();
+
+            boolean hasChange = false;
+
+            if (tag.contains(KEY_ENEMY)) {
+                String enemy = tag.getString(KEY_ENEMY);
+                controlSeat.setEnemy(enemy);
+                hasChange = true;
+            }
+            if (tag.contains(KEY_ALLY)) {
+                String ally = tag.getString(KEY_ALLY);
+                controlSeat.setAlly(ally);
+                hasChange = true;
+            }
+
+            if (hasChange) {
+                player.displayClientMessage(
+                        Component.literal("已设置 IFF → 敌方: " + getEnemy(stack) + "  友方: " + getAlly(stack)),
+                        true
+                );
+                return InteractionResult.CONSUME;   // 消耗动作（不继续执行 use）
+            } else {
+                player.displayClientMessage(
+                        Component.literal("物品上没有设置任何 IFF 信息"),
+                        true
+                );
+                return InteractionResult.CONSUME;
+            }
+        }
+
+        // 不是控制椅
+        player.displayClientMessage(
+                Component.literal("目标方块不是可设置 IFF 的控制席位"),
+                true
+        );
+
+        // 重要：这里返回 CONSUME 或 SUCCESS，让 use() 不被触发
+        return InteractionResult.CONSUME;
     }
+
 
 }

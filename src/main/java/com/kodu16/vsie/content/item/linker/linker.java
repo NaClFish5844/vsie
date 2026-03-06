@@ -4,6 +4,8 @@ import com.kodu16.vsie.content.controlseat.AbstractControlSeatBlock;
 import com.kodu16.vsie.content.controlseat.AbstractControlSeatBlockEntity;
 import com.kodu16.vsie.content.shield.ShieldGeneratorBlockEntity;
 import com.kodu16.vsie.content.storage.energybattery.AbstractEnergyBatteryBlockEntity;
+import com.kodu16.vsie.content.storage.fueltank.AbstractFuelTankBlock;
+import com.kodu16.vsie.content.storage.fueltank.AbstractFuelTankBlockEntity;
 import com.kodu16.vsie.content.thruster.AbstractThrusterBlockEntity;
 import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
 import com.kodu16.vsie.content.weapon.AbstractWeaponBlockEntity;
@@ -130,6 +132,19 @@ public class linker extends Item {
             if (blockEntityA instanceof AbstractControlSeatBlockEntity controlseat) {
                 controlseat.addLinkedPeripheral(pos, 4);
                 player.displayClientMessage(Component.literal("§b已将控制椅: " + controllerPos + " 与电池: " + clickedPos + " 绑定"), true);
+            }
+            else {
+                player.displayClientMessage(Component.literal("绑定的控制椅已经被移除"), true);
+                nbt.remove("ControlSeatPos");
+            }
+            return InteractionResult.PASS;
+        }
+
+        else if (blockEntityB instanceof AbstractFuelTankBlockEntity fueltank) {
+            Vec3 pos = new Vec3(clickedPos.getX(), clickedPos.getY(), clickedPos.getZ());
+            if (blockEntityA instanceof AbstractControlSeatBlockEntity controlseat) {
+                controlseat.addLinkedPeripheral(pos, 5);
+                player.displayClientMessage(Component.literal("§b已将控制椅: " + controllerPos + " 与油箱: " + clickedPos + " 绑定"), true);
             }
             else {
                 player.displayClientMessage(Component.literal("绑定的控制椅已经被移除"), true);
