@@ -1,5 +1,6 @@
 package com.kodu16.vsie.registries;
 
+import com.kodu16.vsie.content.turret.ciws.basicciws.BasicCIWSBlock;
 import com.kodu16.vsie.content.turret.heavyturret.heavyelectromagnetturret.HeavyElectroMagnetTurretBlock;
 import com.kodu16.vsie.content.screen.block.BasicScreenBlock;
 import com.kodu16.vsie.content.shield.ShieldGeneratorBlock;
@@ -127,6 +128,14 @@ public class vsieBlocks {
             .simpleItem()
             .register();
     public static final BlockEntry<HeavyElectroMagnetTurretBlock> HEAVY_ELECTROMAGNET_TURRET_BLOCK = REGISTRATE.block("heavy_electromagnet_turret", HeavyElectroMagnetTurretBlock::new)
+            .properties(p -> p.mapColor(MapColor.METAL))
+            .properties(p -> p.requiresCorrectToolForDrops())
+            .properties(p -> p.sound(SoundType.METAL))
+            .properties(p -> p.strength(5.5f, 4.0f))
+            .properties(p -> p.noOcclusion())
+            .simpleItem()
+            .register();
+    public static final BlockEntry<BasicCIWSBlock> BASIC_CIWS_BLOCK = REGISTRATE.block("basic_ciws", BasicCIWSBlock::new)
             .properties(p -> p.mapColor(MapColor.METAL))
             .properties(p -> p.requiresCorrectToolForDrops())
             .properties(p -> p.sound(SoundType.METAL))

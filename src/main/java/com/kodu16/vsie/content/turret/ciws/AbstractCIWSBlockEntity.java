@@ -28,8 +28,8 @@ import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 import java.util.Comparator;
 import java.util.List;
 
-public abstract class AbstractCIWSTurretBlockEntity extends AbstractTurretBlockEntity {
-    protected AbstractCIWSTurretBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
+public abstract class AbstractCIWSBlockEntity extends AbstractTurretBlockEntity {
+    protected AbstractCIWSBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
         // 初始化 turretData
         this.turretData = new TurretData();
@@ -287,9 +287,7 @@ public abstract class AbstractCIWSTurretBlockEntity extends AbstractTurretBlockE
         return true;
     }
 
-    public void interceptprojectile() {
-
-    }
+    public abstract void interceptprojectile();
 
     @Override
     public Component getDisplayName() {

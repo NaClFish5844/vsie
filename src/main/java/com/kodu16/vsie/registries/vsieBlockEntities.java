@@ -1,6 +1,7 @@
 package com.kodu16.vsie.registries;
 
 import com.kodu16.vsie.content.controlseat.client.AbstractControlSeatGeoRenderer;
+import com.kodu16.vsie.content.turret.ciws.basicciws.BasicCIWSBlockEntity;
 import com.kodu16.vsie.content.turret.heavyturret.heavyelectromagnetturret.HeavyElectroMagnetTurretBlockEntity;
 import com.kodu16.vsie.content.turret.heavyturret.heavyelectromagnetturret.HeavyElectroMagnetTurretGeoRenderer;
 import com.kodu16.vsie.content.screen.AbstractScreenGeoRenderer;
@@ -99,6 +100,11 @@ public class vsieBlockEntities {
             REGISTRATE.blockEntity("heavy_electromagnet_turret_block_entity", HeavyElectroMagnetTurretBlockEntity::new)
                     .validBlocks(vsieBlocks.HEAVY_ELECTROMAGNET_TURRET_BLOCK)
                     .renderer(() -> HeavyElectroMagnetTurretGeoRenderer::new)
+                    .register();
+    public static final BlockEntityEntry<BasicCIWSBlockEntity> BASIC_CIWS_BLOCK_ENTITY =
+            REGISTRATE.blockEntity("basic_ciws_block_entity", BasicCIWSBlockEntity::new)
+                    .validBlocks(vsieBlocks.BASIC_CIWS_BLOCK)
+                    .renderer(() -> AbstractTurretGeoRenderer::new)
                     .register();
     public static final BlockEntityEntry<SmallEnergyBatteryBlockEntity> SMALL_ENERGY_BATTERY_BLOCK_ENTITY =
             REGISTRATE.blockEntity("small_energy_battery_block_entity", SmallEnergyBatteryBlockEntity::new)

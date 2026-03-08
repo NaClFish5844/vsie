@@ -22,6 +22,7 @@ public class AbstractTurretModel extends DefaultedBlockGeoModel<AbstractTurretBl
         return switch (abstractTurretBlockEntity.getturrettype()) {
             case "medium_laser" -> new ResourceLocation(vsie.ID, "geo/block/medium_laser_turret.geo.json");
             case "particle" -> new ResourceLocation(vsie.ID, "geo/block/particle_turret.geo.json");
+            case "basic_ciws" -> new ResourceLocation(vsie.ID, "geo/block/basic_ciws.geo.json");
             default -> throw new IllegalStateException("Unexpected value: " + abstractTurretBlockEntity.getturrettype());
         };
     }
@@ -31,6 +32,7 @@ public class AbstractTurretModel extends DefaultedBlockGeoModel<AbstractTurretBl
         return switch (abstractTurretBlockEntity.getturrettype()) {
             case "medium_laser" -> new ResourceLocation(vsie.ID, "textures/block/medium_laser_turret.png");
             case "particle" -> new ResourceLocation(vsie.ID, "textures/block/particle_turret.png");
+            case "basic_ciws" -> new ResourceLocation(vsie.ID, "textures/block/basic_ciws.png");
             default -> throw new IllegalStateException("Unexpected value: " + abstractTurretBlockEntity.getturrettype());
         };
     }
@@ -40,6 +42,7 @@ public class AbstractTurretModel extends DefaultedBlockGeoModel<AbstractTurretBl
         return switch (abstractTurretBlockEntity.getturrettype()) {
             case "medium_laser" -> new ResourceLocation(vsie.ID, "animations/block/medium_laser_anim.json");
             case "particle" -> new ResourceLocation(vsie.ID, "animations/block/particle_anim.json");
+            case "basic_ciws" -> new ResourceLocation(vsie.ID, "animations/block/basic_ciws_anim.json");
             default -> throw new IllegalStateException("Unexpected value: " + abstractTurretBlockEntity.getturrettype());
         };
     }

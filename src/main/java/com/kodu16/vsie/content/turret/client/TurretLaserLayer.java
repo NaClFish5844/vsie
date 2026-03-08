@@ -62,7 +62,6 @@ public class TurretLaserLayer extends GeoRenderLayer<AbstractTurretBlockEntity> 
         }
         // 只对 cannon bone 执行渲染
         poseStack.pushPose();
-        poseStack.translate(0,0,2.0f);
         //LogUtils.getLogger().warn("rotating:x:"+animatable.xRot0*180/ Mth.PI+"y:"+animatable.yRot0*180/ Mth.PI);
 
         PoseStack.Pose last = poseStack.last();
