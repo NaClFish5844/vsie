@@ -102,9 +102,9 @@ public class HudOverlay {
             gg.drawCenteredString(mc.font, visualThrottle+"%", centerX-(3*centerX/8)+40, centerY+((centerY/2)-5), MAIN_COLOR);
 
             //绘制护盾/飞行辅助/反重力开关
-            int switchBaseX = centerX + (3 * centerX / 8);
+            int switchBaseX = centerX + (centerX / 4);
             int switchY = centerY + (centerY / 2);
-            int switchGap = 48;
+            int switchGap = 24;
             drawSwitch(gg, "Shield", switchBaseX, switchY, data.shieldon);
             drawSwitch(gg, "Assist", switchBaseX + switchGap, switchY, data.isflightassiston);
             drawSwitch(gg, "AntiG", switchBaseX + switchGap * 2, switchY, data.isantigravityon);
@@ -115,8 +115,10 @@ public class HudOverlay {
             double[] angles = ShipAnglePainter.getDirectedAnglesToAxes(VectorConversionsMCKt.toMinecraft(interpolatedFacing));
             ShipAnglePainter.drawAngleLine(gg, interpolatedFacing, centerX, baseY+10, MAIN_COLOR);
             drawCenteredText(gg, "§l§b"+(int)angles[0], centerX, baseY+5, MAIN_COLOR);
-            float horizonAngle = ShipAnglePainter.getHorizonAngleDegrees(interpolatedFacing, interpolatedUp);
-            ShipAnglePainter.drawRotatingItem(gg, new ItemStack(vsieItems.HORIZONTAL_MARK), centerX, centerY, -horizonAngle);
+
+            //水平仪（未完成，目前画的是一坨构石）
+            //float horizonAngle = ShipAnglePainter.getHorizonAngleDegrees(interpolatedFacing, interpolatedUp);
+            //ShipAnglePainter.drawRotatingItem(gg, new ItemStack(vsieItems.HORIZONTAL_MARK), centerX, centerY, -horizonAngle);
 
             RenderSystem.disableBlend();
         }

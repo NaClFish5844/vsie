@@ -51,8 +51,8 @@ public class ShipAnglePainter {
             // 主方向永远用最大参数绘制
             int lineTop    = baseY - cardinalLength;
             int lineBottom = baseY + cardinalLength + 1;
-            // 主方向标签永远显示（可选择只在屏幕内显示）
-            if (Math.abs(screenOffset) < centerX * 0.2) {  // 避免太边缘
+            // 主方向标签
+            if (Math.abs(screenOffset) < centerX * 0.15) {  // 避免太边缘
                 DrawShape.drawThickLine(gg, xPos, lineTop, xPos, lineBottom, cardinalThickness, cardinalColor);
                 String txt = "§l§b" + cardinalLabels[i];
                 drawCenteredText(gg, txt, xPos, baseY + 5, 0xFFCCFFFF);
