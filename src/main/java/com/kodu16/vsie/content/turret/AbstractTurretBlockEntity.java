@@ -189,6 +189,10 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
                         shootentity();
                         idleTicks = getCoolDown();
                     }
+                    if(aimtype == 2){
+                        shootship();
+                        idleTicks = getCoolDown();
+                    }
                 }
             }
 
@@ -501,6 +505,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
         if (tag.contains("hostile")) {turretData.setTargetsHostile(tag.getBoolean("hostile"));}
         if (tag.contains("passive")) {turretData.setTargetsPassive(tag.getBoolean("passive"));}
         if (tag.contains("player")) {turretData.setTargetsPlayers(tag.getBoolean("player"));}
+        if (tag.contains("ship")) {turretData.setTargetsShip(tag.getBoolean("ship"));}
         if (tag.contains("distance")) {this.targetdistance = tag.getDouble("distance");}
         if (tag.contains("xrot")) {this.targetxrot = tag.getFloat("xrot");}
         if (tag.contains("yrot")) {this.targetyrot = tag.getFloat("yrot");}

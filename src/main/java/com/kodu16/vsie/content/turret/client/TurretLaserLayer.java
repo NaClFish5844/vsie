@@ -1,14 +1,8 @@
 package com.kodu16.vsie.content.turret.client;
 
-import com.kodu16.vsie.content.vectorthruster.AbstractVectorThrusterBlockEntity;
 import com.kodu16.vsie.foundation.translucentbeamrendertype;
-import com.mojang.logging.LogUtils;
-import com.mojang.math.Axis;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
-import org.joml.Vector3d;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
@@ -31,7 +25,7 @@ public class TurretLaserLayer extends GeoRenderLayer<AbstractTurretBlockEntity> 
     public double FLAME_LENGTH = 0f;
     private static final float BASE_RADIUS = 0.25f;
     private static final float TIP_RADIUS = 0.25f;
-    private static final String NOZZLE_BONE_NAME = "cannon1";
+    private static final String cannonname = "cannon1";
 
     // 直接使用我们自己定义的 RenderType
     private static final RenderType FLAME_RENDER_TYPE = translucentbeamrendertype.SOLID_TRANSLUCENT_BEAM;
@@ -55,7 +49,7 @@ public class TurretLaserLayer extends GeoRenderLayer<AbstractTurretBlockEntity> 
                               RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer,
                               float partialTick, int packedLight, int packedOverlay) {
 
-        if (!NOZZLE_BONE_NAME.equals(bone.getName())) {
+        if (!cannonname.equals(bone.getName())) {
             super.renderForBone(poseStack, animatable, bone, renderType, bufferSource, buffer,
                     partialTick, packedLight, packedOverlay);
             return;
@@ -67,7 +61,6 @@ public class TurretLaserLayer extends GeoRenderLayer<AbstractTurretBlockEntity> 
         PoseStack.Pose last = poseStack.last();
         Matrix4f pose = last.pose();
         Matrix3f normal = last.normal();
-
         // 使用我们自定义的 RenderType
         VertexConsumer vc = bufferSource.getBuffer(FLAME_RENDER_TYPE);
 
