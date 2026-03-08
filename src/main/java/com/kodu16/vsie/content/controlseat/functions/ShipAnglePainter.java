@@ -1,12 +1,22 @@
 package com.kodu16.vsie.content.controlseat.functions;
 
 import com.kodu16.vsie.content.controlseat.client.HUD.DrawShape;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
 import org.joml.Vector3d;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
+
+import static com.kodu16.vsie.content.controlseat.functions.WorldMarkerPainter.mc;
 
 public class ShipAnglePainter {
 
@@ -25,7 +35,7 @@ public class ShipAnglePainter {
         double highlightRadius  = 5.0;     // 渐变影响范围（度）
         int    cardinalColor    = 0xFF88DDFF;  // 主方向专用颜色（亮蓝）
         int    cardinalAlpha    = 255;
-        int    cardinalLength   = 3;       // 主方向永远最长
+        int    cardinalLength   = 2;       // 主方向永远最长
         int    cardinalThickness = 2;
 
         // ─── 先单独绘制 4 个主方向（N/S/E/W） ───
@@ -45,7 +55,7 @@ public class ShipAnglePainter {
             if (Math.abs(screenOffset) < centerX * 0.2) {  // 避免太边缘
                 DrawShape.drawThickLine(gg, xPos, lineTop, xPos, lineBottom, cardinalThickness, cardinalColor);
                 String txt = "§l§b" + cardinalLabels[i];
-                drawCenteredText(gg, txt, xPos, baseY + 8, 0xFFCCFFFF);
+                drawCenteredText(gg, txt, xPos, baseY + 5, 0xFFCCFFFF);
             }
         }
 
@@ -73,7 +83,7 @@ public class ShipAnglePainter {
             int finalColor = lerpColor(color, cardinalColor, strength);
 
             // 长度、粗细、透明度都跟随强度
-            int lineLength   = Math.round(2 + strength);     // 3～7
+            int lineLength   = Math.round(1+strength);
             int thickness    = Math.round(1 + strength);                // 1～2
             int alpha        = Math.round(100 + strength * 155); // 100～255
             finalColor = (finalColor & 0x00FFFFFF) | (alpha << 24);
@@ -154,4 +164,31 @@ public class ShipAnglePainter {
 
         return new double[]{angleToPosX, angleToPosY, angleToPosZ};
     }
+
+    public static void drawRotatingItem(GuiGraphics gg, ItemStack stack, int centerX, int centerY, float angle) {
+        PoseStack pose = gg.pose(); // 获取当前 PoseStack
+
+        pose.pushPose(); // 保存状态
+        pose.translate(centerX, centerY, 0); // 移动到中心
+        pose.scale(22.0f, 11.0f, 0.001f);        // 放大一点（可选）
+        Quaternionf cameraRot = mc.getEntityRenderDispatcher().cameraOrientation();
+        pose.mulPose(cameraRot);
+        pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(angle));
+        Minecraft mc = Minecraft.getInstance();
+        MultiBufferSource buffers = mc.renderBuffers().bufferSource();
+        ItemRenderer renderer = mc.getItemRenderer();
+        renderer.renderStatic(
+                stack,
+                ItemDisplayContext.GUI,
+                LightTexture.FULL_BRIGHT,
+                OverlayTexture.NO_OVERLAY,
+                pose,
+                buffers,
+                mc.level,
+                0
+        );
+
+        pose.popPose(); // 恢复状态
+    }
+
 }

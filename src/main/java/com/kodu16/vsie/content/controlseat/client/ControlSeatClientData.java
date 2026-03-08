@@ -22,6 +22,7 @@ public class ControlSeatClientData {
     public volatile int throttle;
     public volatile Quaterniond shiprot = new Quaterniond();
     public volatile Vector3d shipfacing = new Vector3d(0,0,0);
+    public volatile Vector3d shipUp = new Vector3d(0,0,0);
     public volatile boolean mouseLpress = false;
 
     public volatile boolean channel1 = false;
@@ -43,6 +44,9 @@ public class ControlSeatClientData {
     public volatile boolean shieldon = false;
     public volatile int shieldavalible = 0;
     public volatile int shieldtotal = 1;
+
+    public volatile boolean isflightassiston = false;
+    public volatile boolean isantigravityon = false;
 
     public void setLastMousex(double x) { lastmousex = x; }
     public void setLastMousey(double x) { lastmousey = x; }

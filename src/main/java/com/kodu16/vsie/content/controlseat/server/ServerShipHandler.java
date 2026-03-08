@@ -49,6 +49,8 @@ public class ServerShipHandler {
         ShipTransform transform = ship.getTransform();
         Vector3d ForwardDirection = new Vector3d();
         transform.getShipToWorld().transformDirection(data.getDirectionForward(), ForwardDirection);
+        Vector3d UpDirection = new Vector3d();
+        transform.getShipToWorld().transformDirection(data.getDirectionUp(), UpDirection);
         BlockPos pos = convertToBlockPos(ship.getCenterOfMass());
         Level level = data.level;
         long now = System.currentTimeMillis();
@@ -65,7 +67,10 @@ public class ServerShipHandler {
                     Ship targetenemyship = data.enemyshipsData.get(data.lockedenemyindex);
                     slug = targetenemyship.getSlug();
                 }
-                ControlSeatS2CPacket packet = new ControlSeatS2CPacket(pos, ForwardDirection,data.enemy,data.ally,slug);
+                ControlSeatS2CPacket packet = new ControlSeatS2CPacket(pos,
+                        ForwardDirection, UpDirection,
+                        data.enemy,data.ally,slug,
+                        data.getThrottle());
                 ModNetworking.CHANNEL.send(PacketDistributor.PLAYER.with(() -> (ServerPlayer) data.getPlayer()), packet);
 
                 //扫描全部船只包（扫描敌人包只跑在服务器不用发送）
@@ -147,7 +152,7 @@ public class ServerShipHandler {
             if (Double.isNaN(torque.x()) || Double.isNaN(torque.y()) || Double.isNaN(torque.z())) {
                 return;
             }
-            data.getPlayer().displayClientMessage(Component.literal("torquex:" + torque.x() + "  torquey:" + torque.y() + "  worldx:" + worldXDirection + "  throttle:" + data.getThrottle()), true);
+            //data.getPlayer().displayClientMessage(Component.literal("torquex:" + torque.x() + "  torquey:" + torque.y() + "  worldx:" + worldXDirection + "  throttle:" + data.getThrottle()), true);
             finaltorque.add(Invarianttorque);
             finalforce.add(Invariantforce);
         }

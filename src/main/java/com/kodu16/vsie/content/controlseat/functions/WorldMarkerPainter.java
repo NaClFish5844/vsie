@@ -5,16 +5,23 @@ import com.kodu16.vsie.content.controlseat.client.Input.ClientDataManager;
 import com.kodu16.vsie.foundation.Vec;
 import com.kodu16.vsie.registries.vsieItems;
 import com.kodu16.vsie.vsie;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -32,8 +39,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT, modid = vsie.ID)
+@SuppressWarnings("removal")
 public class WorldMarkerPainter {
-
     //private static final Component MARKER = Component.literal("[+]").withStyle(ChatFormatting.RED);
     public static Map<String, Object> shipsData = new HashMap<>();
     public static String enemy = "";
@@ -50,7 +57,6 @@ public class WorldMarkerPainter {
         }
         getRenderpos();
         if (shipsData.isEmpty() || playerpos == null) return;
-
         for (var entry : shipsData.entrySet()) {
             PoseStack pose = event.getPoseStack();
             MultiBufferSource buffers = mc.renderBuffers().bufferSource();
@@ -245,4 +251,5 @@ public class WorldMarkerPainter {
         // posA < posB 说明 a 更靠前
         return posA < posB ? 1 : 2;
     }
+
 }

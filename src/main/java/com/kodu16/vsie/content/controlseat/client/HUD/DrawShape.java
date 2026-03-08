@@ -106,58 +106,62 @@ public class DrawShape {
             RenderSystem.disableBlend();
         }
 
-        public static void drawHollowSquare(GuiGraphics gg, int centerX, int centerY,
-                                            int sideLength, int thickness, int argb) {
-            float halfOuter = sideLength / 2.0f;
-            float halfInner = halfOuter - thickness;
+    public static void drawHollowRectangle(GuiGraphics gg, int centerX, int centerY,
+                                           int width, int height, int thickness, int argb) {
+        float halfOuterWidth = width / 2.0f;
+        float halfOuterHeight = height / 2.0f;
+        float halfInnerWidth = halfOuterWidth - thickness;
+        float halfInnerHeight = halfOuterHeight - thickness;
 
-            // 防止厚度过大导致内框负数
-            if (halfInner < 0) halfInner = 0;
+        // 防止厚度过大导致内框负数
+        if (halfInnerWidth < 0) halfInnerWidth = 0;
+        if (halfInnerHeight < 0) halfInnerHeight = 0;
 
-            float a = (argb >> 24 & 255) / 255.0f;
-            float r = (argb >> 16 & 255) / 255.0f;
-            float g = (argb >>  8 & 255) / 255.0f;
-            float b = (argb       & 255) / 255.0f;
+        float a = (argb >> 24 & 255) / 255.0f;
+        float r = (argb >> 16 & 255) / 255.0f;
+        float g = (argb >>  8 & 255) / 255.0f;
+        float b = (argb       & 255) / 255.0f;
 
-            Matrix4f mat = gg.pose().last().pose();
+        Matrix4f mat = gg.pose().last().pose();
 
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
-            RenderSystem.enableBlend();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.enableBlend();
 
-            BufferBuilder buffer = Tesselator.getInstance().getBuilder();
-            buffer.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder buffer = Tesselator.getInstance().getBuilder();
+        buffer.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
 
-            // 按顺序画四条边（每条边用两个点 + 退化连接）
-            // 左上外 → 左上内 → 右上外 → 右上内 → 右下外 → 右下内 → 左下外 → 左下内 → 回到左上外
+        // 按顺序画四条边（每条边用两个点 + 退化连接）
+        // 左上外 → 左上内 → 右上外 → 右上内 → 右下外 → 右下内 → 左下外 → 左下内 → 回到左上外
 
-            // 左上外
-            buffer.vertex(mat, centerX - halfOuter, centerY - halfOuter, 0).color(r,g,b,a).endVertex();
-            // 左上内
-            buffer.vertex(mat, centerX - halfInner, centerY - halfInner, 0).color(r,g,b,a).endVertex();
+        // 左上外
+        buffer.vertex(mat, centerX - halfOuterWidth, centerY - halfOuterHeight, 0).color(r,g,b,a).endVertex();
+        // 左上内
+        buffer.vertex(mat, centerX - halfInnerWidth, centerY - halfInnerHeight, 0).color(r,g,b,a).endVertex();
 
-            // 右上外
-            buffer.vertex(mat, centerX + halfOuter, centerY - halfOuter, 0).color(r,g,b,a).endVertex();
-            // 右上内
-            buffer.vertex(mat, centerX + halfInner, centerY - halfInner, 0).color(r,g,b,a).endVertex();
+        // 右上外
+        buffer.vertex(mat, centerX + halfOuterWidth, centerY - halfOuterHeight, 0).color(r,g,b,a).endVertex();
+        // 右上内
+        buffer.vertex(mat, centerX + halfInnerWidth, centerY - halfInnerHeight, 0).color(r,g,b,a).endVertex();
 
-            // 右下外
-            buffer.vertex(mat, centerX + halfOuter, centerY + halfOuter, 0).color(r,g,b,a).endVertex();
-            // 右下内
-            buffer.vertex(mat, centerX + halfInner, centerY + halfInner, 0).color(r,g,b,a).endVertex();
+        // 右下外
+        buffer.vertex(mat, centerX + halfOuterWidth, centerY + halfOuterHeight, 0).color(r,g,b,a).endVertex();
+        // 右下内
+        buffer.vertex(mat, centerX + halfInnerWidth, centerY + halfInnerHeight, 0).color(r,g,b,a).endVertex();
 
-            // 左下外
-            buffer.vertex(mat, centerX - halfOuter, centerY + halfOuter, 0).color(r,g,b,a).endVertex();
-            // 左下内
-            buffer.vertex(mat, centerX - halfInner, centerY + halfInner, 0).color(r,g,b,a).endVertex();
+        // 左下外
+        buffer.vertex(mat, centerX - halfOuterWidth, centerY + halfOuterHeight, 0).color(r,g,b,a).endVertex();
+        // 左下内
+        buffer.vertex(mat, centerX - halfInnerWidth, centerY + halfInnerHeight, 0).color(r,g,b,a).endVertex();
 
-            // 闭合回到起点（左上外）
-            buffer.vertex(mat, centerX - halfOuter, centerY - halfOuter, 0).color(r,g,b,a).endVertex();
-            buffer.vertex(mat, centerX - halfInner, centerY - halfInner, 0).color(r,g,b,a).endVertex();
+        // 闭合回到起点（左上外）
+        buffer.vertex(mat, centerX - halfOuterWidth, centerY - halfOuterHeight, 0).color(r,g,b,a).endVertex();
+        buffer.vertex(mat, centerX - halfInnerWidth, centerY - halfInnerHeight, 0).color(r,g,b,a).endVertex();
 
-            BufferUploader.drawWithShader(buffer.end());
+        BufferUploader.drawWithShader(buffer.end());
 
-            RenderSystem.disableBlend();
+        RenderSystem.disableBlend();
     }
+
 
     public static void drawThickLine(GuiGraphics gg,
                                      int x1, int y1,

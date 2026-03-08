@@ -20,6 +20,16 @@ public class vsieKeyMappings {
             GLFW.GLFW_KEY_LEFT_ALT, // 默认键位为 alt 键
             "category.vsie" // 键位分类（显示在设置菜单中的类别）
     );
+    public static final KeyMapping KEY_TOGGLE_FLIGHT_ASSIST = new KeyMapping(
+            "key.vsie.toggle_flight_assist", // 键位描述的语言键
+            GLFW.GLFW_KEY_B, // 默认键位为 alt 键
+            "category.vsie" // 键位分类（显示在设置菜单中的类别）
+    );
+    public static final KeyMapping KEY_TOGGLE_ANTI_GRAVITY = new KeyMapping(
+            "key.vsie.toggle_anti_gravity", // 键位描述的语言键
+            GLFW.GLFW_KEY_G, // 默认键位为 alt 键
+            "category.vsie" // 键位分类（显示在设置菜单中的类别）
+    );
     public static final KeyMapping KEY_THROTTLE = new KeyMapping(
             "key.vsie.throttle", // 键位描述的语言键
             GLFW.GLFW_KEY_TAB,

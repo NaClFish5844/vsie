@@ -1,5 +1,6 @@
 package com.kodu16.vsie.registries;
 
+import com.kodu16.vsie.content.item.HUD.horizontal_mark;
 import com.kodu16.vsie.content.item.HUD.screen_bg;
 import com.kodu16.vsie.content.item.HUD.targetframe;
 import com.kodu16.vsie.content.item.HUD.targetframe_ally;
@@ -25,6 +26,7 @@ public class vsieItems {
     //public static final ItemEntry<OpticalLensItem> OPTICAL_LENS = REGISTRATE.item("optical_lens", OpticalLensItem::new).register();
     public static final ItemEntry<testItem> TEST_ITEM = REGISTRATE.item("test_item", testItem::new).register();
     public static final ItemEntry<linker> LINKER = REGISTRATE.item("linker", linker::new).register();
+    public static final ItemEntry<horizontal_mark> HORIZONTAL_MARK = REGISTRATE.item("horizontal_mark", horizontal_mark::new).register();
     public static final ItemEntry<targetframe> TARGET_FRAME = REGISTRATE.item("target_frame", targetframe::new).register();
     public static final ItemEntry<targetframe_enemy> TARGET_FRAME_ENEMY = REGISTRATE.item("target_frame_enemy", targetframe_enemy::new).register();
     public static final ItemEntry<targetframe_enemy_locked> TARGET_FRAME_ENEMY_LOCKED = REGISTRATE.item("target_frame_enemy_locked", targetframe_enemy_locked::new).register();

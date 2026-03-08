@@ -22,17 +22,21 @@ import org.slf4j.Logger;
 public class ControlSeatS2CPacket {
     private final BlockPos pos;
     private final Vector3d shipFacing;
+    private final Vector3d shipUp;
     public String enemy;
     public String ally;
     public String lockedenemyslug;
+    public int throttle;
 
     // 构造函数
-    public ControlSeatS2CPacket(BlockPos pos, Vector3d shipFacing, String enemy, String ally, String lockedenemyslug) {
+    public ControlSeatS2CPacket(BlockPos pos, Vector3d shipFacing, Vector3d shipUp, String enemy, String ally, String lockedenemyslug, int throttle) {
         this.pos = pos;
         this.shipFacing = shipFacing;
+        this.shipUp = shipUp;
         this.enemy = enemy;
         this.ally = ally;
         this.lockedenemyslug = lockedenemyslug;
+        this.throttle = throttle;
     }
 
     // 编码（序列化）
@@ -41,9 +45,13 @@ public class ControlSeatS2CPacket {
         buf.writeDouble(shipFacing.x);
         buf.writeDouble(shipFacing.y);
         buf.writeDouble(shipFacing.z);
+        buf.writeDouble(shipUp.x);
+        buf.writeDouble(shipUp.y);
+        buf.writeDouble(shipUp.z);
         buf.writeUtf(enemy, 64);   // 建议限制长度，防止恶意超长字符串
         buf.writeUtf(ally, 64);
         buf.writeUtf(lockedenemyslug,64);
+        buf.writeInt(throttle);
     }
 
     // 解码（反序列化）
@@ -52,11 +60,16 @@ public class ControlSeatS2CPacket {
         double facingX = buf.readDouble();
         double facingY = buf.readDouble();
         double facingZ = buf.readDouble();
+        double upX = buf.readDouble();
+        double upY = buf.readDouble();
+        double upZ = buf.readDouble();
         String enemy = buf.readUtf(64);
         String ally = buf.readUtf(64);
         String lockedenemyslug = buf.readUtf(64);
         Vector3d shipFacing = new Vector3d(facingX, facingY, facingZ);
-        return new ControlSeatS2CPacket(pos, shipFacing, enemy, ally, lockedenemyslug);
+        Vector3d shipUp = new Vector3d(facingX, facingY, facingZ);
+        int throttle = buf.readInt();
+        return new ControlSeatS2CPacket(pos, shipFacing, shipUp, enemy, ally, lockedenemyslug,throttle);
     }
 
     // 处理客户端接收到的数据包
@@ -77,12 +90,14 @@ public class ControlSeatS2CPacket {
                 return;
             }
             //LOGGER.warn(String.valueOf(Component.literal("writing S2C data to:"+player+" channelencode:"+channelencode)));
-            clientData.setShipFacing(shipFacing);
+            clientData.shipfacing = shipFacing;
+            clientData.shipUp = shipUp;
             clientData.setUserUUID(player.getUUID());
 
             clientData.enemy = enemy;
             clientData.ally = ally;
             clientData.lockedenemyslug = lockedenemyslug;
+            clientData.throttle = throttle;
             //LOGGER.warn(String.valueOf(Component.literal("S2C data:enemy:"+clientData.enemy+"ally:"+clientData.ally)));
             // 这里可以进一步根据需要应用旋转到某个实体或者更新视角
         }));

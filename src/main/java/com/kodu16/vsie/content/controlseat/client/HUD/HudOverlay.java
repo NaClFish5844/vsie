@@ -4,6 +4,7 @@ import com.kodu16.vsie.content.controlseat.client.Input.ClientDataManager;
 import com.kodu16.vsie.content.controlseat.client.ControlSeatClientData;
 import com.kodu16.vsie.content.controlseat.functions.ShipAnglePainter;
 import com.kodu16.vsie.content.controlseat.server.SeatRegistry;
+import com.kodu16.vsie.registries.vsieItems;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.kodu16.vsie.content.controlseat.block.ControlSeatBlockEntity;
 import net.minecraft.client.Minecraft;
@@ -12,13 +13,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.valkyrienskies.core.impl.shadow.Dr;
 import org.valkyrienskies.mod.common.ValkyrienSkiesMod;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 
@@ -28,8 +29,8 @@ public class HudOverlay {
     // 透明度配置（建议后面改成 Config）
     private static final int TEXT_ALPHA    = 10;   // 主文字透明度
 
-    private static final int MAIN_COLOR = FastColor.ARGB32.color(TEXT_ALPHA, 0x00, 0xCC, 0xFF);
-    private static final int SUB_COLOR  = FastColor.ARGB32.color(TEXT_ALPHA, 0x00, 0x88, 0x88);
+    public static final int MAIN_COLOR = FastColor.ARGB32.color(TEXT_ALPHA, 0x00, 0xFF, 0x99);
+    public static final int SUB_COLOR  = FastColor.ARGB32.color(TEXT_ALPHA, 0x00, 0x66, 0x33);
 
     private static final Minecraft mc = Minecraft.getInstance(); // drawGlowText 要用
 
@@ -57,23 +58,16 @@ public class HudOverlay {
             RenderSystem.defaultBlendFunc();
 
             int centerX = sw / 2;
+            int centerY = sh / 2;
             int baseY = sh / 6; // 稍微再往上提一点，避免挡准心太严重
 
             // 标题 - 粗体 + 青色
-            drawCenteredText(gg, "§l§b控制座椅", centerX, baseY, MAIN_COLOR);
+            //drawCenteredText(gg, "§l§b控制座椅", centerX, baseY, MAIN_COLOR);
 
             // 坐标
             Vec3 pos = controlseat.getBlockPos().getCenter();
             String coord = String.format("§a%.1f §b%.1f §c%.1f", pos.x, pos.y, pos.z);
-            drawCenteredText(gg, coord, centerX, baseY + 18, SUB_COLOR);
-
-            // 方块名称
-            String blockName = controlseat.getBlockState().getBlock().getName().getString();
-            drawCenteredText(gg, "§e" + blockName, centerX, baseY + 34, SUB_COLOR);
-
-            /*//油门
-            int throttle = controlseat.getServerData().getThrottle();
-            ThrottleIndicator.renderThrottleIndicator(gg, throttle);*/
+            //drawCenteredText(gg, coord, centerX, baseY + 18, SUB_COLOR);
 
             //武器频道
             drawCenteredText(gg,"§e"+data.channel1, centerX-60, baseY + 50, SUB_COLOR);
@@ -81,27 +75,31 @@ public class HudOverlay {
             drawCenteredText(gg,"§e"+data.channel3, centerX+20, baseY + 50, SUB_COLOR);
             drawCenteredText(gg,"§e"+data.channel4, centerX+60, baseY + 50, SUB_COLOR);
 
-            //绘制电量条，护盾条
+            //绘制电量条，护盾条，油条（大雾），热量条（未实装），油门，鼠标控制条
             StatusIndicator.renderDecorative(gg,
                     (float) data.energyavalible /data.energytotal,
                         (float) data.fuelavalible /data.fueltotal,
-                    (float) data.shieldavalible /data.shieldtotal);
+                    (float) data.shieldavalible /data.shieldtotal,
+                    data.throttle,
+                    (int) data.accumulatedmousex, (int) data.accumulatedmousey);
+            gg.drawCenteredString(mc.font, data.throttle+"%", centerX-(3*centerX/8)+40, centerY+((centerY/2)-5), MAIN_COLOR);
 
-            //绘制护盾条和护盾开关
+            //绘制护盾开关
             if(data.shieldon) {
-                drawCenteredText(gg,"shield:ON", centerX-60, baseY+30, MAIN_COLOR);
+                drawCenteredText(gg,"Shield", centerX+(3*centerX/8), centerY+(centerY/2), MAIN_COLOR);
+                DrawShape.drawHollowRectangle(gg,centerX+(3*centerX/8), centerY+(centerY/2), 20, 10, 1, MAIN_COLOR);
             }
             else {
-                drawCenteredText(gg,"shield:OFF", centerX-60, baseY+30, SUB_COLOR);
+                drawCenteredText(gg,"Shield", centerX+(3*centerX/8), centerY+(centerY/2), SUB_COLOR);
+                DrawShape.drawHollowRectangle(gg,centerX+(3*centerX/8), centerY+(centerY/2), 20, 10, 1, SUB_COLOR);
             }
 
             //绘制水平和竖直方位条
             double[] angles = ShipAnglePainter.getDirectedAnglesToAxes(VectorConversionsMCKt.toMinecraft(data.shipfacing));
-            ShipAnglePainter.drawAngleLine(gg, data.shipfacing, centerX, baseY+150, MAIN_COLOR);
-            drawCenteredText(gg, "§l§b"+(int)angles[0], centerX, baseY+170, MAIN_COLOR);
-
-            //装饰
-            Decorative.renderDecorative(gg);
+            ShipAnglePainter.drawAngleLine(gg, data.shipfacing, centerX, baseY+10, MAIN_COLOR);
+            drawCenteredText(gg, "§l§b"+(int)angles[0], centerX, baseY+5, MAIN_COLOR);
+            double[] anglesUp = ShipAnglePainter.getDirectedAnglesToAxes(VectorConversionsMCKt.toMinecraft(data.shipUp));
+            //ShipAnglePainter.drawRotatingItem(gg, new ItemStack(vsieItems.HORIZONTAL_MARK), centerX, centerY-20, (float) -anglesUp[1]);
 
             RenderSystem.disableBlend();
         }
@@ -109,7 +107,7 @@ public class HudOverlay {
 
 
     // 方便的居中绘制方法（不带辉光）
-    private static void drawCenteredText(GuiGraphics gg, String text, int x, int y, int color) {
+    public static void drawCenteredText(GuiGraphics gg, String text, int x, int y, int color) {
         float scale = 0.7f;
         /*if (scale == 1.0f) {
             gg.drawCenteredString(mc.font, Component.literal(text), x, y, color);
