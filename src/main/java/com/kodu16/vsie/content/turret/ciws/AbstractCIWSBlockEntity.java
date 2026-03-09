@@ -28,10 +28,14 @@ import org.valkyrienskies.core.impl.shadow.En;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 
-import java.util.Comparator;
 import java.util.List;
 
 public abstract class AbstractCIWSBlockEntity extends AbstractTurretBlockEntity {
+    // 功能：分块索敌网格大小（单位：方块）；值越大查询次数越少，但单次AABB越大。
+    private static final double PROJECTILE_SCAN_CELL_SIZE = 64.0D;
+    // 功能：每tick最多扫描的网格块数，限制单tick开销，避免大半径时卡顿。
+    private static final int PROJECTILE_SCAN_CELL_BUDGET_PER_TICK = 8;
+
     protected AbstractCIWSBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
         // 初始化 turretData
@@ -39,6 +43,10 @@ public abstract class AbstractCIWSBlockEntity extends AbstractTurretBlockEntity 
     }
 
     private @Nullable Entity targetprojectile = null;
+    // 功能：记录分块扫描游标，做到“多tick渐进扫描”而不是一次性全范围扫描。
+    private int projectileScanCursor = 0;
+    // 功能：记录上一次扫描中心，炮塔位移较大时重置游标，避免漏扫近处网格。
+    private Vec3 projectileScanLastCenter = Vec3.ZERO;
 
 
     @Override
@@ -226,25 +234,61 @@ public abstract class AbstractCIWSBlockEntity extends AbstractTurretBlockEntity 
         // 功能：索敌阶段不再改动开火冷却，避免冷却与索敌共用计数器导致抖动。
         if (targetprojectile != null && !targetprojectile.isRemoved()) return; // 有活目标就不重复找
 
-        if ((level.getGameTime() + this.hashCode()) % 3 != 0) return;
+        // 功能：检测炮塔是否发生明显位移；若位移过大则重置分块索敌游标。
+        Vec3 currentCenter = new Vec3(currentworldpos.x, currentworldpos.y, currentworldpos.z);
+        if (projectileScanLastCenter.distanceToSqr(currentCenter) > PROJECTILE_SCAN_CELL_SIZE * PROJECTILE_SCAN_CELL_SIZE) {
+            projectileScanCursor = 0;
+        }
+        projectileScanLastCenter = currentCenter;
 
-        AABB searchBox = new AABB(
-                currentworldpos.x - SEARCH_RADIUS,
-                currentworldpos.y - SEARCH_RADIUS,
-                currentworldpos.z - SEARCH_RADIUS,
-                currentworldpos.x + SEARCH_RADIUS,
-                currentworldpos.y + SEARCH_RADIUS,
-                currentworldpos.z + SEARCH_RADIUS
-        );
-        List<Entity> candidates = level.getEntitiesOfClass(Entity.class, searchBox, this::isValidTargetProjectile);
+        // 功能：把搜索半径按网格切分，并在多个tick里渐进扫描，降低大半径时单次AABB查询负载。
+        int minCellX = (int) Math.floor((currentworldpos.x - SEARCH_RADIUS) / PROJECTILE_SCAN_CELL_SIZE);
+        int maxCellX = (int) Math.floor((currentworldpos.x + SEARCH_RADIUS) / PROJECTILE_SCAN_CELL_SIZE);
+        int minCellZ = (int) Math.floor((currentworldpos.z - SEARCH_RADIUS) / PROJECTILE_SCAN_CELL_SIZE);
+        int maxCellZ = (int) Math.floor((currentworldpos.z + SEARCH_RADIUS) / PROJECTILE_SCAN_CELL_SIZE);
+        int cellsX = maxCellX - minCellX + 1;
+        int cellsZ = maxCellZ - minCellZ + 1;
+        int totalCells = Math.max(cellsX * cellsZ, 1);
 
-        if (candidates.isEmpty()) {
+        double bestDistSq = Double.MAX_VALUE;
+        Entity bestCandidate = null;
+        int scannedCells = 0;
+
+        while (scannedCells < PROJECTILE_SCAN_CELL_BUDGET_PER_TICK && scannedCells < totalCells) {
+            int cellIndex = projectileScanCursor % totalCells;
+            int xIndex = cellIndex % cellsX;
+            int zIndex = cellIndex / cellsX;
+            int cellX = minCellX + xIndex;
+            int cellZ = minCellZ + zIndex;
+
+            // 功能：每次只查询一个中等体积AABB，避免超大AABB导致的查询退化与漏检。
+            AABB cellBox = new AABB(
+                    cellX * PROJECTILE_SCAN_CELL_SIZE,
+                    currentworldpos.y - SEARCH_RADIUS,
+                    cellZ * PROJECTILE_SCAN_CELL_SIZE,
+                    (cellX + 1) * PROJECTILE_SCAN_CELL_SIZE,
+                    currentworldpos.y + SEARCH_RADIUS,
+                    (cellZ + 1) * PROJECTILE_SCAN_CELL_SIZE
+            );
+
+            List<Entity> candidates = level.getEntitiesOfClass(Entity.class, cellBox, this::isValidTargetProjectile);
+            for (Entity candidate : candidates) {
+                double distSq = candidate.distanceToSqr(currentworldpos.x, currentworldpos.y, currentworldpos.z);
+                if (distSq < bestDistSq) {
+                    bestDistSq = distSq;
+                    bestCandidate = candidate;
+                }
+            }
+
+            projectileScanCursor = (projectileScanCursor + 1) % totalCells;
+            scannedCells++;
+        }
+
+        if (bestCandidate == null) {
             return;
         }
 
-        targetprojectile = candidates.stream()
-                .min(Comparator.comparingDouble(e -> e.distanceToSqr(currentworldpos.x, currentworldpos.y, currentworldpos.z)))
-                .orElse(null);
+        targetprojectile = bestCandidate;
         // 关键：这里一定要同步更新 targetPos！！
         this.targetPos = new Vector3d(
                 targetprojectile.getX(),
