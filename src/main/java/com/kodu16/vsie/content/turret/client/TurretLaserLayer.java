@@ -1,6 +1,9 @@
 package com.kodu16.vsie.content.turret.client;
 
 import com.kodu16.vsie.foundation.translucentbeamrendertype;
+import com.mojang.math.Axis;
+import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
+import net.minecraft.util.Mth;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
@@ -56,8 +59,8 @@ public class TurretLaserLayer extends GeoRenderLayer<AbstractTurretBlockEntity> 
         }
         // 只对 cannon bone 执行渲染
         poseStack.pushPose();
-        //LogUtils.getLogger().warn("rotating:x:"+animatable.xRot0*180/ Mth.PI+"y:"+animatable.yRot0*180/ Mth.PI);
-
+        poseStack.mulPose(Axis.YP.rotationDegrees(180));
+        poseStack.translate(0,animatable.getYAxisOffset(),0);
         PoseStack.Pose last = poseStack.last();
         Matrix4f pose = last.pose();
         Matrix3f normal = last.normal();

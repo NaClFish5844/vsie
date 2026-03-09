@@ -12,6 +12,7 @@ import com.kodu16.vsie.network.fuel.SyncThrusterFuelsPacket;
 import com.kodu16.vsie.network.screen.ScreenC2SPacket;
 import com.kodu16.vsie.network.turret.HeavyTurretC2SPacket;
 import com.kodu16.vsie.network.turret.TurretC2SPacket;
+import com.kodu16.vsie.network.turret.TurretDefaultSpinC2SPacket;
 import com.kodu16.vsie.network.weapon.WeaponC2SPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -52,14 +53,21 @@ public class ModNetworking {
         );
         CHANNEL.registerMessage(
                 nextId(),
-                TurretC2SPacket.class, // 你的新 C2S 数据包类
+                TurretC2SPacket.class, // 新 C2S 数据包类
                 TurretC2SPacket::encode, // 编码方法
                 TurretC2SPacket::decode, // 解码方法
                 TurretC2SPacket::handle  // 处理方法
         );
         CHANNEL.registerMessage(
                 nextId(),
-                HeavyTurretC2SPacket.class, // 你的新 C2S 数据包类
+                TurretDefaultSpinC2SPacket.class, // 新 C2S 数据包类
+                TurretDefaultSpinC2SPacket::encode, // 编码方法
+                TurretDefaultSpinC2SPacket::decode, // 解码方法
+                TurretDefaultSpinC2SPacket::handle  // 处理方法
+        );
+        CHANNEL.registerMessage(
+                nextId(),
+                HeavyTurretC2SPacket.class, // 新 C2S 数据包类
                 HeavyTurretC2SPacket::encode, // 编码方法
                 HeavyTurretC2SPacket::decode, // 解码方法
                 HeavyTurretC2SPacket::handle  // 处理方法

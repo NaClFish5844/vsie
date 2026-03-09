@@ -2,11 +2,14 @@ package com.kodu16.vsie.content.turret.client;
 
 import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
 import com.kodu16.vsie.content.turret.TurretContainerMenu;
+import com.kodu16.vsie.network.screen.ScreenC2SPacket;
+import com.kodu16.vsie.network.turret.TurretDefaultSpinC2SPacket;
 import com.kodu16.vsie.registries.ModNetworking;
 import com.kodu16.vsie.network.turret.TurretC2SPacket;
 import com.kodu16.vsie.vsie;
 import net.minecraft.client.gui.GuiGraphics;                  // 新增
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -15,7 +18,8 @@ import net.minecraft.world.entity.player.Inventory;
 
 @SuppressWarnings({"removal"})
 public class TurretScreen extends AbstractContainerScreen<TurretContainerMenu> {
-
+    private EditBox editBoxSpinX;
+    private EditBox editBoxSpinY;
     private static final ResourceLocation TEXTURE = new ResourceLocation(vsie.ID, "textures/gui/turret/turret_gui.png");
 
     public TurretScreen(TurretContainerMenu menu, Inventory inv, Component title) {
@@ -69,6 +73,12 @@ public class TurretScreen extends AbstractContainerScreen<TurretContainerMenu> {
     protected void init() {
         super.init();
         BlockPos pos = menu.getBlockEntity().getBlockPos(); // 如果有 getBlockEntity() 方法
+        var be = this.menu.getBlockEntity();
+        int spinX  = be.defaultspinx;   // 假设你有这些 getter
+        int spinY  = be.defaultspiny;
+        this.editBoxSpinX = createIntEditBox("SpinX", 28, 68, String.valueOf(spinX));
+        this.editBoxSpinY = createIntEditBox("SpinY", 68, 68, String.valueOf(spinY));
+
         this.addRenderableWidget(Button.builder(
                         Component.literal("HOS"),
                         button -> ModNetworking.CHANNEL.sendToServer(new TurretC2SPacket(pos,1)))
@@ -92,6 +102,62 @@ public class TurretScreen extends AbstractContainerScreen<TurretContainerMenu> {
                 .pos(this.leftPos + 133, this.topPos + 100)
                 .size(27, 15)
                 .build());
+
+        this.addRenderableWidget(Button.builder(
+                        Component.literal("保存"),
+                        button -> saveAndClose()
+                )
+                .bounds(this.leftPos+32, this.topPos+140, 40, 20)
+                .build());
+
+        this.addRenderableWidget(Button.builder(
+                        Component.literal("取消"),
+                        button -> this.minecraft.player.closeContainer()
+                )
+                .bounds(this.leftPos+72, this.topPos+140, 40, 20)
+                .build());
+    }
+
+    // 抽取成方法，方便复用 + 设置初始值
+    private EditBox createIntEditBox(String name, int x, int y, String initialValue) {
+        EditBox box = new EditBox(this.font,
+                this.leftPos + x, this.topPos + y,
+                24, 14,
+                Component.literal(name));
+        box.setMaxLength(8);           // int 范围够用
+        box.setValue(initialValue);    // ← 关键！设置初始值
+        box.setFocused(false);
+        this.addRenderableWidget(box);
+        return box;
+    }
+
+    private int safeParseInt(String text, int defaultValue) {
+        if (text == null || text.trim().isEmpty()) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(text.trim());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    private void saveAndClose() {
+        try {
+            int spinX   = safeParseInt(editBoxSpinX.getValue(), 0);
+            int spinY   = safeParseInt(editBoxSpinY.getValue(), 0);
+            var be = this.menu.getBlockEntity();
+            be.defaultspinx = spinX;
+            be.defaultspiny = spinY;
+            BlockPos pos = menu.getBlockEntity().getBlockPos();
+            ModNetworking.CHANNEL.sendToServer(
+                    new TurretDefaultSpinC2SPacket(pos, spinX, spinY)
+            );
+            this.minecraft.player.closeContainer();
+        } catch (Exception e) {
+            // 可以选择不做任何事，或者给玩家提示
+            // this.minecraft.player.sendSystemMessage(Component.literal("输入格式错误！使用默认值0保存。"));
+        }
 
     }
 }

@@ -78,7 +78,9 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
     public float targetxrot = 0;
     public float targetyrot = 0;
     public int idleTicks = 0;
-    public static final double SEARCH_RADIUS = 100.0;
+    public static final double SEARCH_RADIUS = 512.0;
+    public int defaultspinx = 0;
+    public int defaultspiny = 0;
     public boolean onShip = false;
     public Vector3d currentworldpos = new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ());
     protected TurretData turretData;
@@ -131,6 +133,14 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
         }
         if (!data.getTargetsHostile() && !data.getTargetsPassive() && !data.getTargetsPlayers() && !data.getTargetsShip())
             this.aimtype = 0;
+        else if (data.getTargetsHostile() || data.getTargetsPassive() || data.getTargetsPlayers()){
+            data.setTargetsShip(false);
+        }
+    }
+
+    public void modifydefaultspin(int spinx, int spiny) {
+        this.defaultspinx = spinx;
+        this.defaultspiny = spiny;
     }
 
     public void tick() {
@@ -172,7 +182,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
                 if(aimtype==1 && isValidTargetEntity(targetentity) ){
                     targetPos = new Vector3d(
                             targetentity.getX(),
-                            targetentity.getY(),
+                            targetentity.getY()+targetentity.getEyeHeight(),
                             targetentity.getZ()
                     );
                 }
@@ -191,6 +201,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
                         idleTicks = getCoolDown();
                     }
                     if(aimtype == 2){
+                        //targetdistance = Vec.Distance(currentworldpos, targetPos);
                         shootship();
                         idleTicks = getCoolDown();
                     }
@@ -232,9 +243,9 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
             if(!isValidTargetEntity(targetentity)) {
                 setAnimData(HAS_TARGET, false);
                 targetentity = null;
-                targetdistance = 0;
                 xRot0 = 0;
                 yRot0 = 0;
+                targetdistance = 0;
                 targetPreVelocity.clear();
             }
         }
@@ -242,9 +253,9 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
             if(!isValidTargetShip(selectedtargetShip)) {
                 setAnimData(HAS_TARGET, false);
                 selectedtargetShip = null;
-                targetdistance = 0;
                 xRot0 = 0;
                 yRot0 = 0;
+                targetdistance = 0;
                 targetPreVelocity.clear();
             }
         }
@@ -252,7 +263,6 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
 
     public void tryFindTargetEntity() {
         // 功能：索敌阶段不再改动开火冷却，避免冷却与索敌共用计数器导致抖动。
-        if (idleTicks > 0) return;
         if (targetentity != null && targetentity.isAlive()) return; // 有活目标就不重复找
 
         if ((level.getGameTime() + this.hashCode()) % 3 != 0) return;
@@ -281,16 +291,12 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
                 targetentity.getY()+targetentity.getEyeHeight(),
                 targetentity.getZ()
         );
-        LOGGER.info("成功锁定目标: {}", targetentity);
         setChanged();
     }
 
 
     public void tryFindtargetShip() {
         // 功能：索敌阶段不再改动开火冷却，避免冷却与索敌共用计数器导致抖动。
-        if(idleTicks > 0) {
-            return;
-        }
         ArrayList<Ship> enemylist = getData().enemyshipsData;
         if (enemylist.isEmpty()) return;
         if (isValidTargetShip(selectedtargetShip)) return;
@@ -306,7 +312,6 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
         if (this.selectedtargetShip != null) {
             // 功能：舰船目标改为“可见瞄准点”（优先可见外表面），避免目标点落在船体内部导致永远无法锁定。
             this.targetPos = getShipAimPoint(this.selectedtargetShip);
-            LOGGER.info("成功锁定舰船目标: {}", this.selectedtargetShip.getId());
             setChanged();
         }
     }
@@ -334,7 +339,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
             return false;
         }
         // 视线判断（眼睛位置更准）
-        if (!canSeeTarget(new Vector3d(e.getX(), e.getY() + e.getEyeHeight(), e.getZ()))) {
+        if (!canSeeTarget(new Vector3d(e.getX(), e.getY(), e.getZ()))) {
             return false;
         }
         return true;
@@ -548,6 +553,8 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
         tag.putDouble("distance", this.getTargetdistance());
         tag.putFloat("xrot",this.targetxrot);
         tag.putFloat("yrot",this.targetyrot);
+        tag.putInt("defaultxrot",this.defaultspinx);
+        tag.putInt("defaultyrot",this.defaultspiny);
     }
 
     @Override
@@ -565,6 +572,8 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
         if (tag.contains("distance")) {this.targetdistance = tag.getDouble("distance");}
         if (tag.contains("xrot")) {this.targetxrot = tag.getFloat("xrot");}
         if (tag.contains("yrot")) {this.targetyrot = tag.getFloat("yrot");}
+        if (tag.contains("defaultyrot")) {this.defaultspiny = tag.getInt("defaultyrot");}
+        if (tag.contains("defaultxrot")) {this.defaultspinx = tag.getInt("defaultxrot");}
     }
 
     @Override

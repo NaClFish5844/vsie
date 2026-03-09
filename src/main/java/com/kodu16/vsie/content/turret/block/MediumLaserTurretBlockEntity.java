@@ -55,7 +55,7 @@ public class MediumLaserTurretBlockEntity extends AbstractTurretBlockEntity {
         return "medium_laser";
     }
 
-    public double getYAxisOffset() {return 1.0d;}
+    public double getYAxisOffset() {return 1.7d;}
 
     @Override
     public float getMaxSpinSpeed() {
