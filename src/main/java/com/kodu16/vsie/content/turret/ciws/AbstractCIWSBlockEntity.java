@@ -4,6 +4,7 @@ import com.kodu16.vsie.content.turret.AbstractTurretBlock;
 import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
 import com.kodu16.vsie.content.turret.TurretData;
 import com.kodu16.vsie.foundation.Vec;
+import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,8 +21,10 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
+import org.joml.Vector3dc;
 import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.core.api.ships.properties.ShipTransform;
+import org.valkyrienskies.core.impl.shadow.En;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 
@@ -35,8 +38,7 @@ public abstract class AbstractCIWSBlockEntity extends AbstractTurretBlockEntity 
         this.turretData = new TurretData();
     }
 
-    private Entity targetentity = null;
-    private volatile Vector3d targetPos = new Vector3d(0,0,0);
+    private @Nullable Entity targetprojectile = null;
 
 
     @Override
@@ -44,55 +46,33 @@ public abstract class AbstractCIWSBlockEntity extends AbstractTurretBlockEntity 
 
     }
 
+    @Override
     public void tick() {
         if(idleTicks > 1) {
             idleTicks = idleTicks-1;
             return;
         }
-        onShip = VSGameUtilsKt.isBlockInShipyard(level, this.getBlockPos());
-        if (onShip) {
-            Ship ship = VSGameUtilsKt.getShipManagingPos(level, this.getBlockPos());
-            Vector3d center = VSGameUtilsKt.toWorldCoordinates(ship, this.getBlockPos().getX(), this.getBlockPos().getY()+getYAxisOffset(), this.getBlockPos().getZ());
-            currentworldpos = new Vector3d(center.x, center.y, center.z);
-        }
-        else {
-            currentworldpos = new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY()+getYAxisOffset(), this.getBlockPos().getZ());
-        }
+        // 功能：统一刷新炮塔世界坐标，减少 tick 主流程分支复杂度。
+        refreshWorldPosition();
         tryInvalidateTarget();
-        tryFindTargetEntity();
-        if(aimtype!=0) {
-            //LOGGER.warn("targeting entity: " + targetentity);
-            if (targetPreVelocity.size()>=5){
-                targetPreVelocity.remove(0);
-            }
-            if(aimtype==1 && isValidTargetEntity(targetentity) || aimtype==2 && isValidTargetProjectile(targetentity)) {
-                if(aimtype==1){
-                    targetPos = new Vector3d(
-                            targetentity.getX(),
-                            targetentity.getY(),
-                            targetentity.getZ()
-                    );
-                }
-                else {
-                    targetPos = new Vector3d(
-                            targetentity.getX(),
-                            targetentity.getY(),
-                            targetentity.getZ()
-                    );
-                }
-                targetPos = getShootLocation(targetPos, targetPreVelocity, level, currentworldpos);
-                updateTargetRot();
-                this.xRot0 = closestReachableX(xRot0,getMaxSpinSpeed(),targetxrot);
-                this.yRot0 = closestReachableY(yRot0,getMaxSpinSpeed(),targetyrot);
-                if(xOK && yOK) {
-                    if(aimtype == 1){
-                        targetdistance = Vec.Distance(currentworldpos, targetPos);
-                        shootentity();
-                        idleTicks = getCoolDown();
-                    }
-                }
-            }
+        // 功能：统一处理目标搜索，若无有效目标则让炮塔回归默认角度。
+        acquireTargetByAimType();
+        if (hasValidTarget()) {
+            // 功能：维护速度采样窗口，为弹道预测提供最近移动趋势。
+            appendTargetVelocitySample();
+            // 功能：统一更新当前目标点，避免实体/舰船重复分支代码。
+            updateCurrentTargetPos();
 
+            targetPos = getShootLocation(targetPos, targetPreVelocity, level, currentworldpos);
+            updateTargetRot();
+            this.xRot0 = closestReachableX(xRot0, getMaxSpinSpeed(), targetxrot);
+            this.yRot0 = closestReachableY(yRot0, getMaxSpinSpeed(), targetyrot);
+            if (xOK && yOK) {
+                fireWhenLocked();
+            }
+        } else {
+            // 功能：当周围没有有效敌人时，平滑回到用户设置的默认俯仰/偏航角。
+            returnToDefaultRotation();
         }
         //LogUtils.getLogger().warn("targetx:"+targetxrot+"y:"+targetyrot+"currentx:"+xRot0+"y:"+yRot0+"OK?"+xOK+yOK);
         this.setAnimData(XROT, xRot0);
@@ -112,9 +92,9 @@ public abstract class AbstractCIWSBlockEntity extends AbstractTurretBlockEntity 
             }
         }
         else if(aimtype==2) {
-            if(!isValidTargetProjectile(targetentity)) {
+            if(!isValidTargetProjectile(targetprojectile)) {
                 setAnimData(HAS_TARGET, false);
-                targetentity = null;
+                targetprojectile = null;
                 targetdistance = 0;
                 xRot0 = 0;
                 yRot0 = 0;
@@ -128,15 +108,22 @@ public abstract class AbstractCIWSBlockEntity extends AbstractTurretBlockEntity 
         if (e == null) {
             return false;
         }
-        if (!e.isAlive()) {
+        if (e instanceof LivingEntity) {
             return false;
         }
-        MobCategory category = e.getType().getCategory();
-        if (    getData().getTargetsHostile() && category.isFriendly() ||
-                getData().getTargetsPassive() && !category.isFriendly() ||
-                getData().getTargetsPlayers() && e instanceof Player player && player.isCreative()) {
-            return false;
+
+        //速度判断
+        Vec3 center = new Vec3(0,0,0);
+        boolean onship = VSGameUtilsKt.isBlockInShipyard(level,this.getBlockPos());
+        if(onship) {
+            Ship ship = VSGameUtilsKt.getShipManagingPos(level, this.getBlockPos());
+            Vector3dc center3d = ship.getTransform().getPositionInWorld();
+            center = new Vec3(center3d.x(),center3d.y(),center3d.z());
         }
+        else {
+            center = new Vec3(this.currentworldpos.x, this.currentworldpos.y, this.currentworldpos.z);
+        }
+        if(isflyingtowards(e,center)){return false;}
 
         // 距离判断（用世界坐标）
         double distSq = e.distanceToSqr(currentworldpos.x, currentworldpos.y, currentworldpos.z);
@@ -221,9 +208,19 @@ public abstract class AbstractCIWSBlockEntity extends AbstractTurretBlockEntity 
         //LogUtils.getLogger().warn("X:"+worldXDirection+"Y:"+worldYDirection+"Z:"+worldZDirection+"target:"+targetPos+"turret:"+currentworldpos +"yaw:"+yaw+"pitch:"+pitch);
     }
 
-    public void tryFindTargetEntity() {
-        if (idleTicks-- > 0) return;
-        if (targetentity != null) return; // 有活目标就不重复找
+    private void acquireTargetByAimType() {
+        if(aimtype == 1) {
+            tryFindTargetEntity();
+        }
+        if(aimtype == 2){
+            tryFindTargetProjectile();
+        }
+
+    }
+
+    public void tryFindTargetProjectile() {
+        // 功能：索敌阶段不再改动开火冷却，避免冷却与索敌共用计数器导致抖动。
+        if (targetprojectile != null && !targetprojectile.isRemoved()) return; // 有活目标就不重复找
 
         if ((level.getGameTime() + this.hashCode()) % 3 != 0) return;
 
@@ -235,56 +232,78 @@ public abstract class AbstractCIWSBlockEntity extends AbstractTurretBlockEntity 
                 currentworldpos.y + SEARCH_RADIUS,
                 currentworldpos.z + SEARCH_RADIUS
         );
-
-        List<Entity> candidates = level.getEntitiesOfClass(Entity.class, searchBox, this::isValidTargetEntity);
+        List<Entity> candidates = level.getEntitiesOfClass(Entity.class, searchBox, this::isValidTargetProjectile);
 
         if (candidates.isEmpty()) {
             return;
         }
 
-        targetentity = candidates.stream()
+        targetprojectile = candidates.stream()
                 .min(Comparator.comparingDouble(e -> e.distanceToSqr(currentworldpos.x, currentworldpos.y, currentworldpos.z)))
                 .orElse(null);
         // 关键：这里一定要同步更新 targetPos！！
         this.targetPos = new Vector3d(
-                targetentity.getX(),
-                targetentity.getY()+targetentity.getEyeHeight(),
-                targetentity.getZ()
+                targetprojectile.getX(),
+                targetprojectile.getY(),
+                targetprojectile.getZ()
         );
         setChanged();
     }
 
-    private boolean isValidTargetEntity(@Nullable Entity e) {
-        // 只负责实体判断，输入的只有实体
-        if (e == null) {
-            return false;
-        }
-        if (!e.isAlive()) {
-            return false;
-        }
-        if(aimtype == 1 && !(e instanceof LivingEntity livingEntity)) {
-            return false;
-        }
-        if(aimtype == 2 && e instanceof LivingEntity livingEntity) {
-            return false;
-        }
-        MobCategory category = e.getType().getCategory();
-        if (    getData().getTargetsHostile() && category.isFriendly() ||
-                getData().getTargetsPassive() && !category.isFriendly() ||
-                getData().getTargetsPlayers() && e instanceof Player player && player.isCreative()) {
-            return false;
-        }
+    // 功能：统一判断“当前是否持有有效目标”。
+    private boolean hasValidTarget() {
+        return (aimtype == 1 && isValidTargetEntity(targetentity))
+                || (aimtype == 2 && isValidTargetProjectile(targetprojectile));
+    }
 
-        // 距离判断（用世界坐标）
-        double distSq = e.distanceToSqr(currentworldpos.x, currentworldpos.y, currentworldpos.z);
-        if (distSq > SEARCH_RADIUS * SEARCH_RADIUS) {
-            return false;
+    private void updateCurrentTargetPos() {
+        if (aimtype == 1 && isValidTargetEntity(targetentity)) {
+            targetPos = new Vector3d(
+                    targetentity.getX(),
+                    targetentity.getY() + targetentity.getEyeHeight(),
+                    targetentity.getZ()
+            );
         }
-        // 视线判断（眼睛位置更准）
-        if (!canSeeTarget(new Vector3d(e.getX(), e.getY() + e.getEyeHeight(), e.getZ()))) {
-            return false;
+        if (aimtype == 2 && isValidTargetProjectile(targetprojectile)) {
+            LogUtils.getLogger().warn("find target projectile:"+targetprojectile.getDisplayName()+"at:"+targetPos);
+            targetPos = new Vector3d(
+                    targetprojectile.getX(),
+                    targetprojectile.getY(),
+                    targetprojectile.getZ()
+            );
         }
-        return true;
+    }
+
+    private void appendTargetVelocitySample() {
+        if (targetPreVelocity.size() >= 5) {
+            targetPreVelocity.remove(0);
+        }
+        if (aimtype == 1 && isValidTargetEntity(targetentity)) {
+            targetPreVelocity.add(new Vector3d(targetentity.getDeltaMovement().x, targetentity.getDeltaMovement().y, targetentity.getDeltaMovement().z));
+        } else if (aimtype == 2 && isValidTargetProjectile(targetprojectile)) {
+            targetPreVelocity.add(new Vector3d(targetprojectile.getDeltaMovement().x, targetprojectile.getDeltaMovement().y, targetprojectile.getDeltaMovement().z));
+        }
+    }
+
+    private void fireWhenLocked() {
+        if (aimtype == 1) {
+            shootentity();
+            idleTicks = getCoolDown();
+        } else if (aimtype == 2) {
+            interceptprojectile();
+            idleTicks = getCoolDown();
+        }
+    }
+
+    private boolean isflyingtowards(Entity e, Vec3 center) {
+        // 速度阈值，可调（单位：方块/刻）
+        double speed = e.getDeltaMovement().length();
+        if (speed < 0.25) return false; // 太慢的直接忽略（比如漂浮的物品）
+
+        // 计算是否朝船本身飞来
+        Vec3 toEntity = e.position().subtract(center);
+        double dot = e.getDeltaMovement().normalize().dot(toEntity.normalize());
+        return dot < -0.3; // 越负说明越正对护盾飞来（-0.3~0.6 之间调节手感）
     }
 
     public abstract void interceptprojectile();

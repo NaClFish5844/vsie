@@ -16,8 +16,8 @@ public class BasicCIWSBlockEntity extends AbstractCIWSBlockEntity {
     }
 
     @Override
-    public Vector3d getShootLocation(Vector3d vec, List<Vector3d> preV, Level lv, Vector3d pos) {
-        return pos;
+    public Vector3d getShootLocation(Vector3d vec, List<Vector3d> preV, Level lv, Vector3d selfpos) {
+        return vec;
     }
 
     @Override
@@ -27,12 +27,12 @@ public class BasicCIWSBlockEntity extends AbstractCIWSBlockEntity {
 
     @Override
     public double getYAxisOffset() {
-        return 1.5;
+        return 2.2;
     }
 
     @Override
     public float getMaxSpinSpeed() {
-        return Mth.PI/8;
+        return Mth.PI/4;
     }
 
     @Override

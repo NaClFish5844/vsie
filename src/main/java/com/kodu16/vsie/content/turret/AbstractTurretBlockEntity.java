@@ -177,7 +177,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
     }
 
     // 功能：根据方块是否在船上，更新炮塔在世界中的实际发射原点。
-    private void refreshWorldPosition() {
+    public void refreshWorldPosition() {
         onShip = VSGameUtilsKt.isBlockInShipyard(level, this.getBlockPos());
         if (onShip) {
             Ship ship = VSGameUtilsKt.getShipManagingPos(level, this.getBlockPos());
@@ -243,7 +243,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
     }
 
     // 功能：无有效目标时将炮塔朝向平滑回归到默认角度（defaultxrot/defaultyrot）。
-    private void returnToDefaultRotation() {
+    public void returnToDefaultRotation() {
         this.targetxrot = this.defaultspinx;
         this.targetyrot = this.defaultspiny;
         this.xRot0 = closestReachableX(xRot0, getMaxSpinSpeed(), targetxrot*Mth.PI/180);
@@ -349,7 +349,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
 
 
 
-    private boolean isValidTargetEntity(@Nullable LivingEntity e) {
+    public boolean isValidTargetEntity(@Nullable LivingEntity e) {
         // 只负责实体判断，输入的只有实体
         if (e == null) {
             return false;
@@ -361,19 +361,16 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
         if (    getData().getTargetsHostile() && category.isFriendly() ||
                 getData().getTargetsPassive() && !category.isFriendly() ||
                 getData().getTargetsPlayers() && e instanceof Player player && player.isCreative()) {
-            LogUtils.getLogger().warn("wrong target entity type:"+e.getType().getCategory());
             return false;
         }
 
         // 距离判断（用世界坐标）
         double distSq = e.distanceToSqr(currentworldpos.x, currentworldpos.y, currentworldpos.z);
         if (distSq > SEARCH_RADIUS * SEARCH_RADIUS) {
-            LogUtils.getLogger().warn("too far entity");
             return false;
         }
         // 视线判断（眼睛位置更准）
         if (!canSeeTarget(new Vector3d(e.getX(), e.getY(), e.getZ()))) {
-            LogUtils.getLogger().warn("cannot see target:"+e.getDisplayName());
             return false;
         }
         return true;

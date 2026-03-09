@@ -2,6 +2,7 @@ package com.kodu16.vsie.content.turret.client;
 
 import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
 import com.kodu16.vsie.content.turret.TurretContainerMenu;
+import com.kodu16.vsie.content.turret.ciws.AbstractCIWSBlockEntity;
 import com.kodu16.vsie.network.screen.ScreenC2SPacket;
 import com.kodu16.vsie.network.turret.TurretDefaultSpinC2SPacket;
 import com.kodu16.vsie.registries.ModNetworking;
@@ -52,12 +53,19 @@ public class TurretScreen extends AbstractContainerScreen<TurretContainerMenu> {
                 : new ResourceLocation(vsie.ID, "textures/gui/turret/target_players_off.png");
         ResourceLocation iconship = turret.getData().targetsShip ? new ResourceLocation(vsie.ID, "textures/gui/turret/target_ship_on.png")
                 : new ResourceLocation(vsie.ID, "textures/gui/turret/target_ship_off.png");
+        ResourceLocation iconciws = turret.getData().targetsShip ? new ResourceLocation(vsie.ID, "textures/gui/turret/target_ciws_on.png")
+                : new ResourceLocation(vsie.ID, "textures/gui/turret/target_ciws_off.png");
 
         // 绘制状态图标
         guiGraphics.blit(iconhostile, this.leftPos + 20, this.topPos + 70, 0, 0, 19, 19, 19,19); // 你可以调整位置和大小
         guiGraphics.blit(iconpassive, this.leftPos + 59, this.topPos + 70, 0, 0, 19, 19, 19,19);
         guiGraphics.blit(iconplayer, this.leftPos + 98, this.topPos + 70, 0, 0, 19, 19, 19,19);
-        guiGraphics.blit(iconship, this.leftPos + 137, this.topPos + 70, 0, 0, 19, 19, 19,19);
+        if(menu.getBlockEntity() instanceof AbstractCIWSBlockEntity) {
+            guiGraphics.blit(iconciws, this.leftPos + 137, this.topPos + 70, 0, 0, 19, 19, 19,19);
+        }
+        else {
+            guiGraphics.blit(iconship, this.leftPos + 137, this.topPos + 70, 0, 0, 19, 19, 19,19);
+        }
     }
 
     // 可选：如果你还想显示物品栏标签、玩家背包等文字，也可以重写这个
@@ -121,8 +129,8 @@ public class TurretScreen extends AbstractContainerScreen<TurretContainerMenu> {
     // 抽取成方法，方便复用 + 设置初始值
     private EditBox createIntEditBox(String name, int x, int y, String initialValue) {
         EditBox box = new EditBox(this.font,
-                this.leftPos + x, this.topPos + y,
-                16, 10,
+                x, y,
+                24, 10,
                 Component.literal(name));
         box.setMaxLength(8);           // int 范围够用
         box.setValue(initialValue);    // ← 关键！设置初始值
