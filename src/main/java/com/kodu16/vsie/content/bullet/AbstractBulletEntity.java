@@ -92,18 +92,17 @@ public abstract class AbstractBulletEntity extends Projectile {
         // 处理命中
         if (hitResult.getType() == HitResult.Type.ENTITY) {
             this.onHitEntity((EntityHitResult) hitResult);
-            // 可选择：不立即discard，让它继续飞一小段产生穿透/溅射效果
-            // this.discard();
+            this.discard();
         } else if (hitResult.getType() == HitResult.Type.BLOCK) {
             this.onHitBlock((BlockHitResult) hitResult);
-            // this.discard();
+            this.discard();
         }
 
         // 最后才真正移动
         this.setPos(end);
 
         lifeTime++;
-        if (lifeTime > 10 * 20) {
+        if (lifeTime > 3 * 20) {
             this.discard();
         }
     }

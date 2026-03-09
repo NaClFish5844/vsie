@@ -78,7 +78,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
     public float targetxrot = 0;
     public float targetyrot = 0;
     public int idleTicks = 0;
-    public static final double SEARCH_RADIUS = 128.0;
+    private static final double SEARCH_RADIUS = 128.0;
     public int defaultspinx = 0;
     public int defaultspiny = 0;
     public boolean onShip = false;

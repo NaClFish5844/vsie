@@ -35,7 +35,7 @@ public abstract class AbstractCIWSBlockEntity extends AbstractTurretBlockEntity 
     private static final double PROJECTILE_SCAN_CELL_SIZE = 64.0D;
     // 功能：每tick最多扫描的网格块数，限制单tick开销，避免大半径时卡顿。
     private static final int PROJECTILE_SCAN_CELL_BUDGET_PER_TICK = 8;
-
+    private static final double SEARCH_RADIUS = 128.0;
     protected AbstractCIWSBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
         // 初始化 turretData
@@ -113,13 +113,10 @@ public abstract class AbstractCIWSBlockEntity extends AbstractTurretBlockEntity 
 
     private boolean isValidTargetProjectile(@Nullable Entity e) {
         // 只负责实体判断，输入的只有实体
-        if (e == null) {
+        if (e == null || e.isRemoved() || e.getDeltaMovement().lengthSqr() < 0.3) {
             return false;
         }
         // 功能：目标实体已经消失（如雪球撞地）时立即判定失效，避免炮塔锁定到最后坐标抖动。
-        if (e.isRemoved() || !e.isAlive()) {
-            return false;
-        }
         if (e instanceof LivingEntity) {
             return false;
         }
@@ -232,7 +229,7 @@ public abstract class AbstractCIWSBlockEntity extends AbstractTurretBlockEntity 
 
     public void tryFindTargetProjectile() {
         // 功能：索敌阶段不再改动开火冷却，避免冷却与索敌共用计数器导致抖动。
-        if (targetprojectile != null && !targetprojectile.isRemoved()) return; // 有活目标就不重复找
+        if (isValidTargetProjectile(targetprojectile)) return; // 有活目标就不重复找
 
         // 功能：检测炮塔是否发生明显位移；若位移过大则重置分块索敌游标。
         Vec3 currentCenter = new Vec3(currentworldpos.x, currentworldpos.y, currentworldpos.z);
@@ -313,7 +310,7 @@ public abstract class AbstractCIWSBlockEntity extends AbstractTurretBlockEntity 
             );
         }
         if (aimtype == 2 && isValidTargetProjectile(targetprojectile)) {
-            LogUtils.getLogger().warn("find target projectile:"+targetprojectile.getDisplayName()+"at:"+targetPos);
+            LogUtils.getLogger().warn("find target projectile:"+targetprojectile.getDisplayName()+"isremoved:"+targetprojectile.isRemoved()+"speed:"+targetprojectile.getDeltaMovement().lengthSqr());
             targetPos = new Vector3d(
                     targetprojectile.getX(),
                     targetprojectile.getY(),
