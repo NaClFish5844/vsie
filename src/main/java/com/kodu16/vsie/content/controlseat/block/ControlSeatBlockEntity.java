@@ -121,6 +121,7 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
             //LogUtils.getLogger().warn("current energy cost per tick:"+this.energyspendpertick);
             updateEnergy();
             updateFuel();
+            updateScreen();
 
             if(this.capacitorenergy < 0) {
                 this.capacitorenergy = 0;
@@ -437,6 +438,8 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
             removeLinkedPeripheral(pos, 5);
         }
     }
+
+    public void updateScreen(){}
 
     protected boolean isWorking() {
         return true;

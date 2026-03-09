@@ -57,6 +57,8 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
     private final List<Vec3> linkedTurrets = new ArrayList<>();
     private final List<Vec3> linkedBatteries = new ArrayList<>();
     public final List<Vec3> linkedFuelTanks = new ArrayList<>();
+    public final List<Vec3> linkedAmmoboxes = new ArrayList<>();
+    public final List<Vec3> linkedScreens = new ArrayList<>();
     //控制椅连的电池，弹药库，燃料库
     //不加了，再加有点多了
 
@@ -90,6 +92,8 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
         writeVec3List(nbt, "Turrets", linkedTurrets);
         writeVec3List(nbt, "Batteries",linkedBatteries);
         writeVec3List(nbt, "Fueltanks", linkedFuelTanks);
+        writeVec3List(nbt, "Ammoboxes", linkedAmmoboxes);
+        writeVec3List(nbt, "Screens", linkedScreens);
     }
 
     @Override
@@ -107,6 +111,8 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
         linkedTurrets.clear();
         linkedBatteries.clear();
         linkedFuelTanks.clear();
+        linkedAmmoboxes.clear();
+        linkedScreens.clear();
 
         readVec3List(nbt, "Thrusters", linkedThrusters);
         readVec3List(nbt, "Weapons",linkedWeapons);
@@ -114,6 +120,8 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
         readVec3List(nbt, "Turrets",linkedTurrets);
         readVec3List(nbt, "Batteries",linkedBatteries);
         readVec3List(nbt, "Fueltanks" ,linkedFuelTanks);
+        readVec3List(nbt, "Ammoboxes", linkedAmmoboxes);
+        readVec3List(nbt, "Screens",linkedScreens);
     }
 
     @Override
@@ -147,7 +155,7 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
         controlseatData.ally = str;
     }
 
-    public void addLinkedPeripheral(Vec3 pos, int type) { //0：推进器 1：主武器 2：护盾 3：炮塔 4：电池，务必不要写错
+    public void addLinkedPeripheral(Vec3 pos, int type) { //0：推进器 1：主武器 2：护盾 3：炮塔 4：电池 5：燃料箱 6：弹药箱；7：屏幕，务必不要写错
         Logger LOGGER = LogUtils.getLogger();
         if (type == 0 && !linkedThrusters.contains(pos)) {
             linkedThrusters.add(pos);
@@ -180,6 +188,11 @@ public abstract class AbstractControlSeatBlockEntity extends SmartBlockEntity im
         else if(type == 5 && !linkedFuelTanks.contains(pos)) {
             linkedFuelTanks.add(pos);
             LOGGER.warn("adding fueltank to controlseat: " + pos);
+            setChanged();
+        }
+        else if(type == 7 && !linkedScreens.contains(pos)) {
+            linkedScreens.add(pos);
+            LOGGER.warn("adding screen to controlseat: " + pos);
             setChanged();
         }
     }
