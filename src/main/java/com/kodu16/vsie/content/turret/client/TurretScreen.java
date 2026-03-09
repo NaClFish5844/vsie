@@ -76,8 +76,8 @@ public class TurretScreen extends AbstractContainerScreen<TurretContainerMenu> {
         var be = this.menu.getBlockEntity();
         int spinX  = be.defaultspinx;   // 假设你有这些 getter
         int spinY  = be.defaultspiny;
-        this.editBoxSpinX = createIntEditBox("SpinX", 28, 68, String.valueOf(spinX));
-        this.editBoxSpinY = createIntEditBox("SpinY", 68, 68, String.valueOf(spinY));
+        this.editBoxSpinX = createIntEditBox("SpinX", this.leftPos+48+16+48, 48, String.valueOf(spinX));
+        this.editBoxSpinY = createIntEditBox("SpinY", this.leftPos+48, 48, String.valueOf(spinY));
 
         this.addRenderableWidget(Button.builder(
                         Component.literal("HOS"),
@@ -122,7 +122,7 @@ public class TurretScreen extends AbstractContainerScreen<TurretContainerMenu> {
     private EditBox createIntEditBox(String name, int x, int y, String initialValue) {
         EditBox box = new EditBox(this.font,
                 this.leftPos + x, this.topPos + y,
-                24, 14,
+                16, 10,
                 Component.literal(name));
         box.setMaxLength(8);           // int 范围够用
         box.setValue(initialValue);    // ← 关键！设置初始值

@@ -254,7 +254,6 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
                 thruster.setdata(controlseatData.getFinaltorque(), controlseatData.getFinalforce());
                 this.calculatedstrength+=thruster.getMaxThrust();
                 this.fuelspendcurrenttick += thruster.fuelconsumptionperthrottle()*thruster.getFuelThrottle();
-                LogUtils.getLogger().warn("thruster consuming fuel:"+this.fuelspendcurrenttick);
             } else {
                 // 先记下来，循环完了再删
                 toRemove.add(pos);
@@ -415,7 +414,6 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
                     return;
                 }
                 float consumptionmultiplier = getFuelProperties(fluid.getRawFluid()).consumptionMultiplier;
-                LogUtils.getLogger().warn("draining fuel:"+this.capacitorfuel);
                 if(currenttankremain>=-this.capacitorfuel*consumptionmultiplier) {
                     fueltank.getFluidTank().drain((int) (-this.capacitorfuel*consumptionmultiplier), IFluidHandler.FluidAction.EXECUTE);
                     this.capacitorfuel = 0;

@@ -78,7 +78,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
     public float targetxrot = 0;
     public float targetyrot = 0;
     public int idleTicks = 0;
-    public static final double SEARCH_RADIUS = 512.0;
+    public static final double SEARCH_RADIUS = 128.0;
     public int defaultspinx = 0;
     public int defaultspiny = 0;
     public boolean onShip = false;
@@ -246,8 +246,8 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
     private void returnToDefaultRotation() {
         this.targetxrot = this.defaultspinx;
         this.targetyrot = this.defaultspiny;
-        this.xRot0 = closestReachableX(xRot0, getMaxSpinSpeed(), targetxrot);
-        this.yRot0 = closestReachableY(yRot0, getMaxSpinSpeed(), targetyrot);
+        this.xRot0 = closestReachableX(xRot0, getMaxSpinSpeed(), targetxrot*Mth.PI/180);
+        this.yRot0 = closestReachableY(yRot0, getMaxSpinSpeed(), targetyrot*Mth.PI/180);
     }
 
     //use 5 ticks' velocity data to predict movement,providing more accurate prediction
@@ -278,8 +278,6 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
             if(!isValidTargetEntity(targetentity)) {
                 setAnimData(HAS_TARGET, false);
                 targetentity = null;
-                xRot0 = 0;
-                yRot0 = 0;
                 targetdistance = 0;
                 targetPreVelocity.clear();
             }
@@ -288,8 +286,6 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
             if(!isValidTargetShip(selectedtargetShip)) {
                 setAnimData(HAS_TARGET, false);
                 selectedtargetShip = null;
-                xRot0 = 0;
-                yRot0 = 0;
                 targetdistance = 0;
                 targetPreVelocity.clear();
             }
@@ -300,7 +296,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
         // 功能：索敌阶段不再改动开火冷却，避免冷却与索敌共用计数器导致抖动。
         if (targetentity != null && targetentity.isAlive()) return; // 有活目标就不重复找
 
-        if ((level.getGameTime() + this.hashCode()) % 3 != 0) return;
+        if ((level.getGameTime() + this.hashCode()) % 5 != 0) return;
 
         AABB searchBox = new AABB(
                 currentworldpos.x - SEARCH_RADIUS,
@@ -365,16 +361,19 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
         if (    getData().getTargetsHostile() && category.isFriendly() ||
                 getData().getTargetsPassive() && !category.isFriendly() ||
                 getData().getTargetsPlayers() && e instanceof Player player && player.isCreative()) {
+            LogUtils.getLogger().warn("wrong target entity type:"+e.getType().getCategory());
             return false;
         }
 
         // 距离判断（用世界坐标）
         double distSq = e.distanceToSqr(currentworldpos.x, currentworldpos.y, currentworldpos.z);
         if (distSq > SEARCH_RADIUS * SEARCH_RADIUS) {
+            LogUtils.getLogger().warn("too far entity");
             return false;
         }
         // 视线判断（眼睛位置更准）
         if (!canSeeTarget(new Vector3d(e.getX(), e.getY(), e.getZ()))) {
+            LogUtils.getLogger().warn("cannot see target:"+e.getDisplayName());
             return false;
         }
         return true;
