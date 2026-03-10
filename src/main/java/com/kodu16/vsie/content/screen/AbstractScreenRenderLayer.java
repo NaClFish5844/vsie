@@ -63,36 +63,17 @@ public class AbstractScreenRenderLayer extends GeoRenderLayer<AbstractScreenBloc
 
         poseStack.pushPose();
         // 旋转以平躺于表面（针对顶部面）
-        poseStack.mulPose(Axis.XP.rotationDegrees(270.0f));  // 对于其他面，使用 Axis.YP 等旋转
-
-        poseStack.scale(0.9f, 0.9f, 0.9f);
-        poseStack.translate(0, 0, 0.01f);  // 调整为目标面，例如 NORTH: translate(0.5, 0.5, 1.0)
+        poseStack.mulPose(Axis.XP.rotationDegrees(-270.0f));  // 对于其他面，使用 Axis.YP 等旋转
+        poseStack.mulPose(Axis.YP.rotationDegrees(180.0f));  // 对于其他面，使用 Axis.YP 等旋转
+        poseStack.translate(0, 0, -0.05f);  // 调整为目标面，例如 NORTH: translate(0.5, 0.5, 1.0)
+        poseStack.scale(0.99f,0.99f,0.99f);
         itemRenderer.renderStatic(new ItemStack(vsieItems.SCREEN_BG), ItemDisplayContext.FIXED,
                 LightTexture.FULL_BRIGHT,
                 OverlayTexture.NO_OVERLAY, poseStack, bufferSource,
                 level, 0);
-        poseStack.translate(0, 0, 0.16f);  // 调整为目标面，例如 NORTH: translate(0.5, 0.5, 1.0)
-        // 缩放物品（0.35 为合适大小）
-        poseStack.scale(0.15f, 0.15f, 0.15f);
-        // 渲染图案（物品）
-        itemRenderer.renderStatic(stack, ItemDisplayContext.FIXED,
-                LightTexture.FULL_BRIGHT,
-                OverlayTexture.NO_OVERLAY, poseStack, bufferSource,
-                level, 0);
-
-        // 功能：在屏幕中心绘制雷达投影（本船 + 周围 512 范围内船只的 XZ 俯视图）。
+        //poseStack.scale(0.15f, 0.15f, 0.15f);
+        poseStack.translate(0, 0, -0.1f);  // 调整为目标面，例如 NORTH: translate(0.5, 0.5, 1.0)
         renderRadar(poseStack, animatable, bufferSource);
-
-        poseStack.pushPose();
-        poseStack.scale(0.1f, -0.1f, 0.1f);  // 缩放文字，负 Y 翻转正向
-        float textWidth = font.width(stack.getCount() + "");
-        poseStack.translate(-textWidth / 2, 0, 2);  // 居中并偏移上方
-        font.drawInBatch(stack.getCount() + "", 0, 0, 0xECECEC, false,
-                poseStack.last().pose(), bufferSource,
-                Font.DisplayMode.NORMAL, 0,
-                LightTexture.FULL_BRIGHT);
-        poseStack.popPose();
-
         poseStack.popPose();
     }
 
@@ -111,14 +92,10 @@ public class AbstractScreenRenderLayer extends GeoRenderLayer<AbstractScreenBloc
         if (clientData == null || clientData.shipsData == null) {
             return;
         }
-
-        poseStack.pushPose();
         // 功能：将雷达绘制区域放在屏幕中间，并保持与现有物品/文字渲染同平面。
-        poseStack.translate(0, 0, 0.2f);
-        poseStack.scale(0.45f, 0.45f, 0.45f);
 
         // 功能：先绘制中心方框，表示当前控制椅所在船只（雷达自身）。
-        Radar.drawSquare(poseStack, bufferSource, 0f, 0f, 2.5f, 0xFF33FF33);
+        Radar.drawSquare(poseStack, bufferSource, 0f, 0f, 0.02f, 0xFF33FF33);
 
         Vector3d seatWorldPos = screen.getRadarControlSeatWorldPos();
         for (Map.Entry<String, Object> entry : clientData.shipsData.entrySet()) {
@@ -139,16 +116,14 @@ public class AbstractScreenRenderLayer extends GeoRenderLayer<AbstractScreenBloc
                 continue;
             }
             // 功能：将世界 XZ 相对坐标投影到屏幕局部平面，形成俯视雷达图。
-            float px = (float) (dx / 512.0 * 28.0);
-            float py = (float) (dz / 512.0 * 28.0);
+            float px = (float) (dx / 512.0 * 8.0);
+            float py = (float) (dz / 512.0 * 8.0);
             // 跳过中心点附近，避免与本船方框重叠。
             if (Math.abs(px) < 0.5f && Math.abs(py) < 0.5f) {
                 continue;
             }
-            Radar.drawSquare(poseStack, bufferSource, px, py, 1.3f, 0xFFFF5555);
+            Radar.drawSquare(poseStack, bufferSource, px, py, 0.02f, 0xFFFF5555);
         }
-
-        poseStack.popPose();
     }
 
     // 功能：将 Object 数值安全转成 double，兼容网络包里的 Number 类型。
