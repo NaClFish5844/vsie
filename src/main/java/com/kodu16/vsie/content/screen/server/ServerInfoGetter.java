@@ -13,14 +13,18 @@ public class ServerInfoGetter {
 
 
     public static double getServerTPS(Level level) {
-        if (level.isClientSide()) return 0;
-
         MinecraftServer server = level.getServer();
-        if (server == null) return 0;
+        long[] times = server.tickTimes;
+        if (times == null) return 0;
 
-        float mspt = server.getAverageTickTime(); // 每tick耗时(ns)
+        long total = 0;
+        for (long time : times) {
+            total += time;
+        }
 
-        return 1000/mspt;
+        double mspt = (total / (double) times.length) / 1_000_000.0;
+
+        return Math.min(20.0, 1000.0 / mspt);
     }
 
     public static int getServerPhysTPS(Level level) {

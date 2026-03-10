@@ -47,12 +47,12 @@ public class ScreenScreen extends AbstractContainerScreen<ScreenContainerMenu> {
         int offsetZ = be.offsetz;
 
         // ===================== 创建输入框并设置初始值 =====================
-        this.editBoxSpinX = createIntEditBox("SpinX", 28, 68, String.valueOf(spinX));
-        this.editBoxSpinY = createIntEditBox("SpinY", 68, 68, String.valueOf(spinY));
+        this.editBoxSpinX = createIntEditBox("SpinX", 28, 88, String.valueOf(spinX));
+        this.editBoxSpinY = createIntEditBox("SpinY", 68, 88, String.valueOf(spinY));
 
-        this.editBoxOffsetX = createIntEditBox("offsetX", 28, 88, String.valueOf(offsetX));
-        this.editBoxOffsetY = createIntEditBox("offsetY", 68, 88, String.valueOf(offsetY));
-        this.editBoxOffsetZ = createIntEditBox("offsetZ", 108, 88, String.valueOf(offsetZ));
+        this.editBoxOffsetX = createIntEditBox("offsetX", 28, 108, String.valueOf(offsetX));
+        this.editBoxOffsetY = createIntEditBox("offsetY", 68, 108, String.valueOf(offsetY));
+        this.editBoxOffsetZ = createIntEditBox("offsetZ", 108, 108, String.valueOf(offsetZ));
 
         // 可选：让输入框只接受数字（更好体验）
         // setFilter 只允许 负号 + 数字
@@ -64,7 +64,7 @@ public class ScreenScreen extends AbstractContainerScreen<ScreenContainerMenu> {
 
         // 保存按钮（推荐加上，体验更好）
         int btnX = this.leftPos + 32;
-        int btnY = this.topPos + 135;
+        int btnY = this.topPos + 145;
         this.addRenderableWidget(Button.builder(
                         Component.literal("保存"),
                         button -> saveAndClose()
@@ -82,7 +82,7 @@ public class ScreenScreen extends AbstractContainerScreen<ScreenContainerMenu> {
         this.addRenderableWidget(Button.builder(
                         Component.literal("switch"),
                         button -> ModNetworking.CHANNEL.sendToServer(new ScreentypeC2SPacket(pos,(menu.getBlockEntity().displaytype+1)%2)))
-                .pos(this.leftPos + 73, this.topPos + 100)
+                .pos(this.leftPos + 73, this.topPos + 45)
                 .size(30, 15)
                 .build());
     }
@@ -163,8 +163,8 @@ public class ScreenScreen extends AbstractContainerScreen<ScreenContainerMenu> {
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         AbstractScreenBlockEntity screen = menu.getBlockEntity();
         ResourceLocation texture = new ResourceLocation(vsie.ID, "textures/gui/iff/iff_gui.png");
-        ResourceLocation iconradar = new ResourceLocation(vsie.ID, "textures/gui/screen/target_manual.png");
-        ResourceLocation iconserverinfo = new ResourceLocation(vsie.ID, "textures/gui/screen/target_auto.png");
+        ResourceLocation iconradar = new ResourceLocation(vsie.ID, "textures/gui/screen/screentype_radar.png");
+        ResourceLocation iconserverinfo = new ResourceLocation(vsie.ID, "textures/gui/screen/screentype_serverinfo.png");
         guiGraphics.blit(texture,   // 用实例字段
                 this.leftPos, this.topPos,
                 0, 0,
@@ -172,17 +172,17 @@ public class ScreenScreen extends AbstractContainerScreen<ScreenContainerMenu> {
                 this.imageWidth, this.imageHeight);
         if(screen.displaytype == 0) {
             guiGraphics.blit(iconradar,   // 用实例字段
-                    this.leftPos+78, this.topPos+70,
+                    this.leftPos+78, this.topPos+10,
                     0, 0,
                     20, 20,
                     20, 20);
         }
         if(screen.displaytype == 1) {
             guiGraphics.blit(iconserverinfo,   // 用实例字段
-                    this.leftPos+78, this.topPos+80,
+                    this.leftPos+78, this.topPos+10,
                     0, 0,
                     20, 20,
-                    20, 70);
+                    20, 20);
         }
     }
 

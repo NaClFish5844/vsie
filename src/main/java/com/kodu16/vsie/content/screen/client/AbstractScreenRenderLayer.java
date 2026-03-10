@@ -70,11 +70,12 @@ public class AbstractScreenRenderLayer extends GeoRenderLayer<AbstractScreenBloc
                 OverlayTexture.NO_OVERLAY, poseStack, bufferSource,
                 level, 0);
         //poseStack.scale(0.15f, 0.15f, 0.15f);
-        poseStack.translate(0, 0, -0.05f);  // 调整为目标面，例如 NORTH: translate(0.5, 0.5, 1.0)
+        poseStack.translate(0, 0, -0.035f);  // 调整为目标面，例如 NORTH: translate(0.5, 0.5, 1.0)
         // 功能：根据 screentype 切换显示内容；0 显示雷达，1 显示服务器信息文本。
         if (animatable.displaytype == 0) {
             Radar.renderRadar(poseStack, animatable, bufferSource);
         } else if (animatable.displaytype == 1) {
+            poseStack.scale(0.005f, 0.005f, 0.005f);
             ServerInfo.renderServerInfo(poseStack, animatable, bufferSource, font);
         }
         poseStack.popPose();
