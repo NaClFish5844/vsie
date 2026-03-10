@@ -58,7 +58,7 @@ public class AbstractVectorThrusterModel extends DefaultedBlockGeoModel<Abstract
         //double targetPitch = animatable.getPitchDegrees();
         double targetSpin = getspin(animatable);
         double targetPitch = getpitch(animatable);
-        LogUtils.getLogger().warn("receiving spin:"+targetSpin+"pitch:"+targetPitch);
+        //LogUtils.getLogger().warn("receiving spin:"+targetSpin+"pitch:"+targetPitch);
 
         // 转换为度数进行插值（rotLerp 专门处理角度循环问题，如从359°到1°不会走长路）
         //float targetSpinDeg = (float) Math.toDegrees(targetSpinRad);

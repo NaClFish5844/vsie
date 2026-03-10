@@ -23,7 +23,7 @@ public class AbstractVectorThrusterGeoRenderer extends GeoBlockRenderer<Abstract
         switch (facing) {
             case SOUTH -> {
                 poseStack.translate(0, 0.5, 0.5);
-                poseStack.mulPose(Axis.XP.rotationDegrees(270));
+                poseStack.mulPose(Axis.XP.rotationDegrees(-90));
             }
             case WEST -> {
                 poseStack.translate(-0.5, 0.5, 0);

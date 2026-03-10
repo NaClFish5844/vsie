@@ -16,8 +16,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraftforge.common.MinecraftForge;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
+import org.joml.Matrix3d;
 import org.slf4j.Logger;
 import org.valkyrienskies.core.api.ships.ServerShip;
 import org.valkyrienskies.core.api.ships.properties.ShipTransform;
@@ -31,7 +33,6 @@ import software.bernie.geckolib.network.SerializableDataTicket;
 
 import java.util.List;
 
-import com.kodu16.vsie.foundation.Vec;
 import static com.kodu16.vsie.foundation.Vec.toVector3d;
 
 public abstract class AbstractVectorThrusterBlockEntity extends AbstractThrusterBlockEntity implements GeoBlockEntity {
@@ -50,6 +51,8 @@ public abstract class AbstractVectorThrusterBlockEntity extends AbstractThruster
     public double pitchrad = 0.0;
     public static float MAX_GIMBAL_ANGLE = 30;
 
+    public static long attachedShipId;
+
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> list) {
@@ -59,15 +62,14 @@ public abstract class AbstractVectorThrusterBlockEntity extends AbstractThruster
     @Override
     public void tick() {
         Level level = this.getLevel();
-        if (level == null || level.isClientSide()) {
-            return;
-        }
+        if (level == null || level.isClientSide()) { return; }
         Logger LOGGER = LogUtils.getLogger();
 
         if (hasInitialized) {
             BlockPos pos = this.getBlockPos();
             boolean onShip = VSGameUtilsKt.isBlockInShipyard(level, pos);
             ServerShip ship = VSGameUtilsKt.getShipManagingPos((ServerLevel) level, getBlockPos());
+
             if (onShip && ship != null) {
                 final ShipTransform transform = ship.getTransform();
 
@@ -79,8 +81,10 @@ public abstract class AbstractVectorThrusterBlockEntity extends AbstractThruster
 
                 //获取基座朝向并计算基座轴的世界朝向（单位化的）
                 BlockState state = this.getBlockState();
+
                 Vector3d blockdirection = VectorConversionsMCKt.toJOMLD(state.getValue(FACING).getNormal());
                 Vector3d worldfacing = new Vector3d();
+
                 transform.getShipToWorld().transformDirection(blockdirection, worldfacing);
                 worldfacing.normalize();
 
@@ -91,6 +95,7 @@ public abstract class AbstractVectorThrusterBlockEntity extends AbstractThruster
                 boolean hasInput = desiredForce.lengthSquared() > 1e-6 || desiredTorque.lengthSquared() > 1e-6;
 
                 double throttle = 0.0;
+                double[] eulerAngle={0,0};
                 if (hasInput) {
                     Vector3d worldXDirection = new Vector3d();
                     Vector3d worldYDirection = new Vector3d();
@@ -99,19 +104,27 @@ public abstract class AbstractVectorThrusterBlockEntity extends AbstractThruster
                     Vector3d targetthrust = torqueforce.add(desiredForce);
                     targetthrust.normalize();
 
-                    transform.getShipToWorld().transformDirection(thrusterData.getDirection(), worldYDirection);
+                    transform.getShipToWorld().transformDirection(thrusterData.getDirectionY(), worldYDirection);
                     worldYDirection.normalize();
                     transform.getShipToWorld().transformDirection(thrusterData.getDirectionX(), worldXDirection);
                     worldXDirection.normalize();
                     transform.getShipToWorld().transformDirection(thrusterData.getDirectionZ(), worldZDirection);
                     worldZDirection.normalize();
-                    this.spinrad = projectionAngleToB_rad_signed(targetthrust, worldZDirection, worldXDirection);
-                    this.pitchrad = projectionAngleToB_rad_signed(targetthrust, worldZDirection, worldYDirection);
+
+                    //eulerAngle = forceTransform(targetthrust,transform,thrusterData.getCoordAxis());
+
                     setChanged();
                     // 日志调试
-                    LOGGER.info("VectorThruster {}  worldY={}, worldX={}, worldZ={}, desiredVec={}, spin={}°, pitch={}°",
-                            getBlockPos(), worldYDirection, worldXDirection, worldZDirection, targetthrust, spinrad, pitchrad);
+                    //LOGGER.info("VectorThruster {}  worldY={}, worldX={}, worldZ={}, desiredVec={}, spin={}°, pitch={}°",
+                    //        getBlockPos(), worldYDirection, worldXDirection, worldZDirection, targetthrust, spinrad, pitchrad);
                 }
+
+                if(!hasInput || true){
+                    eulerAngle = forceTransform(new Vector3d(0,-1,0),transform,thrusterData.getCoordAxis());
+                }
+
+                this.spinrad = eulerAngle[0];   //yaw
+                this.pitchrad = eulerAngle[1];  //pitch
                 // 更新数据
                 thrusterData.setThrottle((float) throttle);
                 setAnimData(FINAL_SPIN, spinrad);
@@ -121,11 +134,14 @@ public abstract class AbstractVectorThrusterBlockEntity extends AbstractThruster
 
         } else {
             LOGGER.warn(String.valueOf(Component.literal("detected uninitialized vector thruster, time to sweep valkyriie's ass")));
+
             BlockPos pos = getBlockPos();
             BlockState state = level.getBlockState(pos);
             Initialize.initialize(level, pos, state);
+
             MinecraftForge.EVENT_BUS.register(this);
             hasInitialized = true;
+
             LOGGER.warn(String.valueOf(Component.literal("vector thruster Initialize complete:" + pos)));
         }
     }
@@ -213,5 +229,28 @@ public abstract class AbstractVectorThrusterBlockEntity extends AbstractThruster
         double angleRad = Math.atan2(y, x);
 
         return angleRad;
+    }
+
+    // 输入你想要的加力方向 所在船的transform 以及模型自身的CoordAxis
+    // 吐出模型应该转的方向
+    public static double[] forceTransform(
+            Vector3d forceInWorld,
+            ShipTransform transform,
+            Matrix3d modelCoordAxis
+    ){
+        Vector3d forceInShip=transform.getWorldToShip().transformDirection(forceInWorld);
+        Vector3d forceInModel=modelCoordAxis.transform(forceInShip);
+
+        // 诡异的坐标变换 根据模型来的
+        double yaw = Math.atan2(
+                -forceInModel.x,
+                forceInModel.z
+        );
+        double pitch=Math.atan2(
+                Math.sqrt(forceInModel.x * forceInModel.x + forceInModel.z * forceInModel.z),
+                forceInModel.y
+        );
+
+        return new double[]{yaw,pitch};
     }
 }
