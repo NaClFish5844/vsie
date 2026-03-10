@@ -86,7 +86,7 @@ public abstract class AbstractThrusterBlock extends DirectionalBlock implements 
             if (Ship != null) {
                 // Initialize thruster data for ValkyRien Skies
                 ThrusterData data = thrusterBlockEntity.getData();
-                data.setDirection(VectorConversionsMCKt.toJOMLD(state.getValue(FACING).getNormal()));
+                data.setDirectionY(VectorConversionsMCKt.toJOMLD(state.getValue(FACING).getNormal()));
             }
         }
     }

@@ -106,7 +106,7 @@ public abstract class AbstractThrusterBlockEntity extends SmartBlockEntity imple
                         .sub(transform.getPositionInShip()); // 推进器相对于质心的船坐标位置
 
                 // 1. 推进器在世界坐标系下的推力方向（单位向量）
-                Vector3d thrustDirectionWorld = new Vector3d(thrusterData.getDirection());
+                Vector3d thrustDirectionWorld = new Vector3d(thrusterData.getDirectionY());
                 transform.getShipToWorldRotation().transform(thrustDirectionWorld); // 只转方向，不转位置
                 thrustDirectionWorld.normalize();
 
