@@ -64,7 +64,7 @@ public class AbstractScreenRenderLayer extends GeoRenderLayer<AbstractScreenBloc
         poseStack.pushPose();
         // 旋转以平躺于表面（针对顶部面）
         poseStack.mulPose(Axis.XP.rotationDegrees(-270.0f));  // 对于其他面，使用 Axis.YP 等旋转
-        poseStack.mulPose(Axis.YP.rotationDegrees(180.0f));  // 对于其他面，使用 Axis.YP 等旋转
+        //poseStack.mulPose(Axis.YP.rotationDegrees(180.0f));  // 对于其他面，使用 Axis.YP 等旋转
         poseStack.translate(0, 0, -0.05f);  // 调整为目标面，例如 NORTH: translate(0.5, 0.5, 1.0)
         poseStack.scale(0.99f,0.99f,0.99f);
         itemRenderer.renderStatic(new ItemStack(vsieItems.SCREEN_BG), ItemDisplayContext.FIXED,
@@ -72,7 +72,7 @@ public class AbstractScreenRenderLayer extends GeoRenderLayer<AbstractScreenBloc
                 OverlayTexture.NO_OVERLAY, poseStack, bufferSource,
                 level, 0);
         //poseStack.scale(0.15f, 0.15f, 0.15f);
-        poseStack.translate(0, 0, -0.1f);  // 调整为目标面，例如 NORTH: translate(0.5, 0.5, 1.0)
+        poseStack.translate(0, 0, -0.05f);  // 调整为目标面，例如 NORTH: translate(0.5, 0.5, 1.0)
         renderRadar(poseStack, animatable, bufferSource);
         poseStack.popPose();
     }
@@ -116,12 +116,9 @@ public class AbstractScreenRenderLayer extends GeoRenderLayer<AbstractScreenBloc
                 continue;
             }
             // 功能：将世界 XZ 相对坐标投影到屏幕局部平面，形成俯视雷达图。
-            float px = (float) (dx / 512.0 * 8.0);
-            float py = (float) (dz / 512.0 * 8.0);
+            float px = (float) (dx / 512.0 * 2.0);
+            float py = (float) (dz / 512.0 * 2.0);
             // 跳过中心点附近，避免与本船方框重叠。
-            if (Math.abs(px) < 0.5f && Math.abs(py) < 0.5f) {
-                continue;
-            }
             Radar.drawSquare(poseStack, bufferSource, px, py, 0.02f, 0xFFFF5555);
         }
     }

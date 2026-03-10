@@ -93,6 +93,8 @@ repositories {
             includeGroup("com.simibubi.create")
             includeGroup("com.jozufozu.flywheel")
             includeGroup("com.tterrag.registrate")
+            includeGroup("dev.engine-room.flywheel")
+            includeGroup("net.createmod.ponder")
         }
     }
     maven {
