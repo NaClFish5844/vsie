@@ -39,6 +39,25 @@ public abstract class AbstractScreenBlockEntity extends SmartBlockEntity impleme
     public int tps = 0;
     public int phystps = 0;
 
+    // 功能：为 serverinfo 保存最近 20 次采样记录（每项都存归一化比例，便于客户端统一绘图）。
+    private static final int SERVERINFO_HISTORY_LIMIT = 20;
+    // 功能：控制采样频率，每 100 tick 记录一次。
+    private static final int SERVERINFO_SAMPLE_INTERVAL = 100;
+    // 功能：记录已存储的样本数量（最大 20）。
+    private int serverInfoHistorySize = 0;
+    // 功能：服务端采样计数器（用于 100 tick 触发一次采样）。
+    private int serverInfoSampleTickCounter = 0;
+    // 功能：客户端采样计数器（用于本地客户端内存采样，并与服务端指标合并成同一批历史点）。
+    private int clientInfoSampleTickCounter = 0;
+    // 功能：TPS 历史（归一化到 0~1，最大值按 20 计算）。
+    private final float[] tpsHistory = new float[SERVERINFO_HISTORY_LIMIT];
+    // 功能：PhysTPS 历史（归一化到 0~1，最大值按 60 计算）。
+    private final float[] physTpsHistory = new float[SERVERINFO_HISTORY_LIMIT];
+    // 功能：服务器内存占用率历史（0~1）。
+    private final float[] serverMemoryHistory = new float[SERVERINFO_HISTORY_LIMIT];
+    // 功能：客户端内存占用率历史（0~1）。
+    private final float[] clientMemoryHistory = new float[SERVERINFO_HISTORY_LIMIT];
+
     // 功能：雷达屏幕绑定的控制椅玩家 UUID，用于客户端反查对应玩家的 ClientData。
     private UUID radarPlayerUuid;
     // 功能：缓存控制椅世界坐标，供客户端将周围船只投影到屏幕雷达上。
@@ -94,6 +113,18 @@ public abstract class AbstractScreenBlockEntity extends SmartBlockEntity impleme
             if(this.level.isClientSide()) {
                 long[] JVMc = ServerInfoGetter.getJVM();
                 this.clientJVMpercentage = (float) JVMc[0] /JVMc[1];
+
+                // 功能：客户端每 100 tick 记录一次历史点，并让柱状图随新点加入向左滚动。
+                this.clientInfoSampleTickCounter++;
+                if (this.clientInfoSampleTickCounter >= SERVERINFO_SAMPLE_INTERVAL) {
+                    this.clientInfoSampleTickCounter = 0;
+                    pushServerInfoHistory(
+                            clamp01((float) this.tps / 20f),
+                            clamp01((float) this.phystps / 60f),
+                            clamp01(this.serverJVMpercentage),
+                            clamp01(this.clientJVMpercentage)
+                    );
+                }
             } else {
                 long[] JVMs = ServerInfoGetter.getJVM();
                 this.serverJVMpercentage = (float) JVMs[0] /JVMs[1];
@@ -101,8 +132,75 @@ public abstract class AbstractScreenBlockEntity extends SmartBlockEntity impleme
                 this.phystps = ServerInfoGetter.getServerPhysTPS(this.level);
 
                 this.tps = (int) ServerInfoGetter.getServerTPS(this.level);
+
+                // 功能：服务端每 100 tick 采样一次 server 指标并同步到客户端。
+                this.serverInfoSampleTickCounter++;
+                if (this.serverInfoSampleTickCounter >= SERVERINFO_SAMPLE_INTERVAL) {
+                    this.serverInfoSampleTickCounter = 0;
+                    pushServerInfoHistory(
+                            clamp01((float) this.tps / 20f),
+                            clamp01((float) this.phystps / 60f),
+                            clamp01(this.serverJVMpercentage),
+                            clamp01(this.clientJVMpercentage)
+                    );
+                    setChanged();
+                }
             }
         }
+    }
+
+    // 功能：向历史数组追加一条记录；满 20 条后左移一格，始终保留最新 20 条。
+    private void pushServerInfoHistory(float tpsRatio, float physTpsRatio, float serverMemoryRatio, float clientMemoryRatio) {
+        if (serverInfoHistorySize < SERVERINFO_HISTORY_LIMIT) {
+            int idx = serverInfoHistorySize++;
+            tpsHistory[idx] = tpsRatio;
+            physTpsHistory[idx] = physTpsRatio;
+            serverMemoryHistory[idx] = serverMemoryRatio;
+            clientMemoryHistory[idx] = clientMemoryRatio;
+            return;
+        }
+        for (int i = 1; i < SERVERINFO_HISTORY_LIMIT; i++) {
+            tpsHistory[i - 1] = tpsHistory[i];
+            physTpsHistory[i - 1] = physTpsHistory[i];
+            serverMemoryHistory[i - 1] = serverMemoryHistory[i];
+            clientMemoryHistory[i - 1] = clientMemoryHistory[i];
+        }
+        int last = SERVERINFO_HISTORY_LIMIT - 1;
+        tpsHistory[last] = tpsRatio;
+        physTpsHistory[last] = physTpsRatio;
+        serverMemoryHistory[last] = serverMemoryRatio;
+        clientMemoryHistory[last] = clientMemoryRatio;
+    }
+
+    // 功能：对外提供历史数据长度，供渲染层按有效样本数量绘制。
+    public int getServerInfoHistorySize() {
+        return serverInfoHistorySize;
+    }
+
+    // 功能：对外提供 TPS 历史比例数组。
+    public float[] getTpsHistory() {
+        return tpsHistory;
+    }
+
+    // 功能：对外提供 PhysTPS 历史比例数组。
+    public float[] getPhysTpsHistory() {
+        return physTpsHistory;
+    }
+
+    // 功能：对外提供服务器内存历史比例数组。
+    public float[] getServerMemoryHistory() {
+        return serverMemoryHistory;
+    }
+
+    // 功能：对外提供客户端内存历史比例数组。
+    public float[] getClientMemoryHistory() {
+        return clientMemoryHistory;
+    }
+
+    // 功能：将浮点值限制在 0~1，避免采样异常导致绘制越界。
+    private static float clamp01(float value) {
+        if (value < 0f) return 0f;
+        return Math.min(value, 1f);
     }
 
     // 更新数据时同步到客户端
@@ -143,6 +241,14 @@ public abstract class AbstractScreenBlockEntity extends SmartBlockEntity impleme
         tag.putFloat("serverjvm",serverJVMpercentage);
         tag.putInt("tps",tps);
         tag.putInt("phystps",phystps);
+        // 功能：同步历史曲线所需的数据到客户端。
+        tag.putInt("serverInfoHistorySize", serverInfoHistorySize);
+        for (int i = 0; i < SERVERINFO_HISTORY_LIMIT; i++) {
+            tag.putFloat("tpsHistory" + i, tpsHistory[i]);
+            tag.putFloat("physTpsHistory" + i, physTpsHistory[i]);
+            tag.putFloat("serverMemoryHistory" + i, serverMemoryHistory[i]);
+            tag.putFloat("clientMemoryHistory" + i, clientMemoryHistory[i]);
+        }
         // 功能：持久化雷达绑定玩家信息。
         if (radarPlayerUuid != null) {
             tag.putUUID("RadarPlayerUuid", radarPlayerUuid);
@@ -179,6 +285,16 @@ public abstract class AbstractScreenBlockEntity extends SmartBlockEntity impleme
         if(tag.contains("tps")) {this.tps = tag.getInt("tps");}
         // 功能：从同步数据恢复 PhysTPS，供 screentype=1 的文字层显示。
         if(tag.contains("phystps")) {this.phystps = tag.getInt("phystps");}
+        // 功能：恢复并同步柱状图历史数据。
+        if (tag.contains("serverInfoHistorySize")) {
+            this.serverInfoHistorySize = Math.min(tag.getInt("serverInfoHistorySize"), SERVERINFO_HISTORY_LIMIT);
+            for (int i = 0; i < SERVERINFO_HISTORY_LIMIT; i++) {
+                if (tag.contains("tpsHistory" + i)) this.tpsHistory[i] = tag.getFloat("tpsHistory" + i);
+                if (tag.contains("physTpsHistory" + i)) this.physTpsHistory[i] = tag.getFloat("physTpsHistory" + i);
+                if (tag.contains("serverMemoryHistory" + i)) this.serverMemoryHistory[i] = tag.getFloat("serverMemoryHistory" + i);
+                if (tag.contains("clientMemoryHistory" + i)) this.clientMemoryHistory[i] = tag.getFloat("clientMemoryHistory" + i);
+            }
+        }
 
         // 功能：读取雷达绑定玩家 UUID。
         radarPlayerUuid = tag.hasUUID("RadarPlayerUuid") ? tag.getUUID("RadarPlayerUuid") : null;
