@@ -56,7 +56,7 @@ public abstract class AbstractWeaponBlock extends DirectionalBlock implements En
 
     @Override
     public BlockState getStateForPlacement(@Nonnull BlockPlaceContext context) {
-        Direction baseDirection = context.getNearestLookingDirection();
+        Direction baseDirection = context.getHorizontalDirection();
         Direction placeDirection;
         Player player = context.getPlayer();
         if (player != null) {

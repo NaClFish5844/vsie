@@ -21,27 +21,19 @@ public class AbstractWeaponGeoRenderer extends GeoBlockRenderer<AbstractWeaponBl
     protected void rotateBlock(Direction facing, PoseStack poseStack) {
         switch (facing) {
             case SOUTH -> {
-                poseStack.translate(0, 0.5, 0.5);
-                poseStack.mulPose(Axis.XP.rotationDegrees(-270));
+                poseStack.mulPose(Axis.YP.rotationDegrees(180));
             }
             case WEST -> {
-                poseStack.translate(-0.5, 0.5, 0);
-                poseStack.mulPose(Axis.ZP.rotationDegrees(90));
+                poseStack.mulPose(Axis.YP.rotationDegrees(90));
             }
             case NORTH -> {
-                poseStack.translate(0, 0.5, -0.5);
-                poseStack.mulPose(Axis.XP.rotationDegrees(-90));
             }
             case EAST -> {
-                poseStack.translate(0.5, 0.5, 0);
-                poseStack.mulPose(Axis.ZP.rotationDegrees(-90));
+                poseStack.mulPose(Axis.YP.rotationDegrees(270));
             }
             case UP -> {
-                poseStack.translate(0, 1, 0);
-                poseStack.mulPose(Axis.ZP.rotationDegrees(-180));
             }
             case DOWN -> {
-
             }
         }
     }

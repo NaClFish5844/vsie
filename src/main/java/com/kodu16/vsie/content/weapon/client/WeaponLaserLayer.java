@@ -1,5 +1,6 @@
 package com.kodu16.vsie.content.weapon.client;
 
+import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
 import com.kodu16.vsie.content.weapon.AbstractWeaponBlockEntity;
 import com.kodu16.vsie.foundation.Vec;
 import com.kodu16.vsie.foundation.translucentbeamrendertype;
@@ -18,6 +19,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3d;
 import org.valkyrienskies.core.impl.shadow.FL;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.renderer.GeoRenderer;
 import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
 
@@ -26,7 +28,7 @@ public class WeaponLaserLayer extends GeoRenderLayer<AbstractWeaponBlockEntity> 
     public WeaponLaserLayer(GeoRenderer<AbstractWeaponBlockEntity> entityRendererIn) {
         super(entityRendererIn);
     }
-
+    private static final String cannonname = "laser_locator";
     private static final int SEGMENTS = 4;
     private static final int LENGTH_SEGMENTS = 8;
     public double LASER_LENGTH = 0f;
@@ -43,14 +45,26 @@ public class WeaponLaserLayer extends GeoRenderLayer<AbstractWeaponBlockEntity> 
     public void render(PoseStack poseStack, AbstractWeaponBlockEntity animatable, BakedGeoModel bakedModel,
                        RenderType renderType, MultiBufferSource bufferSource, VertexConsumer bufferSourceBuffer,
                        float partialTick, int packedLight, int packedOverlay) {
-
-        poseStack.pushPose();
-        Vector3d weaponPos = new Vector3d(animatable.getWeaponPos().x,animatable.getWeaponPos().y,animatable.getWeaponPos().z);
-        BlockState state = animatable.getBlockState();
-        Direction facing = state.getValue(BlockStateProperties.FACING);
         LASER_LENGTH = animatable.getRaycastDistance();
+        if (LASER_LENGTH < 0.1) {
+            return;
+        }
+        super.render(poseStack, animatable, bakedModel, renderType, bufferSource, bufferSourceBuffer,
+                partialTick, packedLight, packedOverlay);
+    }
+
+    @Override
+    public void renderForBone(PoseStack poseStack, AbstractWeaponBlockEntity animatable, GeoBone bone,
+                              RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer,
+                              float partialTick, int packedLight, int packedOverlay) {
+        if (!cannonname.equals(bone.getName())) {
+            super.renderForBone(poseStack, animatable, bone, renderType, bufferSource, buffer,
+                    partialTick, packedLight, packedOverlay);
+            return;
+        }
+        poseStack.pushPose();
         // 1. 先转到 +Y（向上）为基准的情况
-        poseStack.mulPose(Axis.XP.rotationDegrees(90f));
+        poseStack.mulPose(Axis.YP.rotationDegrees(180));
         PoseStack.Pose last = poseStack.last();
         Matrix4f pose = last.pose();
         Matrix3f normal = last.normal();

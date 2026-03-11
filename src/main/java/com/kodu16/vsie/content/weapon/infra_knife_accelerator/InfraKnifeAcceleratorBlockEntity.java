@@ -31,7 +31,9 @@ public class InfraKnifeAcceleratorBlockEntity extends AbstractWeaponBlockEntity 
         return 4;
     }
 
+    @Override
     public void fire() {
+        performRaycast(level);
         if(getRaycastDistance()<getmaxrange())
         {
             LogUtils.getLogger().warn("explode at:"+targetpos);

@@ -82,16 +82,6 @@ public class HudOverlay {
             //drawCenteredText(gg, "§l§b控制座椅", centerX, baseY, MAIN_COLOR);
 
             // 坐标
-            Vec3 pos = controlseat.getBlockPos().getCenter();
-            String coord = String.format("§a%.1f §b%.1f §c%.1f", pos.x, pos.y, pos.z);
-            //drawCenteredText(gg, coord, centerX, baseY + 18, SUB_COLOR);
-
-            //武器频道
-            drawCenteredText(gg,"§e"+data.channel1, centerX-60, baseY + 50, SUB_COLOR);
-            drawCenteredText(gg,"§e"+data.channel2, centerX-20, baseY + 50, SUB_COLOR);
-            drawCenteredText(gg,"§e"+data.channel3, centerX+20, baseY + 50, SUB_COLOR);
-            drawCenteredText(gg,"§e"+data.channel4, centerX+60, baseY + 50, SUB_COLOR);
-
             //绘制电量条，护盾条，油条（大雾），热量条（未实装），油门，鼠标控制条
             StatusIndicator.renderDecorative(gg,
                     data.smoothEnergyRatio,
@@ -101,13 +91,17 @@ public class HudOverlay {
                     (int) data.accumulatedmousex, (int) data.accumulatedmousey);
             gg.drawCenteredString(mc.font, visualThrottle+"%", centerX-(3*centerX/8)+40, centerY+((centerY/2)-5), MAIN_COLOR);
 
-            //绘制护盾/飞行辅助/反重力开关
+            //绘制护盾/飞行辅助/反重力开关/武器频道开关
             int switchBaseX = centerX + (centerX / 6);
             int switchY = centerY + (centerY / 2);
             int switchGap = 24;
-            drawSwitch(gg, "Shield", switchBaseX, switchY, data.shieldon);
-            drawSwitch(gg, "Assist", switchBaseX + switchGap, switchY, data.isflightassiston);
-            drawSwitch(gg, "AntiG", switchBaseX + switchGap * 2, switchY, data.isantigravityon);
+            drawSwitch(gg, "Shield", switchBaseX, switchY, data.shieldon,20,10);
+            drawSwitch(gg, "Assist", switchBaseX + switchGap, switchY, data.isflightassiston,20,10);
+            drawSwitch(gg, "AntiG", switchBaseX + switchGap * 2, switchY, data.isantigravityon,20,10);
+            drawSwitch(gg, "1", switchBaseX+5, switchY+20, data.channel1,10,10);
+            drawSwitch(gg, "2", switchBaseX+20, switchY+10, data.channel2,10,10);
+            drawSwitch(gg, "3", switchBaseX+35, switchY+10, data.channel3,10,10);
+            drawSwitch(gg, "4", switchBaseX+50, switchY+10, data.channel4,10,10);
 
             //绘制水平和竖直方位条
             var interpolatedFacing = data.getInterpolatedShipFacing(partialTick);
@@ -144,10 +138,10 @@ public class HudOverlay {
         gg.pose().popPose();
     }
 
-    private static void drawSwitch(GuiGraphics gg, String label, int x, int y, boolean active) {
+    private static void drawSwitch(GuiGraphics gg, String label, int x, int y, boolean active, int recwidth, int recheight) {
         int color = active ? MAIN_COLOR : SUB_COLOR;
         drawCenteredText(gg, label, x, y, color);
-        DrawShape.drawHollowRectangle(gg, x, y+2, 20, 10, 1, color);
+        DrawShape.drawHollowRectangle(gg, x, y+2, recwidth, recheight, 1, color);
     }
 
 }

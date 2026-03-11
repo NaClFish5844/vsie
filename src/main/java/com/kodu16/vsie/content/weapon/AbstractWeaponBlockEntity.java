@@ -105,8 +105,6 @@ public abstract class AbstractWeaponBlockEntity extends SmartBlockEntity impleme
                 weaponpos = VSGameUtilsKt.toWorldCoordinates(level, pos);
                 LoadedShip Ship = VSGameUtilsKt.getShipObjectManagingPos(level, pos);
                 if (Ship == null) return;
-                performRaycast(level);
-                LogUtils.getLogger().warn("firing weapon");
                 fire();
             }
             else {
@@ -155,7 +153,7 @@ public abstract class AbstractWeaponBlockEntity extends SmartBlockEntity impleme
         }
         if(type==3){
             data.setChannel3(!data.getChannel3());
-            if(data.channel2) {
+            if(data.channel3) {
                 data.channel1 = false;
                 data.channel2 = false;
                 data.channel4 = false;
@@ -163,7 +161,7 @@ public abstract class AbstractWeaponBlockEntity extends SmartBlockEntity impleme
         }
         if(type==4){
             data.setChannel4(!data.getChannel4());
-            if(data.channel2) {
+            if(data.channel4) {
                 data.channel1 = false;
                 data.channel2 = false;
                 data.channel3 = false;

@@ -25,6 +25,7 @@ import com.kodu16.vsie.content.turret.block.ParticleTurretBlockEntity;
 import com.kodu16.vsie.content.vectorthruster.block.BasicVectorThrusterBlockEntity;
 import com.kodu16.vsie.content.vectorthruster.client.AbstractVectorThrusterGeoRenderer;
 import com.kodu16.vsie.content.weapon.arc_emitter.ArcEmitterBlockEntity;
+import com.kodu16.vsie.content.weapon.cenix_plasma_cannon.CenixPlasmaCannonBlockEntity;
 import com.kodu16.vsie.content.weapon.client.AbstractWeaponGeoRenderer;
 import com.kodu16.vsie.content.weapon.arc_emitter.ArcEmitterGeoRenderer;
 import com.kodu16.vsie.content.weapon.infra_knife_accelerator.InfraKnifeAcceleratorBlockEntity;
@@ -66,6 +67,8 @@ public class vsieBlockEntities {
                     .validBlocks(vsieBlocks.BASIC_VECTOR_THRUSTER_BLOCK)
                     .renderer(() -> AbstractVectorThrusterGeoRenderer::new)
                     .register();
+
+
     public static final BlockEntityEntry<InfraKnifeAcceleratorBlockEntity> INFRA_KNIFE_ACCELERATOR_BLOCK_ENTITY =
             REGISTRATE.blockEntity("infra_knife_accelerator_block_entity", InfraKnifeAcceleratorBlockEntity::new)
                     .validBlocks(vsieBlocks.INFRA_KNIFE_ACCELERATOR_BLOCK)
@@ -81,6 +84,13 @@ public class vsieBlockEntities {
                     .validBlocks(vsieBlocks.ARC_EMITTER_BLOCK)
                     .renderer(() -> ArcEmitterGeoRenderer::new)
                     .register();
+    public static final BlockEntityEntry<CenixPlasmaCannonBlockEntity> CENIX_PLASMA_CANNON_BLOCK_ENTITY =
+            REGISTRATE.blockEntity("cenix_plasma_cannon_block_entity", CenixPlasmaCannonBlockEntity::new)
+                    .validBlocks(vsieBlocks.CENIX_PLASMA_CANNON_BLOCK)
+                    .renderer(() -> AbstractWeaponGeoRenderer::new)
+                    .register();
+
+
     public static final BlockEntityEntry<MediumThrusterBlockEntity> MEDIUM_THRUSTER_BLOCK_ENTITY =
             REGISTRATE.blockEntity("medium_thruster_block_entity", MediumThrusterBlockEntity::new)
                     .validBlocks(vsieBlocks.MEDIUM_THRUSTER_BLOCK)

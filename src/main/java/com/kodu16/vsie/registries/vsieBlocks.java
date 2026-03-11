@@ -17,6 +17,7 @@ import com.kodu16.vsie.content.turret.block.MediumLaserTurretBlock;
 import com.kodu16.vsie.content.turret.block.ParticleTurretBlock;
 import com.kodu16.vsie.content.vectorthruster.block.BasicVectorThrusterBlock;
 import com.kodu16.vsie.content.weapon.arc_emitter.ArcEmitterBlock;
+import com.kodu16.vsie.content.weapon.cenix_plasma_cannon.CenixPlasmaCannonBlock;
 import com.kodu16.vsie.content.weapon.infra_knife_accelerator.InfraKnifeAcceleratorBlock;
 import com.kodu16.vsie.content.weapon.missile_launcher.block.BasicMissileLauncherBlock;
 import com.kodu16.vsie.vsie;
@@ -94,7 +95,14 @@ public class vsieBlocks {
             .properties(p -> p.noOcclusion())
             .simpleItem()
             .register();
-
+    public static final BlockEntry<CenixPlasmaCannonBlock> CENIX_PLASMA_CANNON_BLOCK = REGISTRATE.block("cenix_plasma_cannon", CenixPlasmaCannonBlock::new)
+            .properties(p -> p.mapColor(MapColor.METAL))
+            .properties(p -> p.requiresCorrectToolForDrops())
+            .properties(p -> p.sound(SoundType.METAL))
+            .properties(p -> p.strength(5.5f, 4.0f))
+            .properties(p -> p.noOcclusion())
+            .simpleItem()
+            .register();
     public static final BlockEntry<ArcEmitterBlock> ARC_EMITTER_BLOCK = REGISTRATE.block("arc_emitter", ArcEmitterBlock::new)
             .properties(p -> p.mapColor(MapColor.METAL))
             .properties(p -> p.requiresCorrectToolForDrops())
@@ -207,4 +215,5 @@ public class vsieBlocks {
             .properties(p -> p.noOcclusion())
             .simpleItem()
             .register();
+
 }

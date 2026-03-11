@@ -3,15 +3,21 @@
 
     "block.vsie.control_seat": "control seat",
     "block.vsie.basic_thruster": "basic thruster",
-    "block.vsie.medium_laser_turret": "medium laser turret",
     "block.vsie.shield_generator": "shield generator",
     "block.vsie.basic_vector_thruster": "basic vector thruster",
     "block.vsie.infra_knife_accelerator": "infra knife accelerator",
     "block.vsie.basic_missile_launcher": "basic missile launcher",
     "block.vsie.arc_emitter": "arc emitter",
+    "block.vsie.cenix_plasma_cannon": "cenix plasma cannon",
+
     "block.vsie.medium_thruster": "medium thruster",
     "block.vsie.large_thruster": "large thruster",
+
     "block.vsie.particle_turret": "particle turret",
+    "block.vsie.medium_laser_turret": "medium laser turret",
+    "block.vsie.basic_ciws": "type30 ciws",
+    "block.vsie.heavy_electromagnet_turret": "625mm*3 heavy electromagnet turret",
+
     "block.vsie.small_energy_battery": "small energy battery",
     "block.vsie.medium_energy_battery": "medium energy battery",
     "block.vsie.large_energy_battery": "large energy battery",
