@@ -1,9 +1,5 @@
 package com.kodu16.vsie.content.turret.client;
 
-import com.kodu16.vsie.foundation.translucentbeamrendertype;
-import com.mojang.math.Axis;
-import net.minecraft.network.protocol.game.ClientboundMoveEntityPacket;
-import net.minecraft.util.Mth;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
@@ -18,9 +14,9 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 // 你的 BlockEntity 类型
 import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
 
-public class TurretFrameLayer extends GeoRenderLayer<AbstractTurretBlockEntity> {
+public class TurretFlameLayer extends GeoRenderLayer<AbstractTurretBlockEntity> {
 
-    public TurretFrameLayer(GeoRenderer<AbstractTurretBlockEntity> entityRendererIn) {
+    public TurretFlameLayer(GeoRenderer<AbstractTurretBlockEntity> entityRendererIn) {
         super(entityRendererIn);
     }
     private static final int SEGMENTS = 4;
