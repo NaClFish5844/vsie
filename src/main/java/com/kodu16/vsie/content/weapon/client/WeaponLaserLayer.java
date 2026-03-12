@@ -64,7 +64,6 @@ public class WeaponLaserLayer extends GeoRenderLayer<AbstractWeaponBlockEntity> 
         }
         poseStack.pushPose();
         // 1. 先转到 +Y（向上）为基准的情况
-        poseStack.mulPose(Axis.YP.rotationDegrees(180));
         PoseStack.Pose last = poseStack.last();
         Matrix4f pose = last.pose();
         Matrix3f normal = last.normal();

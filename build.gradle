@@ -83,17 +83,6 @@ repositories {
             includeGroup("curse.maven")
         }
     }
-    /*maven {
-        name = "create maven"
-        url = "https://maven.tterrag.com/"
-        content {
-            includeGroup("com.simibubi.create")
-            includeGroup("com.jozufozu.flywheel")
-            includeGroup("com.tterrag.registrate")
-            includeGroup("dev.engine-room.flywheel")
-            includeGroup("net.createmod.ponder")
-        }
-    }*/
     maven {
         name = "Valkyrien Skies Internal"
         url = "https://maven.valkyrienskies.org"
@@ -112,6 +101,8 @@ repositories {
             includeGroup("com.simibubi.create")
             includeGroup("com.jozufozu.flywheel")
             includeGroup("com.tterrag.registrate")
+            includeGroup("dev.engine-room.flywheel")
+            includeGroup("net.createmod.ponder")
         }
     }
 
