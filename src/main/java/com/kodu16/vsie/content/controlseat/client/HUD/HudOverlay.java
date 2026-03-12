@@ -102,10 +102,10 @@ public class HudOverlay {
             drawSwitch(gg, "Shield", switchBaseX, switchY, data.shieldon,20,10);
             drawSwitch(gg, "Assist", switchBaseX + switchGap, switchY, data.isflightassiston,20,10);
             drawSwitch(gg, "AntiG", switchBaseX + switchGap * 2, switchY, data.isantigravityon,20,10);
-            drawSwitch(gg, "1", switchBaseX+5, switchY+20, data.channel1,10,10);
-            drawSwitch(gg, "2", switchBaseX+20, switchY+10, data.channel2,10,10);
-            drawSwitch(gg, "3", switchBaseX+35, switchY+10, data.channel3,10,10);
-            drawSwitch(gg, "4", switchBaseX+50, switchY+10, data.channel4,10,10);
+            drawSwitch(gg, "1", switchBaseX+5, switchY+15, data.channel1,10,10);
+            drawSwitch(gg, "2", switchBaseX+20, switchY+15, data.channel2,10,10);
+            drawSwitch(gg, "3", switchBaseX+35, switchY+15, data.channel3,10,10);
+            drawSwitch(gg, "4", switchBaseX+50, switchY+15, data.channel4,10,10);
 
             // 功能：在 HUD 热量条右侧逐行展示“当前控制椅激活频道下可响应武器”的名称与冷却进度条。
             drawActiveWeaponCooldowns(gg, data, centerX, centerY, hudAlpha);
