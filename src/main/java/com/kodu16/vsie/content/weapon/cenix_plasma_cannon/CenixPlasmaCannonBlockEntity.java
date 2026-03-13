@@ -1,5 +1,6 @@
 package com.kodu16.vsie.content.weapon.cenix_plasma_cannon;
 
+import com.kodu16.vsie.content.bullet.entity.CenixPlasmaBulletEntity;
 import com.kodu16.vsie.content.bullet.entity.ParticleBulletEntity;
 import com.kodu16.vsie.content.weapon.AbstractWeaponBlockEntity;
 import com.kodu16.vsie.registries.vsieEntities;
@@ -9,6 +10,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
+import org.joml.Vector3dc;
 import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
@@ -35,9 +37,10 @@ public class CenixPlasmaCannonBlockEntity extends AbstractWeaponBlockEntity {
         Ship ship = VSGameUtilsKt.getShipObjectManagingPos(level, getBlockPos());
         Vector3d currentfacing = new Vector3d(0,1,0);
         ship.getTransform().getShipToWorld().transformDirection(VectorConversionsMCKt.toJOMLD(this.getBlockState().getValue(FACING).getNormal()),currentfacing);
-        ParticleBulletEntity bullet = new ParticleBulletEntity(vsieEntities.PARTICLE_BULLET.get(), level);
+        CenixPlasmaBulletEntity bullet = new CenixPlasmaBulletEntity(vsieEntities.CENIX_PLASMA_BULLET.get(), level);
         bullet.setPos(new Vec3(this.weaponpos.x,this.weaponpos.y,this.weaponpos.z));
-        bullet.setDeltaMovement(new Vec3(currentfacing.x*20,currentfacing.y*20,currentfacing.z*20));
+        Vector3dc shipspeed = ship.getVelocity();
+        bullet.setDeltaMovement(new Vec3(currentfacing.x*4+shipspeed.x(),currentfacing.y*4+shipspeed.y(),currentfacing.z*4+shipspeed.z()));
         level.addFreshEntity(bullet);
     }
 

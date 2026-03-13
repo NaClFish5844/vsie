@@ -48,7 +48,7 @@ public abstract class AbstractBulletEntity extends Projectile {
     @Override
     public void tick() {
 
-        if (this.tickCount >= 1 && this.tickCount <= 8) {
+        if (this.tickCount >= startemitticks() && this.tickCount <= stopemitticks()) {
             if (this.level().isClientSide()) {
                 vsieFxHelper.extractFxUnit(getDataBase().getFxData(), FxData::getAwakeFx)
                         .map(FxData.FxUnit::getId).map(FXHelper::getFX)
@@ -62,7 +62,7 @@ public abstract class AbstractBulletEntity extends Projectile {
 
         Vec3 movement = this.getDeltaMovement();
         // ===== 5 tick 后速度 ×10 =====
-        if (this.tickCount == 8) {
+        if (this.tickCount == accelrateticks()) {
             this.setDeltaMovement(movement.scale(30));
             movement = this.getDeltaMovement();
         }
@@ -137,6 +137,12 @@ public abstract class AbstractBulletEntity extends Projectile {
             this.discard();
         }
     }
+
+    public abstract int accelrateticks();//开始加速的tick数
+
+    public abstract int startemitticks();//开始发出粒子的tick数
+
+    public abstract int stopemitticks();//停止发出粒子的tick数
 
     @Override
     protected void onHitBlock(BlockHitResult pResult) {

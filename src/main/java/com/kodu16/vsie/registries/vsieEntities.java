@@ -2,7 +2,7 @@ package com.kodu16.vsie.registries;
 
 import com.kodu16.vsie.content.bullet.BulletRenderer;
 import com.kodu16.vsie.content.bullet.entity.ParticleBulletEntity;
-import com.kodu16.vsie.content.bullet.entity.PlasmaBulletEntity;
+import com.kodu16.vsie.content.bullet.entity.CenixPlasmaBulletEntity;
 import com.kodu16.vsie.content.missile.entity.BasicMissileEntity;
 import com.kodu16.vsie.vsie;
 import com.simibubi.create.foundation.data.CreateRegistrate;
@@ -22,8 +22,8 @@ public class vsieEntities {
                     .renderer(() -> BulletRenderer::new)
                     .tag(RPLTags.PRECISE_MOTION)
                     .register();
-    public static final EntityEntry<PlasmaBulletEntity> PLASMA_BULLET =
-            REGISTRATE.entity("plasma_bullet", PlasmaBulletEntity::new, MobCategory.MISC)
+    public static final EntityEntry<CenixPlasmaBulletEntity> CENIX_PLASMA_BULLET =
+            REGISTRATE.entity("plasma_bullet", CenixPlasmaBulletEntity::new, MobCategory.MISC)
                     .renderer(() -> BulletRenderer::new)
                     .tag(RPLTags.PRECISE_MOTION)
                     .register();

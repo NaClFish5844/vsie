@@ -1,4 +1,4 @@
-package com.kodu16.vsie.content.bullet.penetratingbullet;
+/*package com.kodu16.vsie.content.bullet.penetratingbullet;
 
 import com.kodu16.vsie.content.bullet.AbstractBulletEntity;
 import net.minecraft.core.BlockPos;
@@ -164,4 +164,4 @@ public class PenetratingBulletEntity extends AbstractBulletEntity {
         if (tag.contains("K")) this.setK(tag.getInt("K"));
     }
 
-}
+}*/

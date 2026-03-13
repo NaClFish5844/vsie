@@ -4,15 +4,15 @@ import com.kodu16.vsie.content.bullet.AbstractBulletEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
-public class ParticleBulletEntity extends AbstractBulletEntity {
+public class CenixPlasmaBulletEntity extends AbstractBulletEntity {
 
-    public ParticleBulletEntity(EntityType<? extends AbstractBulletEntity> type, Level pLevel) {
+    public CenixPlasmaBulletEntity(EntityType<? extends AbstractBulletEntity> type, Level pLevel) {
         super(type, pLevel);
     }
 
     @Override
     public int accelrateticks() {
-        return 5;
+        return 15;
     }
 
     @Override
@@ -22,6 +22,6 @@ public class ParticleBulletEntity extends AbstractBulletEntity {
 
     @Override
     public int stopemitticks() {
-        return 8;
+        return 10;
     }
 }

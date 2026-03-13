@@ -43,7 +43,7 @@ public class BulletRenderer<T extends AbstractBulletEntity> extends EntityRender
         pPoseStack.mulPose(Axis.YP.rotationDegrees(Mth.lerp(pPartialTick, pEntity.yRotO, pEntity.getYRot()) - 90.0F));
         pPoseStack.mulPose(Axis.ZP.rotationDegrees(Mth.lerp(pPartialTick, pEntity.xRotO, pEntity.getXRot())));
 
-        pPoseStack.scale(0.05F, 0.05F, 0.05F);
+        pPoseStack.scale(0.25F, 0.25F, 0.25F);
         pPoseStack.translate(0F, 0F, 0F);
         VertexConsumer vertexconsumer = pBuffer.getBuffer(translucentbeamrendertype.SOLID_TRANSLUCENT_BEAM);
         PoseStack.Pose pose = pPoseStack.last();
