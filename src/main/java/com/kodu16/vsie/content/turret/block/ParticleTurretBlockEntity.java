@@ -51,7 +51,7 @@ public class ParticleTurretBlockEntity extends AbstractTurretBlockEntity {
     @Override
     protected Vector3d getTurretPivotInGeoPixels() {
         // 功能：返回 particle turret 模型中 turret 骨骼的枢轴点，用于计算真实世界炮口基准点。
-        return new Vector3d(0.03509, 13.00917, -0.0829);
+        return new Vector3d(0.0, 0.0, 0);
     }
 
     @Override

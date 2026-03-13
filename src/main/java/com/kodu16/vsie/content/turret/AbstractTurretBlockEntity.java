@@ -281,17 +281,19 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
 
     // 功能：允许子类声明 Geo 模型中 turret 骨骼的枢轴点（单位：模型像素，原点为方块本地原点）。
     protected Vector3d getTurretPivotInGeoPixels() {
-        return new Vector3d(0.0, getYAxisOffset() * 16.0, 0.0);
+        return new Vector3d(0.0, 0.0, 0.0);
     }
 
     // 功能：允许子类声明 Geo 模型中 cannon 骨骼的枢轴点（单位：模型像素，原点为方块本地原点）。
     protected Vector3d getCannonPivotInGeoPixels() {
-        return new Vector3d(0.0, getYAxisOffset() * 16.0, 0.0);
+        return new Vector3d(0.0, 0.0, 0.0);
     }
 
-    // 功能：根据 Geckolib 骨骼枢轴和当前炮塔旋转，计算 cannon 枢轴在真实世界中的位置（含船体坐标系转换）。
+    // 功能：先在方块本地坐标系中计算 cannon 枢轴位置，最后若炮塔在船上再统一映射到世界坐标。
     public Vector3d getCannonPivotWorldPos() {
         Direction facing = getBlockState().getValue(com.kodu16.vsie.content.turret.AbstractTurretBlock.FACING);
+
+        // 方块本地坐标系基向量（此时仍然是“方块局部/船局部”语义，不先转世界）
         Vec3 localUp = switch (facing) {
             case NORTH, DOWN, SOUTH -> new Vec3(0, 0, 1);
             case WEST -> new Vec3(1, 0, 0);
@@ -310,53 +312,53 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
             case UP -> new Vec3(-1, 0, 0);
         };
 
-        Vector3d upDir = new Vector3d(localUp.x, localUp.y, localUp.z);
-        Vector3d forwardDir = new Vector3d(localForward.x, localForward.y, localForward.z);
-        Vector3d rightDir = new Vector3d(localRight.x, localRight.y, localRight.z);
-
-        // 功能：若炮塔在船上，先把本地朝向基向量变换到世界坐标，保证发射点是“真实世界坐标”。
-        if (onShip) {
-            Ship ship = VSGameUtilsKt.getShipManagingPos(level, this.getBlockPos());
-            if (ship != null) {
-                ShipTransform transform = ship.getTransform();
-                transform.getShipToWorld().transformDirection(upDir, upDir).normalize();
-                transform.getShipToWorld().transformDirection(forwardDir, forwardDir).normalize();
-                transform.getShipToWorld().transformDirection(rightDir, rightDir).normalize();
-            }
-        }
-
-        // 功能：将 Geo 模型像素坐标转换为方块本地坐标（1 方块 = 16 像素）。
+        // Geo 像素坐标 -> 方块本地坐标（1 block = 16 px）
         Vector3d turretPivot = getTurretPivotInGeoPixels().mul(1.0 / 16.0, new Vector3d());
         Vector3d cannonPivot = getCannonPivotInGeoPixels().mul(1.0 / 16.0, new Vector3d());
 
-        // 功能：围绕 turret 枢轴按当前 yaw 旋转 cannon 偏移量，得到实际动画后的炮管枢轴位置。
+        // 先在“本地坐标系”里，围绕 turretPivot 按当前 yaw 旋转 cannon 偏移
         Vector3d cannonOffsetFromTurret = cannonPivot.sub(turretPivot, new Vector3d());
         double cos = Math.cos(-this.yRot0);
         double sin = Math.sin(-this.yRot0);
         double rotatedX = cannonOffsetFromTurret.x * cos - cannonOffsetFromTurret.z * sin;
         double rotatedZ = cannonOffsetFromTurret.x * sin + cannonOffsetFromTurret.z * cos;
         Vector3d rotatedOffset = new Vector3d(rotatedX, cannonOffsetFromTurret.y, rotatedZ);
+
+        // 得到 cannon 枢轴在“方块本地坐标系”中的最终位置
         Vector3d localPivotPos = turretPivot.add(rotatedOffset, new Vector3d());
 
-        Vector3d blockOriginWorld;
-        // 功能：方块若在船上，将方块本地原点转换成世界坐标作为所有骨骼偏移的参考原点。
+        // 再把这个“本地位置”映射成 block/ship 局部坐标中的三维偏移
+        Vector3d blockLocalOffset = new Vector3d()
+                .add(localRight.x * localPivotPos.x, localRight.y * localPivotPos.x, localRight.z * localPivotPos.x)
+                .add(localUp.x * localPivotPos.y, localUp.y * localPivotPos.y, localUp.z * localPivotPos.y)
+                .add(localForward.x * localPivotPos.z, localForward.y * localPivotPos.z, localForward.z * localPivotPos.z);
+
+        // 本地原点：方块原点
+        Vector3d localBlockPos = new Vector3d(
+                this.getBlockPos().getX(),
+                this.getBlockPos().getY(),
+                this.getBlockPos().getZ()
+        );
+
+        // cannon 枢轴在“世界/船局部坐标”中的最终点（尚未做 ship->world）
+        Vector3d finalLocalPos = localBlockPos.add(blockLocalOffset, new Vector3d());
+
+        // 最后一步：如果在船上，再统一映射到世界坐标
         if (onShip) {
             Ship ship = VSGameUtilsKt.getShipManagingPos(level, this.getBlockPos());
             if (ship != null) {
-                Vector3d origin = VSGameUtilsKt.toWorldCoordinates(ship, this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ());
-                blockOriginWorld = new Vector3d(origin.x, origin.y, origin.z);
-            } else {
-                blockOriginWorld = new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ());
+                Vector3d worldPos = VSGameUtilsKt.toWorldCoordinates(
+                        ship,
+                        finalLocalPos.x,
+                        finalLocalPos.y,
+                        finalLocalPos.z
+                );
+                return new Vector3d(worldPos.x, worldPos.y, worldPos.z);
             }
-        } else {
-            blockOriginWorld = new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ());
         }
 
-        // 功能：把本地坐标偏移映射到世界坐标，得到最终 cannon 枢轴世界位置。
-        return blockOriginWorld
-                .add(rightDir.mul(localPivotPos.x, new Vector3d()))
-                .add(upDir.mul(localPivotPos.y, new Vector3d()))
-                .add(forwardDir.mul(localPivotPos.z, new Vector3d()));
+        // 不在船上，本地坐标就是世界坐标
+        return finalLocalPos;
     }
 
     public void updateenemy(ArrayList<Ship> enemyshipsData) {
