@@ -1,5 +1,7 @@
 package com.kodu16.vsie.content.controlseat.server;
 
+import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import org.joml.Vector3d;
@@ -17,12 +19,27 @@ import com.kodu16.vsie.content.controlseat.ActiveWeaponHudInfo;
 //请勿在客户端使用，或加入任何仅限客户端的值
 public class ControlSeatServerData {
     public volatile List<BlockPos> thrusterpositionslist = new ArrayList<>(); // 用来存储推进器的位置
+    @Getter
     public volatile Vector3d force =  new Vector3d(0,0,0);
+    @Getter
+    @Setter
     public volatile Vector3d torque = new Vector3d(0,0,0);
+    @Getter
+    @Setter
     public volatile int throttle = 0;
+    //似乎自带UUID
+    @Getter
+    @Setter
     public volatile Player player = null;
+    //Direction in ship space. Expected to be normalized
+    @Setter
+    @Getter
     private volatile Vector3d directionForward;
+    @Setter
+    @Getter
     private volatile Vector3d directionUp;
+    @Setter
+    @Getter
     private volatile Vector3d directionRight;
 
     public volatile boolean channel1 = true;
@@ -69,15 +86,12 @@ public class ControlSeatServerData {
     public Level level;
 
 
+    @Getter
+    @Setter
     public volatile Vector3d finaltorque = new Vector3d(0,0,0);
+    @Getter
+    @Setter
     public volatile Vector3d finalforce = new Vector3d(0,0,0);
-
-    public Player getPlayer() { return player; } //似乎自带UUID
-    public Vector3d getForce() { return force; }
-    public Vector3d getTorque() { return torque; }
-    public int getThrottle() {return throttle;}
-    public Vector3d getFinaltorque() { return finaltorque; }
-    public Vector3d getFinalforce() { return finalforce; }
 
     public boolean getChannel1() {return channel1;}
     public boolean getChannel2() {return channel2;}
@@ -85,19 +99,6 @@ public class ControlSeatServerData {
     public boolean getChannel4() {return channel4;}
 
 
-    public void setPlayer(Player player) { this.player = player; }
-    public void setTorque(Vector3d torque) { this.torque = torque; }
-    public void setThrottle(int throttle) { this.throttle = throttle; }
-    public void setFinaltorque(Vector3d finaltorque) { this.finaltorque = finaltorque; }
-    public void setFinalforce(Vector3d finalforce) { this.finalforce = finalforce; }
-
-    //Direction in ship space. Expected to be normalized
-    public Vector3d getDirectionForward() { return directionForward; }
-    public Vector3d getDirectionUp() { return directionUp; }
-    public Vector3d getDirectionRight() { return directionRight; }
-    public void setDirectionForward(Vector3d direction) { this.directionForward = direction; }
-    public void setDirectionUp(Vector3d direction) { this.directionUp = direction; }
-    public void setDirectionRight(Vector3d direction) { this.directionRight = direction; }
     public void reset() {
         this.torque = new Vector3d(0,0,0);
         this.force = new Vector3d(0,0,0);

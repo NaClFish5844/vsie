@@ -57,7 +57,7 @@ public class AbstractTurretGeoRenderer extends GeoBlockRenderer<AbstractTurretBl
     @Override
     public boolean shouldRender(AbstractTurretBlockEntity be, Vec3 cameraPos) {
         // 自己写距离判断，比如 256 格以内都渲染
-        return be.getBlockPos().distSqr(new Vec3i((int) cameraPos.x, (int) cameraPos.y, (int) cameraPos.z)) < 2048 * 2048;
+        return true;
     }
 
 }

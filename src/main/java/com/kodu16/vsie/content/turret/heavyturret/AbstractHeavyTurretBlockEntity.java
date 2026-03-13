@@ -62,7 +62,7 @@ public abstract class AbstractHeavyTurretBlockEntity extends AbstractTurretBlock
             currentworldpos = new Vector3d(Math.round(this.getBlockPos().getX()*10)/10.0, Math.round((this.getBlockPos().getY()+getYAxisOffset())*10)/10.0, Math.round(this.getBlockPos().getZ()*10)/10.0);
         }
 
-        boolean canTrackBySeatView = needtofire() && !getData().isviewlocked && (getData().firetype == 0 || getData().firetype == 2);
+        boolean canTrackBySeatView = !getData().isviewlocked && (getData().firetype == 0 || getData().firetype == 2);
         // 功能：当控制椅视角未锁定且重炮为手动/智能模式时，将玩家视角先做“控制椅->重炮”的方向转换后再驱动头瞄。
         if (canTrackBySeatView) {
             updateSeatViewTargetRot();
@@ -72,7 +72,7 @@ public abstract class AbstractHeavyTurretBlockEntity extends AbstractTurretBlock
         }
 
         // 功能：重型炮塔只有在频道匹配时才响应自动/智能射击，行为与主武器一致。
-        if (needtofire() && (getData().firetype == 1 || (getData().firetype == 2 && getData().isviewlocked && !targetPos.equals(new Vector3d(0,0,0))))) {
+        if ((getData().firetype == 1 || (getData().firetype == 2 && getData().isviewlocked && !targetPos.equals(new Vector3d(0,0,0))))) {
             LogUtils.getLogger().warn("setting target:"+targetPos);
             updateTargetRot();
             this.xRot0 = closestReachableX(xRot0,getMaxSpinSpeed(),targetxrot);
