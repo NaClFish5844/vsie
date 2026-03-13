@@ -30,8 +30,6 @@ public final class TurretData {
     public volatile int playerangleX = 0;//玩家当前朝向
     public volatile int playerangleY = 0;
     public volatile boolean isviewlocked = false;
-
-    public volatile boolean targetsTrusted = false;
     // 功能：为重型炮塔提供与主武器一致的 4 路频道开关。
     public volatile boolean channel1 = true;
     public volatile boolean channel2 = false;
@@ -40,6 +38,7 @@ public final class TurretData {
     // 功能：缓存控制椅当前下发给重型炮塔的频道编码。
     public volatile int receivingchannel = 0;
     public volatile Vector3d location;
+
     @Getter
     @Setter
     public volatile double distance;
