@@ -3,6 +3,8 @@ package com.kodu16.vsie.registries;
 import com.kodu16.vsie.content.controlseat.client.AbstractControlSeatGeoRenderer;
 import com.kodu16.vsie.content.misc.electromagnet_rail.core.ElectroMagnetRailCoreBlockEntity;
 import com.kodu16.vsie.content.misc.electromagnet_rail.core.ElectroMagnetRailCoreGeoRenderer;
+import com.kodu16.vsie.content.misc.electromagnet_rail.top.ElectroMagnetRailTopBlockEntity;
+import com.kodu16.vsie.content.misc.electromagnet_rail.top.ElectroMagnetRailTopGeoRenderer;
 import com.kodu16.vsie.content.turret.ciws.basicciws.BasicCIWSBlockEntity;
 import com.kodu16.vsie.content.turret.heavyturret.heavyelectromagnetturret.HeavyElectroMagnetTurretBlockEntity;
 import com.kodu16.vsie.content.turret.heavyturret.heavyelectromagnetturret.HeavyElectroMagnetTurretGeoRenderer;
@@ -165,5 +167,10 @@ public class vsieBlockEntities {
             REGISTRATE.blockEntity("electro_magnet_rail_core_block_entity", ElectroMagnetRailCoreBlockEntity::new)
                     .validBlocks(vsieBlocks.ELECTRO_MAGNET_RAIL_CORE_BLOCK)
                     .renderer(() -> ElectroMagnetRailCoreGeoRenderer::new)
+                    .register();
+    public static final BlockEntityEntry<ElectroMagnetRailTopBlockEntity> ELECTRO_MAGNET_RAIL_TOP_BLOCK_ENTITY =
+            REGISTRATE.blockEntity("electro_magnet_rail_top_block_entity", ElectroMagnetRailTopBlockEntity::new)
+                    .validBlocks(vsieBlocks.ELECTRO_MAGNET_RAIL_TOP_BLOCK)
+                    .renderer(() -> ElectroMagnetRailTopGeoRenderer::new)
                     .register();
 }

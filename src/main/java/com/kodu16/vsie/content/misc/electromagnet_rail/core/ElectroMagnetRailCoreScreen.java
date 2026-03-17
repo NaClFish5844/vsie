@@ -16,7 +16,7 @@ public class ElectroMagnetRailCoreScreen extends AbstractContainerScreen<Electro
             new ResourceLocation(vsie.ID, "textures/gui/iff/iff_gui.png");
 
     private static final ResourceLocation SLOT_TEXTURE =
-            new ResourceLocation("minecraft", "textures/gui/container/slot.png");
+            new ResourceLocation(vsie.ID, "textures/gui/slot.png");
 
     public ElectroMagnetRailCoreScreen(ElectroMagnetRailCoreContainerMenu menu, Inventory playerInv, Component title) {
         super(menu, playerInv, title);
@@ -38,8 +38,8 @@ public class ElectroMagnetRailCoreScreen extends AbstractContainerScreen<Electro
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
 
         // 绘制核心仓 2x2 槽位底图，对应容器菜单中的 4 个 rail 槽位。
-        int coreStartX = this.leftPos + 68;
-        int coreStartY = this.topPos + 32;
+        int coreStartX = this.leftPos + 68-1;
+        int coreStartY = this.topPos + 32-1;
         for (int row = 0; row < 2; row++) {
             for (int col = 0; col < 2; col++) {
                 guiGraphics.blit(SLOT_TEXTURE,
@@ -50,8 +50,8 @@ public class ElectroMagnetRailCoreScreen extends AbstractContainerScreen<Electro
         }
 
         // 绘制玩家背包 3x9 的槽位底图，保证和 vanilla 容器视觉一致。
-        int playerInvStartX = this.leftPos + 8;
-        int playerInvStartY = this.topPos + 84;
+        int playerInvStartX = this.leftPos + 8-1;
+        int playerInvStartY = this.topPos + 84-1;
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
                 guiGraphics.blit(SLOT_TEXTURE,
@@ -62,7 +62,7 @@ public class ElectroMagnetRailCoreScreen extends AbstractContainerScreen<Electro
         }
 
         // 绘制玩家快捷栏 1x9 的槽位底图。
-        int hotbarY = this.topPos + 142;
+        int hotbarY = this.topPos + 142-1;
         for (int col = 0; col < 9; col++) {
             guiGraphics.blit(SLOT_TEXTURE,
                     playerInvStartX + col * 18,
