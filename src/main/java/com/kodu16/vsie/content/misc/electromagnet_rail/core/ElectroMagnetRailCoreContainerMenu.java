@@ -47,12 +47,26 @@ public class ElectroMagnetRailCoreContainerMenu extends AbstractContainerMenu {
             this.addSlot(new Slot(playerInventory, col, playerInvStartX + col * 18, hotbarY));
         }
 
-        // 通过 ContainerData 同步当前存储 rail 总数给客户端显示。
+        // 通过 ContainerData 同步 rail 数量、终端检测状态和终端坐标给客户端显示。
         this.data = new ContainerData() {
             @Override
             public int get(int index) {
-                if (index == 0 && ElectroMagnetRailCoreContainerMenu.this.coreInventory instanceof ElectroMagnetRailCoreBlockEntity blockEntity) {
-                    return blockEntity.getStoredRailCount();
+                if (ElectroMagnetRailCoreContainerMenu.this.coreInventory instanceof ElectroMagnetRailCoreBlockEntity blockEntity) {
+                    if (index == 0) {
+                        return blockEntity.getStoredRailCount();
+                    }
+                    if (index == 1) {
+                        return blockEntity.getTerminalStatus();
+                    }
+                    if (index == 2) {
+                        return blockEntity.getTerminalPos().getX();
+                    }
+                    if (index == 3) {
+                        return blockEntity.getTerminalPos().getY();
+                    }
+                    if (index == 4) {
+                        return blockEntity.getTerminalPos().getZ();
+                    }
                 }
                 return 0;
             }
@@ -64,7 +78,7 @@ public class ElectroMagnetRailCoreContainerMenu extends AbstractContainerMenu {
 
             @Override
             public int getCount() {
-                return 1;
+                return 5;
             }
         };
         this.addDataSlots(this.data);
@@ -76,6 +90,21 @@ public class ElectroMagnetRailCoreContainerMenu extends AbstractContainerMenu {
 
     public int getRailCount() {
         return this.data.get(0);
+    }
+
+    // 提供方块坐标给客户端按钮发包使用。
+    public BlockPos getBlockPosition() {
+        return this.blockPosition;
+    }
+
+    // 读取最近一次终端检测状态。
+    public int getTerminalStatus() {
+        return this.data.get(1);
+    }
+
+    // 读取最近一次终端检测返回的坐标。
+    public BlockPos getTerminalPos() {
+        return new BlockPos(this.data.get(2), this.data.get(3), this.data.get(4));
     }
 
     @Override

@@ -9,6 +9,7 @@ import com.kodu16.vsie.network.controlseat.S2C.ControlSeatS2CPacket;
 import com.kodu16.vsie.network.controlseat.S2C.ControlSeatStatusS2CPacket;
 import com.kodu16.vsie.network.controlseat.S2C.NearbyShipsS2CPacket;
 import com.kodu16.vsie.network.fuel.SyncThrusterFuelsPacket;
+import com.kodu16.vsie.network.rail.ElectroMagnetRailCoreDetectC2SPacket;
 import com.kodu16.vsie.network.fx.FxBlockS2CPacket;
 import com.kodu16.vsie.network.fx.FxEntityS2CPacket;
 import com.kodu16.vsie.network.screen.ScreenC2SPacket;
@@ -102,6 +103,13 @@ public class ModNetworking {
                 ScreentypeC2SPacket::encode,
                 ScreentypeC2SPacket::decode,
                 ScreentypeC2SPacket::handle
+        );
+        CHANNEL.registerMessage(
+                nextId(),
+                ElectroMagnetRailCoreDetectC2SPacket.class,
+                ElectroMagnetRailCoreDetectC2SPacket::encode,
+                ElectroMagnetRailCoreDetectC2SPacket::decode,
+                ElectroMagnetRailCoreDetectC2SPacket::handle
         );
         CHANNEL.registerMessage(
                 nextId(),

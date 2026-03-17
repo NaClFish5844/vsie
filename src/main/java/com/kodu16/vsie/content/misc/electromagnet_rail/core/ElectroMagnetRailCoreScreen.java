@@ -1,8 +1,11 @@
 package com.kodu16.vsie.content.misc.electromagnet_rail.core;
 
+import com.kodu16.vsie.network.rail.ElectroMagnetRailCoreDetectC2SPacket;
+import com.kodu16.vsie.registries.ModNetworking;
 import com.kodu16.vsie.vsie;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
@@ -26,6 +29,17 @@ public class ElectroMagnetRailCoreScreen extends AbstractContainerScreen<Electro
     }
 
     @Override
+    protected void init() {
+        super.init();
+        // 添加“检测终端”按钮：点击后向服务端发包执行扫描逻辑。
+        this.addRenderableWidget(Button.builder(Component.literal("检测终端"), button ->
+                        ModNetworking.CHANNEL.sendToServer(new ElectroMagnetRailCoreDetectC2SPacket(this.menu.getBlockPosition())))
+                .pos(this.leftPos + 114, this.topPos + 34)
+                .size(56, 20)
+                .build());
+    }
+
+    @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         // 复用 IFF 背景贴图，满足“与 IFF 相同 GUI 背景”的需求。
         guiGraphics.blit(IFF_BG_TEXTURE,
@@ -38,8 +52,8 @@ public class ElectroMagnetRailCoreScreen extends AbstractContainerScreen<Electro
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
 
         // 绘制核心仓 2x2 槽位底图，对应容器菜单中的 4 个 rail 槽位。
-        int coreStartX = this.leftPos + 68-1;
-        int coreStartY = this.topPos + 32-1;
+        int coreStartX = this.leftPos + 68 - 1;
+        int coreStartY = this.topPos + 32 - 1;
         for (int row = 0; row < 2; row++) {
             for (int col = 0; col < 2; col++) {
                 guiGraphics.blit(SLOT_TEXTURE,
@@ -50,8 +64,8 @@ public class ElectroMagnetRailCoreScreen extends AbstractContainerScreen<Electro
         }
 
         // 绘制玩家背包 3x9 的槽位底图，保证和 vanilla 容器视觉一致。
-        int playerInvStartX = this.leftPos + 8-1;
-        int playerInvStartY = this.topPos + 84-1;
+        int playerInvStartX = this.leftPos + 8 - 1;
+        int playerInvStartY = this.topPos + 84 - 1;
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
                 guiGraphics.blit(SLOT_TEXTURE,
@@ -62,7 +76,7 @@ public class ElectroMagnetRailCoreScreen extends AbstractContainerScreen<Electro
         }
 
         // 绘制玩家快捷栏 1x9 的槽位底图。
-        int hotbarY = this.topPos + 142-1;
+        int hotbarY = this.topPos + 142 - 1;
         for (int col = 0; col < 9; col++) {
             guiGraphics.blit(SLOT_TEXTURE,
                     playerInvStartX + col * 18,
@@ -80,6 +94,31 @@ public class ElectroMagnetRailCoreScreen extends AbstractContainerScreen<Electro
                 32, 18,
                 0x404040,
                 false);
+
+        // 在按钮下方显示最近一次终端检测结果。
+        guiGraphics.drawString(this.font,
+                this.getTerminalMessage(),
+                86, 58,
+                0x404040,
+                false);
+    }
+
+    // 将状态码转换成用户可读中文提示文本。
+    private Component getTerminalMessage() {
+        int status = this.menu.getTerminalStatus();
+        if (status == ElectroMagnetRailCoreBlockEntity.TERMINAL_STATUS_FOUND) {
+            return Component.literal("已找到电磁导轨终端：" + this.menu.getTerminalPos().toShortString());
+        }
+        if (status == ElectroMagnetRailCoreBlockEntity.TERMINAL_STATUS_FACING_ERROR) {
+            return Component.literal("电磁导轨终端朝向错误");
+        }
+        if (status == ElectroMagnetRailCoreBlockEntity.TERMINAL_STATUS_BLOCKED) {
+            return Component.literal("电磁导轨终端和核心之间有阻挡");
+        }
+        if (status == ElectroMagnetRailCoreBlockEntity.TERMINAL_STATUS_NOT_FOUND) {
+            return Component.literal("未找到可到达的电磁导轨终端");
+        }
+        return Component.literal("等待终端检测");
     }
 
     @Override
