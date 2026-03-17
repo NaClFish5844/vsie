@@ -1,8 +1,10 @@
 package com.kodu16.vsie.content.misc.electromagnet_rail.core;
 
 import com.kodu16.vsie.vsie;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -12,6 +14,9 @@ public class ElectroMagnetRailCoreScreen extends AbstractContainerScreen<Electro
 
     private static final ResourceLocation IFF_BG_TEXTURE =
             new ResourceLocation(vsie.ID, "textures/gui/iff/iff_gui.png");
+
+    private static final ResourceLocation SLOT_TEXTURE =
+            new ResourceLocation("minecraft", "textures/gui/container/slot.png");
 
     public ElectroMagnetRailCoreScreen(ElectroMagnetRailCoreContainerMenu menu, Inventory playerInv, Component title) {
         super(menu, playerInv, title);
@@ -28,6 +33,42 @@ public class ElectroMagnetRailCoreScreen extends AbstractContainerScreen<Electro
                 0, 0,
                 this.imageWidth, this.imageHeight,
                 this.imageWidth, this.imageHeight);
+
+        // 先切换到通用纹理着色器，再绘制 Minecraft 默认槽位贴图。
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+
+        // 绘制核心仓 2x2 槽位底图，对应容器菜单中的 4 个 rail 槽位。
+        int coreStartX = this.leftPos + 68;
+        int coreStartY = this.topPos + 32;
+        for (int row = 0; row < 2; row++) {
+            for (int col = 0; col < 2; col++) {
+                guiGraphics.blit(SLOT_TEXTURE,
+                        coreStartX + col * 18,
+                        coreStartY + row * 18,
+                        0, 0, 18, 18, 18, 18);
+            }
+        }
+
+        // 绘制玩家背包 3x9 的槽位底图，保证和 vanilla 容器视觉一致。
+        int playerInvStartX = this.leftPos + 8;
+        int playerInvStartY = this.topPos + 84;
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 9; col++) {
+                guiGraphics.blit(SLOT_TEXTURE,
+                        playerInvStartX + col * 18,
+                        playerInvStartY + row * 18,
+                        0, 0, 18, 18, 18, 18);
+            }
+        }
+
+        // 绘制玩家快捷栏 1x9 的槽位底图。
+        int hotbarY = this.topPos + 142;
+        for (int col = 0; col < 9; col++) {
+            guiGraphics.blit(SLOT_TEXTURE,
+                    playerInvStartX + col * 18,
+                    hotbarY,
+                    0, 0, 18, 18, 18, 18);
+        }
     }
 
     @Override
