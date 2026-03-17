@@ -23,7 +23,7 @@ public class ElectroMagnetRailCoreContainerMenu extends AbstractContainerMenu {
         this.blockPosition = pos;
 
         // 4 个核心仓位：2x2 布局，对应 IFF GUI 中央区域。
-        int slotStartX = 68;
+        int slotStartX = 28;
         int slotStartY = 32;
         for (int row = 0; row < 2; row++) {
             for (int col = 0; col < 2; col++) {

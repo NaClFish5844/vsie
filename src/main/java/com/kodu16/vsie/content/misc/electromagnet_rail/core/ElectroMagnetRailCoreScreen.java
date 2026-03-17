@@ -34,7 +34,7 @@ public class ElectroMagnetRailCoreScreen extends AbstractContainerScreen<Electro
         // 添加“检测终端”按钮：点击后向服务端发包执行扫描逻辑。
         this.addRenderableWidget(Button.builder(Component.literal("检测终端"), button ->
                         ModNetworking.CHANNEL.sendToServer(new ElectroMagnetRailCoreDetectC2SPacket(this.menu.getBlockPosition())))
-                .pos(this.leftPos + 114, this.topPos + 34)
+                .pos(this.leftPos + 94, this.topPos + 34)
                 .size(56, 20)
                 .build());
     }
@@ -91,7 +91,7 @@ public class ElectroMagnetRailCoreScreen extends AbstractContainerScreen<Electro
         // 在 GUI 上显示当前存储的 rail 数量。
         guiGraphics.drawString(this.font,
                 Component.literal("Rail: " + this.menu.getRailCount()),
-                32, 18,
+                this.leftPos+28, this.topPos+60,
                 0x404040,
                 false);
         drawTerminalMessage(guiGraphics);
@@ -101,37 +101,46 @@ public class ElectroMagnetRailCoreScreen extends AbstractContainerScreen<Electro
     // 将状态码转换成用户可读中文提示文本。
     private void drawTerminalMessage(GuiGraphics guiGraphics) {
         int status = this.menu.getTerminalStatus();
-        if(status == ElectroMagnetRailCoreBlockEntity.TERMINAL_STATUS_IDLE) {
+        if (status == ElectroMagnetRailCoreBlockEntity.TERMINAL_STATUS_IDLE) {
             return;
         }
+
+        String text = null;
+        int color = 0xCC5555;
+
         if (status == ElectroMagnetRailCoreBlockEntity.TERMINAL_STATUS_FOUND) {
-            guiGraphics.drawString(this.font,
-                    Component.literal("已找到电磁导轨终端：" + this.menu.getTerminalPos().toShortString()),
-                    86, 58,
-                    0x00BB44,
-                    false);
+            text = "已找到电磁导轨终端：" + this.menu.getTerminalPos().toShortString();
+            color = 0x00CC77;
         }
-        if (status == ElectroMagnetRailCoreBlockEntity.TERMINAL_STATUS_FACING_ERROR) {
-            guiGraphics.drawString(this.font,
-                    Component.literal("电磁导轨终端朝向错误：" + this.menu.getTerminalPos().toShortString()),
-                    86, 58,
-                    0xCC5555,
-                    false);
+        else if (status == ElectroMagnetRailCoreBlockEntity.TERMINAL_STATUS_FACING_ERROR) {
+            text = "电磁导轨终端朝向错误：" + this.menu.getTerminalPos().toShortString();
         }
-        if (status == ElectroMagnetRailCoreBlockEntity.TERMINAL_STATUS_BLOCKED) {
-            guiGraphics.drawString(this.font,
-                    Component.literal("电磁导轨终端和核心之间有遮挡：" + this.menu.getTerminalPos().toShortString()),
-                    86, 58,
-                    0xCC5555,
-                    false);
+        else if (status == ElectroMagnetRailCoreBlockEntity.TERMINAL_STATUS_BLOCKED) {
+            text = "电磁导轨终端和核心之间有遮挡：" + this.menu.getTerminalPos().toShortString();
         }
-        if (status == ElectroMagnetRailCoreBlockEntity.TERMINAL_STATUS_NOT_FOUND) {
-            guiGraphics.drawString(this.font,
-                    Component.literal("可到达范围内未找到电磁导轨终端：" + this.menu.getTerminalPos().toShortString()),
-                    86, 58,
-                    0xCC5555,
-                    false);
+        else if (status == ElectroMagnetRailCoreBlockEntity.TERMINAL_STATUS_NOT_FOUND) {
+            text = "可到达范围内未找到电磁导轨终端：" + this.menu.getTerminalPos().toShortString();
         }
+
+        if (text == null) {
+            return;
+        }
+
+        float scale = 0.5F; // 1.0 是原始大小，越小字越小
+
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().scale(scale, scale, scale);
+
+        guiGraphics.drawString(
+                this.font,
+                Component.literal(text),
+                (int) (86 / scale),
+                (int) (58 / scale),
+                color,
+                false
+        );
+
+        guiGraphics.pose().popPose();
     }
 
     @Override

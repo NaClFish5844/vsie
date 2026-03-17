@@ -16,7 +16,7 @@ public class ElectroMagnetRailTopGeoRenderer extends GeoBlockRenderer<ElectroMag
     protected void rotateBlock(Direction facing, PoseStack poseStack) {
         switch (facing) {
             case SOUTH -> {
-                poseStack.mulPose(Axis.YP.rotationDegrees(180));
+                poseStack.mulPose(Axis.YP.rotationDegrees(-180));
             }
             case WEST -> {
                 poseStack.mulPose(Axis.YP.rotationDegrees(90));
@@ -25,7 +25,7 @@ public class ElectroMagnetRailTopGeoRenderer extends GeoBlockRenderer<ElectroMag
                 poseStack.mulPose(Axis.YP.rotationDegrees(0));
             }
             case EAST -> {
-                poseStack.mulPose(Axis.YP.rotationDegrees(270));
+                poseStack.mulPose(Axis.YP.rotationDegrees(-90));
             }
         }
     }
