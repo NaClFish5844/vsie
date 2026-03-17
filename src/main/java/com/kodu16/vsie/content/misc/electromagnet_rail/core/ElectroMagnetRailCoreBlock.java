@@ -9,12 +9,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Containers;
 import net.minecraft.world.level.block.DirectionalBlock;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -121,5 +124,24 @@ public class ElectroMagnetRailCoreBlock extends DirectionalBlock implements Enti
             return Math.min(15, (int) Math.ceil(count / 16.0));
         }
         return 0;
+    }
+
+    @Override
+    public void onRemove(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos,
+                         @Nonnull BlockState newState, boolean isMoving) {
+        if (state.getBlock() != newState.getBlock() && !level.isClientSide) {
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (blockEntity instanceof ElectroMagnetRailCoreBlockEntity coreBlockEntity) {
+                // 破坏核心仓时，将 4 个槽位中的 rail 全部作为掉落物抛出到世界，避免物品丢失。
+                SimpleContainer drops = new SimpleContainer(coreBlockEntity.getSlots());
+                for (int slot = 0; slot < coreBlockEntity.getSlots(); slot++) {
+                    ItemStack stack = coreBlockEntity.getStackInSlot(slot);
+                    drops.setItem(slot, stack.copy());
+                    coreBlockEntity.setStackInSlot(slot, ItemStack.EMPTY);
+                }
+                Containers.dropContents(level, pos, drops);
+            }
+        }
+        super.onRemove(state, level, pos, newState, isMoving);
     }
 }
