@@ -121,6 +121,11 @@ public class ControlSeatWarpSelectionScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        // 功能：防止界面刚打开时 Screen 尚未拿到 minecraft/font 引用就进入渲染，从而触发原版 renderBackground 空指针。
+        if (this.minecraft == null || this.font == null) {
+            return;
+        }
+
         renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
 
