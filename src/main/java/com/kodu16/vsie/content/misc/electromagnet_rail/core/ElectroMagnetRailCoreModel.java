@@ -29,7 +29,7 @@ public class ElectroMagnetRailCoreModel extends DefaultedBlockGeoModel<ElectroMa
         CoreGeoBone railright = getAnimationProcessor().getBone("railright");
         if(railleft != null && railright != null) {
             // 功能：仅在成功绑定到 top 时向两侧展开滑轨，否则平滑回收到中心位置。
-            float targetOffsetX = animatable.hasValidTerminalBinding() ? 60.0f : 0.0f;
+            float targetOffsetX = animatable.hasValidTerminalBinding() ? 58.0f : 0.0f;
             float smoothOffsetX = lerpOffset(animatable.prevRailOffsetX, targetOffsetX);
             animatable.prevRailOffsetX = smoothOffsetX;
 

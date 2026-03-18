@@ -18,7 +18,7 @@ public class ElectroMagnetRailCoreBeamLayer extends GeoRenderLayer<ElectroMagnet
     // 功能：复用项目已有的半透明光束渲染管线，保持与推进器光束一致的视觉风格。
     private static final RenderType BEAM_RENDER_TYPE = translucentbeamrendertype.SOLID_TRANSLUCENT_BEAM;
     private static final int FULL_BRIGHT = 0xF000F0;
-    private static final float BEAM_HALF_WIDTH = 3/8f;
+    private static final float BEAM_HALF_WIDTH = 3/10f;
 
     public ElectroMagnetRailCoreBeamLayer(GeoRenderer<ElectroMagnetRailCoreBlockEntity> entityRendererIn) {
         super(entityRendererIn);
@@ -42,7 +42,7 @@ public class ElectroMagnetRailCoreBeamLayer extends GeoRenderLayer<ElectroMagnet
 
         poseStack.pushPose();
         // 功能：将渲染原点对齐到方块中心，便于按方块单位直接构造光束几何。
-        //poseStack.translate(0.5f, 0.5f, 0.5f);
+        poseStack.translate(0, 0.5f, 0);
         poseStack.mulPose(Axis.YP.rotationDegrees(-90));
 
         VertexConsumer consumer = bufferSource.getBuffer(BEAM_RENDER_TYPE);
