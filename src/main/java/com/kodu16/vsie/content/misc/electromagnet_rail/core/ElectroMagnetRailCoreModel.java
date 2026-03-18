@@ -28,14 +28,19 @@ public class ElectroMagnetRailCoreModel extends DefaultedBlockGeoModel<ElectroMa
         CoreGeoBone railleft = getAnimationProcessor().getBone("railleft");
         CoreGeoBone railright = getAnimationProcessor().getBone("railright");
         if(railleft != null && railright != null) {
-            float extend = lerp(animatable.prevextend, 48);
-            animatable.prevextend = extend;
-            railleft.setRotX(-extend);
-            railright.setRotY(-extend);
+            // 功能：仅在成功绑定到 top 时向两侧展开滑轨，否则平滑回收到中心位置。
+            float targetOffsetX = animatable.hasValidTerminalBinding() ? 60.0f : 0.0f;
+            float smoothOffsetX = lerpOffset(animatable.prevRailOffsetX, targetOffsetX);
+            animatable.prevRailOffsetX = smoothOffsetX;
+
+            // 功能：左/右骨骼沿 X 轴对称移动，形成平滑展开到 -60 / 60 的动画效果。
+            railleft.setPosX(-smoothOffsetX);
+            railright.setPosX(smoothOffsetX);
         }
     }
 
-    private float lerp(float start, float end) {
-        return Mth.rotLerp(0.1F, start * Mth.RAD_TO_DEG, end * Mth.RAD_TO_DEG) * Mth.DEG_TO_RAD;
+    // 功能：使用线性插值平滑滑轨位移，避免绑定成功时瞬间弹开。
+    private float lerpOffset(float start, float end) {
+        return Mth.lerp(0.12F, start, end);
     }
 }

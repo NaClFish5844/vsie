@@ -42,7 +42,8 @@ public class ElectroMagnetRailCoreBlockEntity extends SmartBlockEntity implement
     public static final int TERMINAL_STATUS_NOT_FOUND = 3;
     public static final int TERMINAL_STATUS_BLOCKED = 4;
     public static SerializableDataTicket<Boolean> IS_WORKING;
-    public float prevextend = 0;
+    // 功能：缓存上一帧左右滑轨的 X 偏移，用于客户端渲染时做平滑插值。
+    public float prevRailOffsetX = 0.0f;
     // 核心仓仅有 4 个槽位，且只允许放入 electromagnet_rail 方块物品。
     public final AnimatableInstanceCache cache = new SingletonAnimatableInstanceCache(this);
     private final ItemStackHandler inventory = new ItemStackHandler(4) {
