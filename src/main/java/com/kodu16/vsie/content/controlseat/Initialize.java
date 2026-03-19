@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import org.joml.Vector3d;
 import org.slf4j.Logger;
+import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 
 public class Initialize {
@@ -34,7 +35,6 @@ public class Initialize {
                 data.setTorque(new Vector3d(0, 0, 0));
                 data.setDirectionForward(VectorConversionsMCKt.toJOMLD(state.getValue(FACING).getNormal()));
                 data.setDirectionUp(VectorConversionsMCKt.toJOMLD(new Vec3i(0, 1, 0)));
-
                 // 修正方向
                 Direction facing = state.getValue(FACING); // 获取当前方块的朝向
                 rightVector = switch (facing) {

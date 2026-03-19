@@ -7,10 +7,15 @@ import com.kodu16.vsie.content.warpprojectile.WarpProjecTileEntity;
 import com.kodu16.vsie.network.controlseat.S2C.ControlSeatInputS2CPacket;
 import com.kodu16.vsie.network.controlseat.S2C.ControlSeatStatusS2CPacket;
 import com.kodu16.vsie.network.controlseat.S2C.NearbyShipsS2CPacket;
+import net.minecraft.server.level.ServerLevel;
+import org.joml.Matrix4dc;
+import org.joml.Quaterniondc;
+import org.valkyrienskies.core.api.ships.ServerShip;
+import org.valkyrienskies.core.api.world.ServerShipWorld;
+import org.valkyrienskies.core.impl.game.ShipTeleportDataImpl;
 import com.kodu16.vsie.registries.vsieEntities;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -19,6 +24,7 @@ import net.minecraft.world.level.Level;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
 import org.joml.primitives.AABBdc;
+import org.valkyrienskies.core.api.VsCoreApi;
 import org.valkyrienskies.core.api.ships.QueryableShipData;
 import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.core.api.ships.properties.ShipTransform;
@@ -343,6 +349,18 @@ public class ServerShipHandler {
         double c = rotationMatrix[2][0] * localTorque.x + rotationMatrix[2][1] * localTorque.y + rotationMatrix[2][2] * localTorque.z;
         return new Vector3d(a,b,c);
         // 返回世界坐标系下d(a, b, c);
+    }
+
+    public static void teleportship(ServerShip ship, Level level, Vector3d destpos) {
+        Quaterniondc rot = ship.getTransform().getShipToWorldRotation();
+        Vector3dc vel = ship.getVelocity();
+        Vector3dc omega = ship.getAngularVelocity();
+        Vector3dc centerofmass = ship.getTransform().getPositionInModel();
+        String dimension = String.valueOf(level.dimension());
+        ServerShipWorld ssw = (ServerShipWorld) VSGameUtilsKt.getShipObjectWorld(level);
+        double scale = ship.getTransform().getShipToWorldScaling().x();
+        var teleportData = new ShipTeleportDataImpl(destpos, rot, vel, omega, dimension, scale,centerofmass);
+        ValkyrienSkiesMod.getVsCore().teleportShip(ssw, ship,teleportData);
     }
 
 }

@@ -49,6 +49,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.joml.Vector3d;
 import org.joml.Vector3dc;
+import org.valkyrienskies.core.api.ships.ServerShip;
 import org.valkyrienskies.core.api.ships.Ship;
 import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import org.valkyrienskies.mod.common.ValkyrienSkiesMod;
@@ -567,6 +568,7 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
         if (onShip) {
             Ship ship = VSGameUtilsKt.getShipManagingPos(level, this.getBlockPos());
             if (ship != null) {
+                controlseatData.serverShip = (ServerShip) ship;
                 Vector3d center = VSGameUtilsKt.toWorldCoordinates(ship, this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ());
                 currentworldpos = new Vector3d(center.x, center.y, center.z);
                 return;

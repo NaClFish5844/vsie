@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import org.joml.Vector3d;
 import net.minecraft.world.entity.player.Player;
+import org.valkyrienskies.core.api.ships.ServerShip;
 import org.valkyrienskies.core.api.ships.Ship;
 
 import java.util.ArrayList;
@@ -94,6 +95,7 @@ public class ControlSeatServerData {
     public volatile BlockPos controlSeatPos = BlockPos.ZERO;
 
     public Level level;
+    public ServerShip serverShip;
 
 
     @Getter
