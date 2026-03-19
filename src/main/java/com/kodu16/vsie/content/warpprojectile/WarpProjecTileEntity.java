@@ -20,8 +20,6 @@ public class WarpProjecTileEntity extends Projectile {
     // 功能：同步弹射物总飞行距离，保证客户端和服务端都能按相同距离自动消失。
     private static final EntityDataAccessor<Float> MAX_TRAVEL_DISTANCE =
             SynchedEntityData.defineId(WarpProjecTileEntity.class, EntityDataSerializers.FLOAT);
-    // 功能：记录是否已经播放过生成时的 Photon 特效，避免同一个实体重复触发。
-    private boolean hasPlayedSpawnFx = false;
     // 功能：累计当前实体已经飞行的距离，用于达到上限时自动移除。
     private double travelledDistance = 0.0D;
     // 功能：统一管理跃迁弹射物的生成特效资源，生成时播放 warp_projectile.fx。
@@ -71,8 +69,7 @@ public class WarpProjecTileEntity extends Projectile {
         super.tick();
 
         // 功能：实体首次更新时播放生成特效，使用 warp_projectile.fx 提供视觉表现。
-        if (!this.hasPlayedSpawnFx && this.level().isClientSide()) {
-            this.hasPlayedSpawnFx = true;
+        if (this.level().isClientSide()) {
             var fx = FXHelper.getFX(WARP_PROJECTILE_FX);
             if (fx != null) {
                 var effect = new EntityEffect(fx, this.level(), this, EntityEffect.AutoRotate.XROT);
