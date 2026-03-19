@@ -123,8 +123,8 @@ public class ServerShipHandler {
         final ShipTransform transform = ship.getTransform();
 
         Vector3d invomega = ship.getOmega().negate(new Vector3d()).mul(10);
-        Vector3d invtorque = ship.getMomentOfInertia().transform(invomega);
-        Vector3dc invforce = ship.getVelocity().negate(new Vector3d()).mul(mass);
+        Vector3d invtorque = data.isWarpPreparing ? new Vector3d(0,0,0) : ship.getMomentOfInertia().transform(invomega);
+        Vector3dc invforce = data.isWarpPreparing ? new Vector3d(0,0,0) : ship.getVelocity().negate(new Vector3d()).mul(mass);
 
         Vector3d finaltorque = new Vector3d();
         Vector3d finalforce  = new Vector3d();
@@ -149,7 +149,7 @@ public class ServerShipHandler {
             worldZDirection.normalize();
 
             Vector3d steeringTorque = data.isWarpPreparing ? calculateWarpPreparationTorque(ship) : new Vector3d(torque);
-            double torquescale = data.thruster_strength / (Math.sqrt(ship.getMass()));
+            double torquescale = data.thruster_strength*5 / (Math.sqrt(ship.getMass()));
             Vector3d controltorque = new Vector3d(steeringTorque.x*torquescale, steeringTorque.y*torquescale, steeringTorque.z*torquescale);
             if(controltorque.length()<0.1) {
                 controltorque.mul(0);
@@ -202,10 +202,10 @@ public class ServerShipHandler {
         double alignment = Mth.clamp(currentForward.dot(targetDirection), -1.0D, 1.0D);
         double angleStrength = Mth.clamp((1.0D - alignment) * 2.0D, 0.0D, 1.0D);
         rotationAxisWorld.normalize(angleStrength);
-
+        double factor = ship.getMass()/10;
         // 功能：只使用 yaw/pitch 两个轴进行自动对准，避免 warp 准备阶段给控制椅引入额外滚转。
-        double localYawTorque = Mth.clamp(rotationAxisWorld.dot(worldYDirection), -1.0D, 1.0D);
-        double localPitchTorque = Mth.clamp(rotationAxisWorld.dot(worldZDirection), -1.0D, 1.0D);
+        double localYawTorque = Mth.clamp(rotationAxisWorld.dot(worldYDirection), -factor, factor);
+        double localPitchTorque = Mth.clamp(rotationAxisWorld.dot(worldZDirection), -factor, factor);
         return new Vector3d(0, localYawTorque, localPitchTorque);
     }
 

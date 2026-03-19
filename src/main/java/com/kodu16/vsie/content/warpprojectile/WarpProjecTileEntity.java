@@ -16,6 +16,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
+@SuppressWarnings("removal")
 public class WarpProjecTileEntity extends Projectile {
     // 功能：同步弹射物总飞行距离，保证客户端和服务端都能按相同距离自动消失。
     private static final EntityDataAccessor<Float> MAX_TRAVEL_DISTANCE =
