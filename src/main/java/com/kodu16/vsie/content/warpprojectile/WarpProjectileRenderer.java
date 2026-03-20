@@ -5,7 +5,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
-
+@SuppressWarnings("removal")
 // 功能：提供一个空渲染器，让 warp projectile 仅依赖 Photon 特效显示，避免缺失实体渲染注册导致客户端报错。
 public class WarpProjectileRenderer extends EntityRenderer<WarpProjecTileEntity> {
 
