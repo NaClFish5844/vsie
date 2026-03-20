@@ -45,9 +45,6 @@ public class ServerShipHandler {
     private static final double WARP_PROJECTILE_SPEED_PER_TICK = 1.0D;
     // 功能：在 warp projectile 消失后额外多等 1 秒，再调用 teleportship 执行正式跃迁。
     private static final int WARP_TELEPORT_EXTRA_DELAY_TICKS = 20;
-    //原先用于加力，现在改成综合的船只信息和行为处理
-    //船只的四元数等数据也会被S2C传回用于视角控制之类的
-    //说句实话我真想让你按alt直接固定在当前视角得了，但是考虑到我要做HUD我还是选择现在立刻马上就搞S2C
     private ControlSeatServerData data;
     public static final Logger LOGGER = LogUtils.getLogger();
 
