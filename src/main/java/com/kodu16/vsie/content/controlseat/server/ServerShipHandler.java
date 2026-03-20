@@ -7,6 +7,7 @@ import com.kodu16.vsie.content.warpprojectile.WarpProjecTileEntity;
 import com.kodu16.vsie.network.controlseat.S2C.ControlSeatInputS2CPacket;
 import com.kodu16.vsie.network.controlseat.S2C.ControlSeatStatusS2CPacket;
 import com.kodu16.vsie.network.controlseat.S2C.NearbyShipsS2CPacket;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import org.joml.Matrix4dc;
 import org.joml.Quaterniondc;
@@ -40,7 +41,7 @@ import org.slf4j.Logger;
 
 public class ServerShipHandler {
     // 功能：当控制椅前向与 warp 目标夹角小于 1 度时，视为已完成自动对准并触发 warp projectile。
-    private static final double WARP_ALIGNMENT_THRESHOLD_DEGREES = 1.0D;
+    private static final double WARP_ALIGNMENT_THRESHOLD_DEGREES = 5.0D;
     // 功能：warp projectile 固定以 1 格/tick 飞行，对应用户要求的跃迁特效速度。
     private static final double WARP_PROJECTILE_SPEED_PER_TICK = 1.0D;
     // 功能：在 warp projectile 消失后额外多等 1 秒，再调用 teleportship 执行正式跃迁。
@@ -139,8 +140,8 @@ public class ServerShipHandler {
         final ShipTransform transform = ship.getTransform();
 
         Vector3d invomega = ship.getOmega().negate(new Vector3d()).mul(10);
-        Vector3d invtorque = data.isWarpPreparing ? new Vector3d(0,0,0) : ship.getMomentOfInertia().transform(invomega);
-        Vector3dc invforce = data.isWarpPreparing ? new Vector3d(0,0,0) : ship.getVelocity().negate(new Vector3d()).mul(mass);
+        Vector3d invtorque = ship.getMomentOfInertia().transform(invomega);
+        Vector3dc invforce = ship.getVelocity().negate(new Vector3d()).mul(mass);
 
         Vector3d finaltorque = new Vector3d();
         Vector3d finalforce  = new Vector3d();
@@ -184,7 +185,6 @@ public class ServerShipHandler {
             if (Double.isNaN(torque.x()) || Double.isNaN(torque.y()) || Double.isNaN(torque.z())) {
                 return;
             }
-            //data.getPlayer().displayClientMessage(Component.literal("torquex:" + torque.x() + "  torquey:" + torque.y() + "  worldx:" + worldXDirection + "  throttle:" + data.getThrottle()), true);
             finaltorque.add(Invarianttorque);
             finalforce.add(Invariantforce);
         }
@@ -218,10 +218,10 @@ public class ServerShipHandler {
         double alignment = Mth.clamp(currentForward.dot(targetDirection), -1.0D, 1.0D);
         double angleStrength = Mth.clamp((1.0D - alignment) * 2.0D, 0.0D, 1.0D);
         rotationAxisWorld.normalize(angleStrength);
-        double factor = ship.getMass()/10;
+        double factor = ship.getMass()/2;
         // 功能：只使用 yaw/pitch 两个轴进行自动对准，避免 warp 准备阶段给控制椅引入额外滚转。
-        double localYawTorque = Mth.clamp(rotationAxisWorld.dot(worldYDirection), -factor, factor);
-        double localPitchTorque = Mth.clamp(rotationAxisWorld.dot(worldZDirection), -factor, factor);
+        double localYawTorque = Mth.clamp(rotationAxisWorld.dot(worldYDirection)*20, -factor, factor);
+        double localPitchTorque = Mth.clamp(rotationAxisWorld.dot(worldZDirection)*20, -factor, factor);
         return new Vector3d(0, localYawTorque, localPitchTorque);
     }
 
@@ -263,7 +263,7 @@ public class ServerShipHandler {
         if (k <= 0.0D) {
             return;
         }
-
+        data.getPlayer().sendSystemMessage(Component.literal("准备跃迁"));
         Vector3dc shipPos = ship.getTransform().getPositionInWorld();
         WarpProjecTileEntity warpProjectile = new WarpProjecTileEntity(vsieEntities.WARP_PROJECTILE.get(), level);
         // 功能：在船只 world pos 处生成特效弹体，并让其以 1 格/tick 朝目标飞行 k tick。
