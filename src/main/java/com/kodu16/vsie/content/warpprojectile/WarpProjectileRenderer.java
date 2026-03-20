@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.EndPortalBlock;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
@@ -32,7 +33,7 @@ public class WarpProjectileRenderer extends EntityRenderer<WarpProjecTileEntity>
     // 功能：指定消失平面使用的末地门纹理，让残影视觉上与末地门效果一致。
     private static final ResourceLocation END_PORTAL_TEXTURE = new ResourceLocation("minecraft", "textures/block/end_portal.png");
     // 功能：使用带透明度的实体贴图渲染类型，便于直接绘制六边形贴图平面。
-    private static final RenderType DECAY_RENDER_TYPE = RenderType.entityTranslucentEmissive(END_PORTAL_TEXTURE);
+    private static final RenderType DECAY_RENDER_TYPE = RenderType.endPortal();
     // 功能：统一约束消失残影持续时间，满足需求中的 80 tick 生命周期。
     private static final int DECAY_DURATION_TICKS = 80;
     // 功能：维护当前世界内所有活跃的跃迁弹消失残影，供世界渲染阶段统一绘制。
