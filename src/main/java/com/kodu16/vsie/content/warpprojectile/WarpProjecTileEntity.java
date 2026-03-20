@@ -8,6 +8,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.RemovalReason;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
@@ -21,11 +22,15 @@ public class WarpProjecTileEntity extends Projectile {
             SynchedEntityData.defineId(WarpProjecTileEntity.class, EntityDataSerializers.FLOAT);
     // 功能：记录是否已经在客户端播放过生成特效，避免每 tick 重复创建 Photon 特效实例。
     private boolean spawnedClientFx = false;
+    // 功能：记录是否已经播放过消失特效，避免实体移除流程中重复触发 warp_projectile_vanish.fx。
+    private boolean vanishedClientFx = false;
     // 功能：保存跃迁弹的最大寿命/半径，用于服务端销毁判定与客户端消失平面半径统一。
     public double maxlife;
     private int lifeTime = 0;
     // 功能：统一管理跃迁弹射物的生成特效资源，生成时播放 warp_projectile.fx。
     private static final ResourceLocation WARP_PROJECTILE_FX = new ResourceLocation("vsie", "warp_projectile");
+    // 功能：统一管理跃迁弹射物的消失特效资源，实体销毁时播放 warp_projectile_vanish.fx。
+    private static final ResourceLocation WARP_PROJECTILE_VANISH_FX = new ResourceLocation("vsie", "warp_projectile_vanish");
 
     @Override
     protected void defineSynchedData() {
@@ -84,6 +89,29 @@ public class WarpProjecTileEntity extends Projectile {
 
             this.discard();
         }
+    }
+
+
+    // 功能：在客户端播放一次消失特效，确保跃迁弹移除时能释放 warp_projectile_vanish.fx。
+    private void playVanishFx() {
+        if (!this.level().isClientSide() || this.vanishedClientFx) {
+            return;
+        }
+
+        this.vanishedClientFx = true;
+        var fx = FXHelper.getFX(WARP_PROJECTILE_VANISH_FX);
+        if (fx != null) {
+            var effect = new EntityEffect(fx, this.level(), this, EntityEffect.AutoRotate.XROT);
+            effect.setForcedDeath(true);
+            effect.start();
+        }
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        // 功能：在实体真正移除前补播消失特效，让服务端同步销毁与客户端本地销毁都保持一致表现。
+        this.playVanishFx();
+        super.remove(reason);
     }
 
     @Override
