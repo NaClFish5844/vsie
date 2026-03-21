@@ -8,7 +8,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.RemovalReason;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
@@ -18,7 +17,7 @@ import net.minecraft.world.phys.Vec3;
 @SuppressWarnings("removal")
 public class WarpProjecTileEntity extends Projectile {
     // 功能：同步弹射物总飞行距离，保证客户端和服务端都能按相同距离自动消失。
-    private static final EntityDataAccessor<Float> MAX_TRAVEL_DISTANCE =
+    private static final EntityDataAccessor<Float> MAX_LIFE =
             SynchedEntityData.defineId(WarpProjecTileEntity.class, EntityDataSerializers.FLOAT);
     // 功能：记录是否已经在客户端播放过生成特效，避免每 tick 重复创建 Photon 特效实例。
     private boolean spawnedClientFx = false;
@@ -35,7 +34,7 @@ public class WarpProjecTileEntity extends Projectile {
     @Override
     protected void defineSynchedData() {
         // 功能：为最大飞行距离提供默认值，避免未配置时出现 0 距离立刻消失。
-        this.entityData.define(MAX_TRAVEL_DISTANCE, 64.0F);
+        this.entityData.define(MAX_LIFE, 64.0F);
     }
 
     public WarpProjecTileEntity(EntityType<? extends Projectile> type, Level level) {
@@ -46,9 +45,8 @@ public class WarpProjecTileEntity extends Projectile {
 
     // 功能：在生成前一次性配置方向、速度和最大飞行距离，调用方式与 bullet 的生成流程保持一致。
     public void configureLaunch(Vec3 direction, double life) {
-        this.setDeltaMovement(direction.scale(5));
-        this.maxlife = life;
-        this.entityData.set(MAX_TRAVEL_DISTANCE, (float) life);
+        this.setDeltaMovement(direction.scale(0.2));
+        this.maxlife = life/3;
     }
 
     @Override
@@ -60,19 +58,14 @@ public class WarpProjecTileEntity extends Projectile {
             this.spawnedClientFx = true;
             var fx = FXHelper.getFX(WARP_PROJECTILE_FX);
             if (fx != null) {
-                var effect = new EntityEffect(fx, this.level(), this, EntityEffect.AutoRotate.XROT);
+                var effect = new EntityEffect(fx, this.level(), this, EntityEffect.AutoRotate.FORWARD);
                 effect.setForcedDeath(true);
                 effect.start();
             }
         }
-
-        // 功能：客户端每 tick 从同步数据回填半径，确保消失平面大小与服务端配置一致。
-        this.maxlife = this.entityData.get(MAX_TRAVEL_DISTANCE);
+        this.maxlife = this.entityData.get(MAX_LIFE);
 
         Vec3 movement = this.getDeltaMovement();
-        if (movement.lengthSqr() < 1.0E-7D) {
-            return;
-        }
 
         Vec3 nextPos = this.position().add(movement);
 
@@ -86,7 +79,10 @@ public class WarpProjecTileEntity extends Projectile {
         this.setPos(nextPos);
         lifeTime++;
         if (lifeTime >= this.maxlife) {
-
+            this.setDeltaMovement(new Vec3(0,0,0));
+            this.playVanishFx();
+        }
+        if(lifeTime>=this.maxlife+80) {
             this.discard();
         }
     }
@@ -94,24 +90,12 @@ public class WarpProjecTileEntity extends Projectile {
 
     // 功能：在客户端播放一次消失特效，确保跃迁弹移除时能释放 warp_projectile_vanish.fx。
     private void playVanishFx() {
-        if (!this.level().isClientSide() || this.vanishedClientFx) {
-            return;
-        }
-
-        this.vanishedClientFx = true;
         var fx = FXHelper.getFX(WARP_PROJECTILE_VANISH_FX);
         if (fx != null) {
-            var effect = new EntityEffect(fx, this.level(), this, EntityEffect.AutoRotate.XROT);
-            effect.setForcedDeath(true);
+            var effect = new EntityEffect(fx, this.level(), this, EntityEffect.AutoRotate.FORWARD);
+            effect.setForcedDeath(false);
             effect.start();
         }
-    }
-
-    @Override
-    public void remove(RemovalReason reason) {
-        // 功能：在实体真正移除前补播消失特效，让服务端同步销毁与客户端本地销毁都保持一致表现。
-        this.playVanishFx();
-        super.remove(reason);
     }
 
     @Override

@@ -59,7 +59,6 @@ public class vsieClientModRegistryEvents {
                 EntityRenderers.register(vsieEntities.BASIC_MISSILE.get(), AbstractMissileGeoRenderer::new)
         );
         event.enqueueWork(() ->
-                // 功能：为 warp projectile 注册空渲染器，仅显示其 Photon 特效而不渲染额外模型。
                 EntityRenderers.register(vsieEntities.WARP_PROJECTILE.get(), WarpProjectileRenderer::new)
         );
         event.enqueueWork(() -> {
