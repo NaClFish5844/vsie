@@ -318,6 +318,8 @@ public abstract class AbstractHeavyTurretBlockEntity extends AbstractTurretBlock
         tag.putBoolean("channel2", getData().channel2);
         tag.putBoolean("channel3", getData().channel3);
         tag.putBoolean("channel4", getData().channel4);
+        tag.putInt("defaultxrot",this.defaultspinx);
+        tag.putInt("defaultyrot",this.defaultspiny);
         tag.putInt("receivingchannel", getData().receivingchannel);
     }
 
@@ -344,6 +346,8 @@ public abstract class AbstractHeavyTurretBlockEntity extends AbstractTurretBlock
         if (tag.contains("channel2")) { this.getData().channel2 = tag.getBoolean("channel2"); }
         if (tag.contains("channel3")) { this.getData().channel3 = tag.getBoolean("channel3"); }
         if (tag.contains("channel4")) { this.getData().channel4 = tag.getBoolean("channel4"); }
+        if (tag.contains("defaultyrot")) {this.defaultspiny = tag.getInt("defaultyrot");}
+        if (tag.contains("defaultxrot")) {this.defaultspinx = tag.getInt("defaultxrot");}
         if (tag.contains("receivingchannel")) { this.getData().receivingchannel = tag.getInt("receivingchannel"); }
     }
 
