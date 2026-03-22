@@ -20,8 +20,6 @@ public class WarpProjecTileEntity extends Projectile {
     // 功能：同步弹射物总飞行距离，保证客户端和服务端都能按相同距离自动消失。
     private static final EntityDataAccessor<Float> MAX_LIFE =
             SynchedEntityData.defineId(WarpProjecTileEntity.class, EntityDataSerializers.FLOAT);
-    // 功能：记录是否已经在客户端播放过生成特效，避免每 tick 重复创建 Photon 特效实例。
-    private boolean spawnedClientFx = false;
     // 功能：记录是否已经播放过消失特效，避免实体移除流程中重复触发 warp_projectile_vanish.fx。
     private boolean vanishedClientFx = false;
     // 功能：保存跃迁弹的最大寿命/半径，用于服务端销毁判定与客户端消失平面半径统一。
@@ -48,8 +46,8 @@ public class WarpProjecTileEntity extends Projectile {
 
     // 功能：在生成前一次性配置方向、速度和最大飞行距离，调用方式与 bullet 的生成流程保持一致。
     public void configureLaunch(Vec3 direction, double life) {
-        this.setDeltaMovement(direction.scale(0.2));
-        this.maxlife = life/3;
+        this.setDeltaMovement(direction.scale(1));
+        this.maxlife = life;
     }
 
     @Override
@@ -57,8 +55,7 @@ public class WarpProjecTileEntity extends Projectile {
         super.tick();
 
         // 功能：实体首次更新时播放生成特效，使用 warp_projectile.fx 提供视觉表现。
-        if (this.level().isClientSide() && !this.spawnedClientFx) {
-            this.spawnedClientFx = true;
+        if (this.level().isClientSide()) {
             var fx = FXHelper.getFX(WARP_PROJECTILE_FX);
             if (fx != null) {
                 var effect = new EntityEffect(fx, this.level(), this, EntityEffect.AutoRotate.FORWARD);
@@ -114,9 +111,23 @@ public class WarpProjecTileEntity extends Projectile {
     private void playVanishFx() {
         var fx = FXHelper.getFX(WARP_PROJECTILE_VANISH_FX);
         if (fx != null) {
-            var effect = new EntityEffect(fx, this.level(), this, EntityEffect.AutoRotate.FORWARD);
+            var effect = new EntityEffect(fx, this.level(), this, EntityEffect.AutoRotate.NONE);
             effect.setForcedDeath(false);
             effect.start();
+
+            Vec3 dir = this.lastNonZeroVelocity;
+            if (dir.lengthSqr() > 1.0E-6D && effect.getRuntime() != null && effect.getRuntime().root != null) {
+                dir = dir.normalize();
+
+                float yaw = (float) Math.atan2(-dir.z, dir.x);
+                float pitch = (float) Math.atan2(dir.y, Math.sqrt(dir.x * dir.x + dir.z * dir.z));
+
+                var rot = new org.joml.Quaternionf()
+                        .rotateXYZ(0, yaw, pitch)
+                        .rotateZ((float) Math.toRadians(90));
+
+                effect.getRuntime().root.updateRotation(rot);
+            }
         }
     }
 

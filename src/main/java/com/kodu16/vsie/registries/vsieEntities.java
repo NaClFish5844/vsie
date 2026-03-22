@@ -31,6 +31,7 @@ public class vsieEntities {
     public static final EntityEntry<WarpProjecTileEntity> WARP_PROJECTILE =
             REGISTRATE.entity("warp_projectile", WarpProjecTileEntity::new, MobCategory.MISC)
                     // 功能：注册 warp 特效弹体实体，供控制椅自动对准完成后在服务器生成。
+                    .tag(RPLTags.PRECISE_MOTION)
                     .register();
 
 }
