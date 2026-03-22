@@ -63,6 +63,7 @@ public abstract class AbstractHeavyTurretBlockEntity extends AbstractTurretBlock
         }
 
         boolean canTrackBySeatView = !getData().isviewlocked && (getData().firetype == 0 || getData().firetype == 2);
+        boolean canTrackAutoTarget = getData().firetype == 1 || (getData().firetype == 2 && getData().isviewlocked && !targetPos.equals(new Vector3d(0,0,0)));
         // 功能：当控制椅视角未锁定且重炮为手动/智能模式时，将玩家视角先做“控制椅->重炮”的方向转换后再驱动头瞄。
         if (canTrackBySeatView) {
             updateSeatViewTargetRot();
@@ -71,8 +72,16 @@ public abstract class AbstractHeavyTurretBlockEntity extends AbstractTurretBlock
             setAnimData(HAS_TARGET, true);
         }
 
+        // 功能：当重型炮塔没有手动瞄准或自动目标时，平滑回到 GUI 配置的默认 X/Y 朝向。
+        if (!canTrackBySeatView && !canTrackAutoTarget) {
+            setAnimData(HAS_TARGET, false);
+            returnToDefaultRotation();
+            targetdistance = 0;
+            targetPreVelocity.clear();
+        }
+
         // 功能：重型炮塔只有在频道匹配时才响应自动/智能射击，行为与主武器一致。
-        if ((getData().firetype == 1 || (getData().firetype == 2 && getData().isviewlocked && !targetPos.equals(new Vector3d(0,0,0))))) {
+        if (canTrackAutoTarget) {
             LogUtils.getLogger().warn("setting target:"+targetPos);
             updateTargetRot();
             this.xRot0 = closestReachableX(xRot0,getMaxSpinSpeed(),targetxrot);
@@ -88,8 +97,8 @@ public abstract class AbstractHeavyTurretBlockEntity extends AbstractTurretBlock
                 LogUtils.getLogger().warn("target is null");
                 setAnimData(HAS_TARGET, false);
                 targetdistance = 0;
-                xRot0 = 0;
-                yRot0 = 0;
+                // 功能：自动目标丢失时恢复到玩家配置的默认旋转角，而不是强制回到 0 度。
+                returnToDefaultRotation();
                 targetPreVelocity.clear();
             }
         }
