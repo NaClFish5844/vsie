@@ -52,14 +52,23 @@ public class HeavyTurretC2SPacket {
             }
             // 功能：复用同一数据包，同时支持“切换开火模式”和“切换频道”。
             if (changetype >= 100) {
+                // 功能：重型炮塔的模式编码只允许 100~102（手动/自动/智能），其它编码直接忽略。
+                if (changetype > 102) {
+                    return;
+                }
                 int fireType = changetype - 100;
                 heavyturret.modifyFireType(fireType);
                 LogUtils.getLogger().warn("C2S:setting heavy turret fire type to:" + fireType);
             } else {
+                // 功能：重型炮塔的频道编码只允许 1~4，保持与主武器频道开关一致。
+                if (changetype < 1 || changetype > 4) {
+                    return;
+                }
                 heavyturret.modifyChannel(changetype);
                 LogUtils.getLogger().warn("C2S:changing heavy turret channel:" + changetype);
             }
-            heavyturret.setChanged();
+            // 功能：配置变更后立即同步方块实体，确保 GUI 与服务端状态保持一致。
+            heavyturret.markUpdated();
         });
         ctx.setPacketHandled(true);
     }
