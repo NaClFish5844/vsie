@@ -25,8 +25,8 @@ public final class TurretData {
     public final int CHANNEL_4 = 0b0000_1000;
     public final int CHANNEL_HIDE = 0b0000_1111;
 
-    // 炮塔配置寄存器 高4位为目标配置 低4位为频道配置
-    public volatile int configRegister = TARGET_HOSTILE ;
+    // 功能：炮塔配置寄存器（高4位目标、低4位频道）默认全部关闭，避免新放置炮塔自动激活索敌。
+    public volatile int configRegister = TARGET_MANUAL;
     // 缓存控制椅当前下发给重型炮塔的频道编码
     public volatile int channelOfCtrl = 0;
 

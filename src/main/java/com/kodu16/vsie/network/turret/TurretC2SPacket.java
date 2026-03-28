@@ -52,9 +52,17 @@ public class TurretC2SPacket {
                 sender.sendSystemMessage(Component.literal("Invalid turret at " + pos));
                 return;
             }
+            // 功能：普通炮塔数据包显式忽略重型炮塔，避免两类炮塔编码串线。
+            if (turret instanceof AbstractHeavyTurretBlockEntity) {
+                return;
+            }
+            // 功能：普通炮塔只允许 1~4（敌对/被动/玩家/舰船）目标编码，忽略其它编码。
+            if (changetype < 1 || changetype > 4) {
+                return;
+            }
             turret.modifyTargetType(pkt.changetype);
-            // 可选：标记方块实体为脏以保存更改
-            turret.setChanged();
+            // 功能：目标配置改变后立即下发客户端，保证按钮状态与图标实时刷新。
+            turret.markUpdated();
         });
         ctx.setPacketHandled(true);
     }
