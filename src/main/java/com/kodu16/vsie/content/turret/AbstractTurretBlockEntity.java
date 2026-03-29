@@ -35,6 +35,7 @@ import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 import software.bernie.geckolib.animatable.GeoBlockEntity;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
 import software.bernie.geckolib.network.SerializableDataTicket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -146,7 +147,7 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
 
             this.turretData.setWorldPivotOffset(    // 得到实际的枢轴偏移 并且写进去
                     transform.getShipToWorld().transformDirection(
-                            this.turretData.getBasePivotOffset()
+                            this.turretData.getBasePivotOffset().normalize().mul(this.turretData.getBasePivotOffset().length())
                     ));
 
             // 功能：冷却时间仅用于禁止开火，不再阻断索敌与转向逻辑。s

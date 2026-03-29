@@ -6,6 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.joml.Quaternionf;
+import org.joml.Vector3d;
 import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
 import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.model.DefaultedBlockGeoModel;
@@ -58,6 +59,10 @@ public class AbstractTurretModel extends DefaultedBlockGeoModel<AbstractTurretBl
             animatable.prevyrot = yRot;
             cannon.setRotX(xRot);
             turret.setRotY(yRot);
+        }
+        CoreGeoBone firepoint = getAnimationProcessor().getBone("cannonend");
+        if(firepoint!=null) {
+            Vector3d postofire = new Vector3d(firepoint.getPosX(),firepoint.getPosY(),firepoint.getPosZ());
         }
     }
     private float lerp(float start, float end) {
