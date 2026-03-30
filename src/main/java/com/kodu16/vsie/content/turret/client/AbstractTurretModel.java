@@ -62,12 +62,6 @@ public class AbstractTurretModel extends DefaultedBlockGeoModel<AbstractTurretBl
             cannon.setRotX(xRot);
             turret.setRotY(yRot);
         }
-        CoreGeoBone firepoint = getAnimationProcessor().getBone("cannonend");
-        if (firepoint != null && "particle".equals(animatable.getturrettype())) {
-            // 功能：读取 cannonend 骨骼坐标并通过 C2S 发给服务端，作为粒子炮子弹生成点。
-            Vector3d postofire = new Vector3d(firepoint.getPosX(), firepoint.getPosY(), firepoint.getPosZ());
-            ModNetworking.CHANNEL.sendToServer(new TurretFirePointC2SPacket(animatable.getBlockPos(), postofire));
-        }
     }
     private float lerp(float start, float end) {
         return Mth.rotLerp(0.1F, start * Mth.RAD_TO_DEG, end * Mth.RAD_TO_DEG) * Mth.DEG_TO_RAD;

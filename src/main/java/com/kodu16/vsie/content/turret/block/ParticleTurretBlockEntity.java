@@ -3,11 +3,7 @@ package com.kodu16.vsie.content.turret.block;
 import com.kodu16.vsie.content.bullet.BulletData;
 import com.kodu16.vsie.content.bullet.entity.ParticleBulletEntity;
 import com.kodu16.vsie.content.turret.AbstractTurretBlockEntity;
-import com.kodu16.vsie.network.fx.FxEntityS2CPacket;
-import com.kodu16.vsie.registries.ModNetworking;
 import com.kodu16.vsie.registries.vsieEntities;
-import com.kodu16.vsie.utility.FxData;
-import com.kodu16.vsie.utility.vsieFxHelper;
 import com.mojang.logging.LogUtils;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
@@ -16,8 +12,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.network.PacketDistributor;
 import org.joml.Vector3d;
+import org.valkyrienskies.core.api.ships.Ship;
+import org.valkyrienskies.mod.common.VSGameUtilsKt;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.Animation;
@@ -47,18 +44,12 @@ public class ParticleTurretBlockEntity extends AbstractTurretBlockEntity {
         return "particle";
     }
 
-    public double getYAxisOffset() {return 2.45d;}
+    public double getYAxisOffset() {return 3d;}
 
     @Override
     protected Vector3d getTurretPivotInGeoPixels() {
         // 功能：返回 particle turret 模型中 turret 骨骼的枢轴点，用于计算真实世界炮口基准点。
         return new Vector3d(0.0, 0.0, 0);
-    }
-
-    @Override
-    protected Vector3d getCannonPivotInGeoPixels() {
-        // 功能：返回 particle turret 模型中 cannon 骨骼的枢轴点，用于让子弹从炮管实际旋转中心射出。
-        return new Vector3d(0.0, 46.0, 7.0);
     }
 
     @Override
@@ -83,27 +74,25 @@ public class ParticleTurretBlockEntity extends AbstractTurretBlockEntity {
 
     @Override
     public void shootentity() {
+        Level level = this.getLevel();
         // 功能：仅允许服务端执行开火逻辑，避免客户端在索敌/预测分支误触发一次射击动画。
-        if (this.getLevel() == null || this.getLevel().isClientSide) {
+        if (level == null || level.isClientSide) {
             return;
         }
-        // 功能：射击动画与真实发射绑定，保证“生成炮弹后”才播放且每次开火仅触发一次。
-        triggerAnim("controller", "shoot");
-        // 功能：暂时停用“通过 pivot 计算世界炮口坐标”的逻辑，改为直接使用客户端上传的 firepoint 坐标。
-//        Vector3d muzzleWorldPos = this.getCannonPivotWorldPos();
-//        LogUtils.getLogger().warn("muzzle world pos:"+muzzleWorldPos);
-        Vector3d postofire = this.getParticleTurretFirePoint();
-        // 功能：如果尚未收到客户端 firepoint，回退到 currentworldpos 以避免空指针。
-        if (postofire == null) {
-            postofire = new Vector3d(this.currentworldpos);
+        boolean onship = VSGameUtilsKt.isBlockInShipyard(level,this.getBlockPos());
+        if(onship && getFirePoint() != null){
+            triggerAnim("controller", "shoot");
+            Ship ship = VSGameUtilsKt.getShipManagingPos(level,this.getBlockPos());
+            Vec3 center = new Vec3(this.getBlockPos().getX()+getFirePoint().x, this.getBlockPos().getY()+getYAxisOffset(), this.getBlockPos().getZ()+getFirePoint().z);
+            Vec3 firepoint = VSGameUtilsKt.toWorldCoordinates(ship,center);
+            LogUtils.getLogger().warn("postofire:"+ firepoint);
+            ParticleBulletEntity bullet = new ParticleBulletEntity(vsieEntities.PARTICLE_BULLET.get(), level);
+            // 功能：为粒子炮子弹写入标准 data，确保子弹第 1 tick 使用 particle_cannon_fire 触发 awake FX。
+            bullet.setDataBase(BulletData.createParticleCannonDefault());
+            bullet.setPos(firepoint);
+            bullet.setDeltaMovement(new Vec3(targetPos.x-currentworldpos.x,targetPos.y-currentworldpos.y,targetPos.z-currentworldpos.z).normalize().scale(1.0F));
+            this.getLevel().addFreshEntity(bullet);
         }
-        Vec3 center = new Vec3(postofire.x, postofire.y, postofire.z);
-        ParticleBulletEntity bullet = new ParticleBulletEntity(vsieEntities.PARTICLE_BULLET.get(), this.getLevel());
-        // 功能：为粒子炮子弹写入标准 data，确保子弹第 1 tick 使用 particle_cannon_fire 触发 awake FX。
-        bullet.setDataBase(BulletData.createParticleCannonDefault());
-        bullet.setPos(center);
-        bullet.setDeltaMovement(center.vectorTo(new Vec3(targetPos.x,targetPos.y,targetPos.z)).normalize().scale(1.0F));
-        this.getLevel().addFreshEntity(bullet);
     }
 
     @Override

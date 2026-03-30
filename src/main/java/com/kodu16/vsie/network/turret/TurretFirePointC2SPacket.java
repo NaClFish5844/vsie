@@ -44,8 +44,8 @@ public class TurretFirePointC2SPacket {
             ServerLevel level = sender.serverLevel();
             BlockEntity be = level.getBlockEntity(pkt.pos);
             if (be instanceof AbstractTurretBlockEntity turret) {
-                // 功能：缓存粒子炮 firepoint 坐标，供服务端开火时直接读取。
-                turret.setParticleTurretFirePoint(pkt.postofire);
+                // 功能：缓存firepoint 坐标，供服务端开火时直接读取。
+                turret.setFirePoint(pkt.postofire);
             }
         });
         ctx.setPacketHandled(true);

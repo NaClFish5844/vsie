@@ -35,7 +35,6 @@ import org.valkyrienskies.mod.common.util.VectorConversionsMCKt;
 import software.bernie.geckolib.animatable.GeoBlockEntity;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
-import software.bernie.geckolib.core.animatable.model.CoreGeoBone;
 import software.bernie.geckolib.network.SerializableDataTicket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -78,8 +77,10 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
     // 功能：记录炮口火焰剩余显示时间（单位：tick），用于实现“开火后延迟熄灭”效果。
     public int muzzleFlashTicks = 0;
 
+    // 功能：读取粒子炮 firepoint 坐标，返回副本避免外部意外修改内部状态。
     // 功能：保存客户端上传的 firepoint 坐标，粒子炮开火时直接作为子弹生成点使用。
-    private Vector3d particleTurretFirePoint = null;
+    @Getter
+    private Vector3d FirePoint = null;
 
     private static final double SEARCH_RADIUS = 128.0;
 
@@ -687,93 +688,13 @@ public abstract class AbstractTurretBlockEntity extends SmartBlockEntity impleme
         this.yRot0 = closestReachableY(yRot0, getMaxSpinSpeed(), targetyrot*Mth.PI/180);
     }
 
-
-    // 功能：先在方块本地坐标系中计算 cannon 枢轴位置，最后若炮塔在船上再统一映射到世界坐标。
-    // 这已经被牢鱼写进tick和data
-    public Vector3d getCannonPivotWorldPos() {
-        Direction facing = getBlockState().getValue(AbstractTurretBlock.FACING);
-
-        // 方块本地坐标系基向量（此时仍然是“方块局部/船局部”语义，不先转世界）
-        Vec3 localUp = switch (facing) {
-            case NORTH, DOWN, SOUTH -> new Vec3(0, 0, 1);
-            case WEST -> new Vec3(1, 0, 0);
-            case EAST -> new Vec3(-1, 0, 0);
-            case UP -> new Vec3(0, 0, -1);
-        };
-        Vec3 localForward = switch (facing) {
-            case NORTH -> new Vec3(0, 1, 0);
-            case SOUTH -> new Vec3(0, -1, 0);
-            case WEST, EAST, UP, DOWN -> new Vec3(0, 0, -1);
-        };
-        Vec3 localRight = switch (facing) {
-            case NORTH, DOWN, SOUTH -> new Vec3(1, 0, 0);
-            case WEST -> new Vec3(0, -1, 0);
-            case EAST -> new Vec3(0, 1, 0);
-            case UP -> new Vec3(-1, 0, 0);
-        };
-
-        // Geo 像素坐标 -> 方块本地坐标（1 block = 16 px）
-        Vector3d turretPivot = getTurretPivotInGeoPixels().mul(1.0 / 16.0, new Vector3d());
-        Vector3d cannonPivot = getCannonPivotInGeoPixels().mul(1.0 / 16.0, new Vector3d());
-
-        // 先在“本地坐标系”里，围绕 turretPivot 按当前 yaw 旋转 cannon 偏移
-        Vector3d cannonOffsetFromTurret = cannonPivot.sub(turretPivot, new Vector3d());
-        double cos = Math.cos(-this.yRot0);
-        double sin = Math.sin(-this.yRot0);
-        double rotatedX = cannonOffsetFromTurret.x * cos - cannonOffsetFromTurret.z * sin;
-        double rotatedZ = cannonOffsetFromTurret.x * sin + cannonOffsetFromTurret.z * cos;
-        Vector3d rotatedOffset = new Vector3d(rotatedX, cannonOffsetFromTurret.y, rotatedZ);
-
-        // 得到 cannon 枢轴在“方块本地坐标系”中的最终位置
-        Vector3d localPivotPos = turretPivot.add(rotatedOffset, new Vector3d());
-
-        // 再把这个“本地位置”映射成 block/ship 局部坐标中的三维偏移
-        Vector3d blockLocalOffset = new Vector3d()
-                .add(localRight.x * localPivotPos.x, localRight.y * localPivotPos.x, localRight.z * localPivotPos.x)
-                .add(localUp.x * localPivotPos.y, localUp.y * localPivotPos.y, localUp.z * localPivotPos.y)
-                .add(localForward.x * localPivotPos.z, localForward.y * localPivotPos.z, localForward.z * localPivotPos.z);
-
-        // 本地原点：方块原点
-        Vector3d localBlockPos = new Vector3d(
-                this.getBlockPos().getX(),
-                this.getBlockPos().getY(),
-                this.getBlockPos().getZ()
-        );
-
-        // cannon 枢轴在“世界/船局部坐标”中的最终点（尚未做 ship->world）
-        Vector3d finalLocalPos = localBlockPos.add(blockLocalOffset, new Vector3d());
-
-        // 最后一步：如果在船上，再统一映射到世界坐标
-        boolean onship = VSGameUtilsKt.isBlockInShipyard(this.getLevel(), this.getBlockPos());
-        if (onship) {
-            Ship ship = VSGameUtilsKt.getShipManagingPos(this.getLevel(), this.getBlockPos());
-            if (ship != null) {
-                Vector3d worldPos = VSGameUtilsKt.toWorldCoordinates(
-                        ship,
-                        finalLocalPos.x,
-                        finalLocalPos.y,
-                        finalLocalPos.z
-                );
-                return new Vector3d(worldPos.x, worldPos.y, worldPos.z);
-            }
-        }
-
-        // 不在船上，本地坐标就是世界坐标
-        return finalLocalPos;
-    }
-
     // 功能：由 C2S 数据包写入粒子炮 firepoint 坐标，避免服务端再计算 pivot 世界坐标。
-    public void setParticleTurretFirePoint(Vector3d postofire) {
+    public void setFirePoint(Vector3d postofire) {
         if (postofire == null) {
-            this.particleTurretFirePoint = null;
+            this.FirePoint = null;
             return;
         }
-        this.particleTurretFirePoint = new Vector3d(postofire);
-    }
-
-    // 功能：读取粒子炮 firepoint 坐标，返回副本避免外部意外修改内部状态。
-    public @Nullable Vector3d getParticleTurretFirePoint() {
-        return this.particleTurretFirePoint == null ? null : new Vector3d(this.particleTurretFirePoint);
+        this.FirePoint = new Vector3d(postofire);
     }
 
     public float xRot0 = 0;

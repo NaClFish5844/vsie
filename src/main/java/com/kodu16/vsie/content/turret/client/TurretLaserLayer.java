@@ -49,7 +49,6 @@ public class TurretLaserLayer extends GeoRenderLayer<AbstractTurretBlockEntity> 
     public void renderForBone(PoseStack poseStack, AbstractTurretBlockEntity animatable, GeoBone bone,
                               RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer,
                               float partialTick, int packedLight, int packedOverlay) {
-
         if (!cannonname.equals(bone.getName())) {
             super.renderForBone(poseStack, animatable, bone, renderType, bufferSource, buffer,
                     partialTick, packedLight, packedOverlay);
