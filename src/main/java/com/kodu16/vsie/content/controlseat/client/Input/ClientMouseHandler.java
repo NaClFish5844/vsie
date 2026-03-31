@@ -13,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -20,6 +21,8 @@ import org.slf4j.Logger;
 import org.valkyrienskies.mod.common.entity.ShipMountingEntity;
 
 public class ClientMouseHandler {
+    // 功能：控制椅手动瞄准模式下，客户端直接计算“玩家视线延伸固定距离”后的目标点并上传给服务端。
+    private static final double MANUAL_AIM_DISTANCE = 1024.0D;
 
     // 在这干活不必考虑你做的是哪个player，你做的就是entity告诉你的客户端的player，这整个程序是跑在客户端的
     //handle负责挨个检测一遍，然后给服务端发包
@@ -38,15 +41,26 @@ public class ClientMouseHandler {
                 //LOGGER.warn(String.valueOf(Component.literal("mouseDX:"+dx+"mouseDY:"+dy)));
                 //dxdy都是（-1,1）
                 if (data.isViewLocked()) {
-                    ClientSeatInputSender.tickSend(pos, data.getUserUUID(), dx, dy, 0, data.mouseLpress, data.viewLock, (int) player.getXRot()-180, (int) player.getYHeadRot()+90);
+                    // 功能：视角锁定时仍保留姿态控制输入，同时把玩家视线延伸目标点传给重型炮塔链路。
+                    Vec3 aimTargetPos = calculateManualAimTargetPos(player);
+                    ClientSeatInputSender.tickSend(pos, data.getUserUUID(), dx, dy, 0, data.mouseLpress, data.viewLock, aimTargetPos);
                     //LOGGER.warn(String.valueOf(Component.literal("sending mousepress:"+data.mouseLpress)));
                 }
                 else {
-                    ClientSeatInputSender.tickSend(pos, data.getUserUUID(), 0, 0, 0, false, data.viewLock, (int) player.getXRot()-180, (int) player.getYHeadRot()+90);
+                    // 功能：非视角锁定时仅上传目标点给重型炮塔手动模式，控制椅本体姿态输入归零。
+                    Vec3 aimTargetPos = calculateManualAimTargetPos(player);
+                    ClientSeatInputSender.tickSend(pos, data.getUserUUID(), 0, 0, 0, false, data.viewLock, aimTargetPos);
                     data.reset();
                 }
             }
         }
+    }
+
+    // 功能：将玩家眼睛位置沿视线方向延伸 1024 格，得到重型炮塔手动瞄准目标点（世界坐标）。
+    private static Vec3 calculateManualAimTargetPos(LocalPlayer player) {
+        Vec3 eyePos = player.getEyePosition();
+        Vec3 lookVec = player.getLookAngle().normalize();
+        return eyePos.add(lookVec.scale(MANUAL_AIM_DISTANCE));
     }
 
 

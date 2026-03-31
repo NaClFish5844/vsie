@@ -20,32 +20,37 @@ public class ControlSeatInputC2SPacket {
     public final BlockPos pos;
     public final int keys;   // bitmask
     public final boolean isviewlock;
-    public final int rotx;
-    public final int roty;
+    // 功能：客户端预计算后的手动瞄准目标点（玩家视线延伸 1024 格的世界坐标）。
+    public final double aimTargetX;
+    public final double aimTargetY;
+    public final double aimTargetZ;
 
-    public ControlSeatInputC2SPacket(BlockPos pos, int keys, boolean isviewlock, int rotx, int roty) {
+    public ControlSeatInputC2SPacket(BlockPos pos, int keys, boolean isviewlock, double aimTargetX, double aimTargetY, double aimTargetZ) {
         this.pos = pos;
         this.keys = keys;
         this.isviewlock = isviewlock;
-        this.rotx = rotx;
-        this.roty = roty;
+        this.aimTargetX = aimTargetX;
+        this.aimTargetY = aimTargetY;
+        this.aimTargetZ = aimTargetZ;
     }
 
     public static void encode(ControlSeatInputC2SPacket pkt, FriendlyByteBuf buf) {
         buf.writeBlockPos(pkt.pos);
         buf.writeVarInt(pkt.keys);
         buf.writeBoolean(pkt.isviewlock);
-        buf.writeInt(pkt.rotx);
-        buf.writeInt(pkt.roty);
+        buf.writeDouble(pkt.aimTargetX);
+        buf.writeDouble(pkt.aimTargetY);
+        buf.writeDouble(pkt.aimTargetZ);
     }
 
     public static ControlSeatInputC2SPacket decode(FriendlyByteBuf buf) {
         BlockPos pos = buf.readBlockPos();
         int keys = buf.readVarInt();
         Boolean isviewlock = buf.readBoolean();
-        int rotx = buf.readInt();
-        int roty = buf.readInt();
-        return new ControlSeatInputC2SPacket(pos, keys, isviewlock,rotx,roty);
+        double aimTargetX = buf.readDouble();
+        double aimTargetY = buf.readDouble();
+        double aimTargetZ = buf.readDouble();
+        return new ControlSeatInputC2SPacket(pos, keys, isviewlock, aimTargetX, aimTargetY, aimTargetZ);
     }
 
     public static void handle(ControlSeatInputC2SPacket pkt, Supplier<NetworkEvent.Context> ctxSup) {
@@ -102,8 +107,10 @@ public class ControlSeatInputC2SPacket {
             }
             // 可选：标记方块实体为脏以保存更改
             serverData.isviewlocked = pkt.isviewlock;
-            serverData.playerrotx = pkt.rotx;;
-            serverData.playerroty = pkt.roty;
+            // 功能：服务端缓存客户端上传的手动瞄准目标点，供重型炮塔直接作为 targetPos 使用。
+            serverData.manualAimTargetX = pkt.aimTargetX;
+            serverData.manualAimTargetY = pkt.aimTargetY;
+            serverData.manualAimTargetZ = pkt.aimTargetZ;
             controlSeat.setChanged();
         });
         ctx.setPacketHandled(true);
