@@ -31,6 +31,9 @@ import java.util.List;
 import java.util.Objects;
 
 public abstract class AbstractHeavyTurretBlockEntity extends AbstractTurretBlockEntity {
+    // 功能：手动头瞄时，不再直接沿视线角度旋转，而是瞄准视线方向前方固定 1024 格处的空间点。
+    private static final double MANUAL_AIM_DISTANCE = 1024.0D;
+
     protected AbstractHeavyTurretBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
         // 初始化 turretData
@@ -76,9 +79,9 @@ public abstract class AbstractHeavyTurretBlockEntity extends AbstractTurretBlock
         }
 
         boolean canTrackBySeatView = !getData().isViewLocked && (getData().fireType == 0 || getData().fireType == 2);
-        // 功能：当控制椅视角未锁定且重炮为手动/智能模式时，将玩家视角先做“控制椅->重炮”的方向转换后再驱动头瞄。
+        // 功能：当控制椅视角未锁定且重炮为手动/智能模式时，先把视线延长 1024 格得到目标点，再解算重炮旋转角度。
         if (canTrackBySeatView) {
-            updateSeatViewTargetRot();
+            updateSeatViewTargetPosAndRot();
             this.xRot0 = closestReachableX(xRot0, getMaxSpinSpeed(), targetxrot);
             this.yRot0 = closestReachableY(yRot0, getMaxSpinSpeed(), targetyrot);
             setAnimData(TURRET_HAS_TARGET, true);
@@ -181,11 +184,65 @@ public abstract class AbstractHeavyTurretBlockEntity extends AbstractTurretBlock
         this.controlSeatFacing = seatFacing;
     }// 这应该写在控制椅里
 
-    private void updateSeatViewTargetRot() {
-        // 功能：根据控制椅朝向与重炮朝向差值，修正玩家传入 yaw，使头瞄角度与重炮本地坐标系一致。
+    private void updateSeatViewTargetPosAndRot() {
+        // 功能：根据控制椅朝向与重炮朝向差值，修正玩家 yaw，并计算“视线前方 1024 格”的世界目标点。
         float convertedYaw = convertSeatYawToTurretYaw(getData().playerAngleY, controlSeatFacing, this.getBlockState().getValue(AbstractTurretBlock.FACING));
-        this.targetxrot = (float) Math.toRadians(getData().playerAngleX);
-        this.targetyrot = (float) Math.toRadians(-convertedYaw);
+        double pitchRad = Math.toRadians(getData().playerAngleX);
+        double yawRad = Math.toRadians(convertedYaw);
+
+        // 功能：在重炮本地坐标系中根据 yaw/pitch 还原视线方向向量（右/上/前）。
+        Vector3d localAimDirection = new Vector3d(
+                Math.sin(yawRad) * Math.cos(pitchRad),
+                Math.sin(pitchRad),
+                Math.cos(yawRad) * Math.cos(pitchRad)
+        );
+
+        // 功能：将本地方向转换为世界方向，并生成视线前方固定距离（1024 格）目标点。
+        Vector3d worldAimDirection = getTurretWorldDirection(localAimDirection).normalize();
+        this.targetPos = new Vector3d(
+                currentworldpos.x + worldAimDirection.x * MANUAL_AIM_DISTANCE,
+                currentworldpos.y + worldAimDirection.y * MANUAL_AIM_DISTANCE,
+                currentworldpos.z + worldAimDirection.z * MANUAL_AIM_DISTANCE
+        );
+
+        // 功能：统一复用目标点转角逻辑，保证手动模式与自动模式的炮塔解算路径一致。
+        updateTargetRot();
+    }
+
+    private Vector3d getTurretWorldDirection(Vector3d localDirection) {
+        // 功能：按炮塔朝向构建本地基向量（前/上/右），供本地视线方向转换到世界坐标。
+        Direction facing = this.getBlockState().getValue(AbstractTurretBlock.FACING);
+        Vec3 localUp = VectorConversionsMCKt.toMinecraft(VectorConversionsMCKt.toJOMLD(facing.getOpposite().getNormal()));
+        Vec3 localForward = switch (facing) {
+            case NORTH -> new Vec3(0, 1, 0);
+            case SOUTH -> new Vec3(0, -1, 0);
+            case WEST, EAST, UP, DOWN -> new Vec3(0, 0, -1);
+        };
+        Vec3 localRight = switch (facing) {
+            case NORTH, DOWN, SOUTH -> new Vec3(1, 0, 0);
+            case WEST -> new Vec3(0, -1, 0);
+            case EAST -> new Vec3(0, 1, 0);
+            case UP -> new Vec3(-1, 0, 0);
+        };
+
+        // 功能：若炮塔在船体上，先把本地基向量转换到世界坐标；否则直接使用本地方向作为世界方向。
+        Vector3d worldForward = new Vector3d(localForward.x, localForward.y, localForward.z);
+        Vector3d worldUp = new Vector3d(localUp.x, localUp.y, localUp.z);
+        Vector3d worldRight = new Vector3d(localRight.x, localRight.y, localRight.z);
+        if (VSGameUtilsKt.isBlockInShipyard(level, this.getBlockPos())) {
+            Ship ship = VSGameUtilsKt.getShipManagingPos(level, this.getBlockPos());
+            ShipTransform transform = ship.getTransform();
+            worldForward = transform.getShipToWorld().transformDirection(worldForward, new Vector3d());
+            worldUp = transform.getShipToWorld().transformDirection(worldUp, new Vector3d());
+            worldRight = transform.getShipToWorld().transformDirection(worldRight, new Vector3d());
+        }
+
+        // 功能：将“本地右/上/前”方向按分量叠加成最终世界方向向量。
+        return new Vector3d(
+                worldRight.x * localDirection.x + worldUp.x * localDirection.y + worldForward.x * localDirection.z,
+                worldRight.y * localDirection.x + worldUp.y * localDirection.y + worldForward.y * localDirection.z,
+                worldRight.z * localDirection.x + worldUp.z * localDirection.y + worldForward.z * localDirection.z
+        );
     }
 
     private float convertSeatYawToTurretYaw(float seatYaw, Direction seatFacing, Direction turretFacing) {
