@@ -479,9 +479,11 @@ public class ControlSeatBlockEntity extends AbstractControlSeatBlockEntity {
                     } else {
                         heavyturret.channelFromCtrl(0);
                     }
-                    // 功能：同步玩家视角状态时，额外下发控制椅方块朝向，供重型炮塔做方向转换后再头瞄。
-                    Direction controlSeatFacing = this.getBlockState().getValue(BlockStateProperties.FACING);
-                    heavyturret.updateplayerstatus(controlseatData.isviewlocked, controlseatData.playerrotx, controlseatData.playerroty, controlSeatFacing);
+                    // 功能：同步玩家视角锁状态，并直接下发客户端计算的手动瞄准目标点给重型炮塔。
+                    heavyturret.updateplayerstatus(
+                            controlseatData.isviewlocked,
+                            new Vector3d(controlseatData.manualAimTargetX, controlseatData.manualAimTargetY, controlseatData.manualAimTargetZ)
+                    );
                     if (!controlseatData.enemyshipsData.isEmpty()) {
                         heavyturret.updatespecificenemy((Vector3d) controlseatData.enemyshipsData.get(controlseatData.lockedenemyindex).getTransform().getPositionInWorld());
                     }

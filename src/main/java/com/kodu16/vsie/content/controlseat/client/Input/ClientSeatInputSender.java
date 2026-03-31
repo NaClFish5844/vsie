@@ -7,6 +7,7 @@ import com.kodu16.vsie.registries.vsieKeyMappings;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -20,7 +21,7 @@ public class ClientSeatInputSender {
                                 double mousex, double mousey,
                                 double roll,
                                 boolean mouseLpress,
-                                boolean isviewlock, int xrot, int yrot) {
+                                boolean isviewlock, Vec3 manualAimTargetPos) {
         Minecraft mc = Minecraft.getInstance();
         //合法性校验，省的玩家A动了读玩家B
         if (mc.player == null || mc.player.getUUID() != uuid) return;
@@ -56,7 +57,9 @@ public class ClientSeatInputSender {
             if (vsieKeyMappings.KEY_TOGGLE_FLIGHT_ASSIST.isDown()) keysInput |= ControlSeatInputC2SPacket.KeysInput.TOGGLEFLIGHTASSIST;
             if (vsieKeyMappings.KEY_TOGGLE_ANTI_GRAVITY.isDown()) keysInput |= ControlSeatInputC2SPacket.KeysInput.TOGGLEANTIGRAVITY;
             ModNetworking.CHANNEL.sendToServer(
-                    new ControlSeatInputC2SPacket(pos,keysInput, isviewlock, xrot, yrot)
+                    // 功能：输入包直接上传客户端计算后的手动瞄准目标点，重型炮塔服务端不再用角度二次换算。
+                    new ControlSeatInputC2SPacket(pos, keysInput, isviewlock,
+                            manualAimTargetPos.x, manualAimTargetPos.y, manualAimTargetPos.z)
             );
         }
     }

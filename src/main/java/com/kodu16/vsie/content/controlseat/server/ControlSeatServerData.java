@@ -95,8 +95,10 @@ public class ControlSeatServerData {
     public volatile long pendingWarpTeleportGameTime = -1L;
 
     public volatile boolean isviewlocked = false;
-    public volatile int playerrotx = 0;
-    public volatile int playerroty = 0;
+    // 功能：缓存客户端上报的手动瞄准世界坐标（玩家视线延伸 1024 格），供重型炮塔直接瞄准。
+    public volatile double manualAimTargetX = 0;
+    public volatile double manualAimTargetY = 0;
+    public volatile double manualAimTargetZ = 0;
 
     // 功能：缓存当前控制椅方块坐标，供 warp 自动对准时把座椅位置转换为世界空间。
     public volatile BlockPos controlSeatPos = BlockPos.ZERO;
